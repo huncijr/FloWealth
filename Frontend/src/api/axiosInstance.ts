@@ -1,5 +1,5 @@
-import axios, { AxiosInstance } from "axios";
-
+import axios from "axios";
+import type { AxiosInstance } from "axios";
 const baseURL: string = import.meta.env.PROD
   ? (import.meta.env.VITE_API_URL as string)
   : "http://localhost:5001";

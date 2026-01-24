@@ -1,8 +1,13 @@
-import { Button } from "@heroui/react";
+import Home from "./Pages/Home";
+import { Route, Routes } from "react-router-dom";
 import "./index.css";
 
 function App() {
-  return <></>;
+  return (
+    <Routes>
+      <Route path="/Home" element={<Home />} />
+    </Routes>
+  );
 }
 
 export default App;
