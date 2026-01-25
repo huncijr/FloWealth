@@ -2,7 +2,7 @@ services:
   backend:
     build: ./Backend
     ports:
-      - "5001:5001"
+      - "5001:${PORT:-3000}"
     env_file:
       - ./Backend/.env
 
