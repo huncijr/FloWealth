@@ -26,7 +26,6 @@ export const VerifyGoogleAuth = async (
     });
     //  Extract the user profile data (email, name, etc.) from the token payload
     const payload = ticket.getPayload();
-    console.log(payload);
     if (!payload) return res.status(400).send("Something went wrong!");
     //  Attach the verified user data to the request object for the next function
 
@@ -36,7 +35,7 @@ export const VerifyGoogleAuth = async (
         message: "Google account is not authenticated",
       });
     }
-    req.user = payload;
+    req.user = { ...payload, isGoogleUser: true };
     next();
   } catch (error) {
     next(error);
