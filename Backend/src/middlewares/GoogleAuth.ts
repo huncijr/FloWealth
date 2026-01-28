@@ -35,6 +35,7 @@ export const VerifyGoogleAuth = async (
         message: "Google account is not authenticated",
       });
     }
+    console.log(payload);
     req.user = { ...payload, isGoogleUser: true };
     next();
   } catch (error) {
