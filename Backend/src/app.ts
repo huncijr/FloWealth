@@ -3,6 +3,7 @@ import { errorHandler } from "./middlewares/Errorhandling";
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 const app: Application = express();
@@ -22,7 +23,7 @@ app.use(
 );
 
 app.use(express.json());
-
+app.use(cookieParser());
 app.use("/API", router);
 
 app.use(errorHandler);
