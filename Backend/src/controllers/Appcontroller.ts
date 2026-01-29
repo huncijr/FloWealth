@@ -5,7 +5,8 @@ import { generateOTP, sendOTP } from "../middlewares/Emailverification";
 import { db } from "../DB/db";
 import { Otps, Users } from "../DB/schemas";
 import { eq, and, desc } from "drizzle-orm";
-import { generateToken } from "../routes/jwtgeneration";
+import { jwtToken } from "../routes/jwtgeneration";
+import jwt from "jsonwebtoken";
 
 const requestOTP = async (email: string, name: string, password: string) => {
   //  Generate a random numeric or alphanumeric string
@@ -27,10 +28,6 @@ const requestOTP = async (email: string, name: string, password: string) => {
   // Delivery: Send the code to the user's inbox
   console.log("kod sent");
   await sendOTP(email, code);
-};
-const jwtToken = (id: number, email: string): string => {
-  const token = generateToken(id, email);
-  return token;
 };
 
 const CreateCookies = (id: number, email: string, res: Response) => {
@@ -90,25 +87,35 @@ export const createUser = async (
           .from(Users)
           .where(eq(Users.email, userData.email))
           .limit(1);
-        console.log(existingUser);
+        console.log("existinguser", existingUser);
         if (existingUser.length > 0) {
           return res
             .status(409)
             .json({ message: "account  already exist with this e-mail" });
         }
-        await db.insert(Users).values({
-          email: userData.email!,
-          name: userData.name!,
-          given_name: userData.given_name,
-          picture: userData.picture,
-          sub: userData.sub,
-          isGoogleUser: userData.isGoogleUser,
-        });
+        const [userId] = await db
+          .insert(Users)
+          .values({
+            email: userData.email!,
+            name: userData.name!,
+            given_name: userData.given_name,
+            picture: userData.picture,
+            sub: userData.sub,
+            isGoogleUser: userData.isGoogleUser,
+          })
+          .returning({ id: Users.id });
+        if (userId && userId.id) {
+          CreateCookies(userId.id, userData.email, res);
+        }
         return res.status(201).json({
           success: true,
-          email: userData.email,
-          name: userData.name,
           isGoogleUser: userData.isGoogleUser,
+          user: {
+            id: userId?.id,
+            email: userData.email,
+            name: userData.name,
+            isGoogleUser: userData.isGoogleUser,
+          },
         });
       }
     } else {
@@ -201,10 +208,57 @@ export const AuthenticateUser = async (
       if (newUser && newUser.id) {
         CreateCookies(newUser.id, email, res);
       }
-      return res
-        .status(201)
-        .json({ success: true, email, name: userData.name });
+      return res.status(201).json({
+        success: true,
+        user: {
+          id: newUser?.id,
+          email,
+          name: userData.name,
+          isGoogleUser: false,
+        },
+      });
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const GetUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    // Extract the token from cookies (requires cookie-parser middleware)
+    const token = req.cookies.authToken;
+    if (!token) {
+      return res.status(401).json({ success: false, message: "No token" });
+    }
+    // Verify the JWT token using your secret key
+    // This checks if the token is valid and hasn't expired
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string) as {
+      id: number;
+      email: string;
+    };
+    console.log("decoded", decoded);
+    // Query the database to get fresh user data using the ID from the token
+    const [user] = await db
+      .select()
+      .from(Users)
+      .where(eq(Users.id, decoded.id));
+    console.log("I got the with token user");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "No user" });
+    }
+    return res.status(200).json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        isGoogleUser: false,
+      },
+    });
   } catch (error) {
     next(error);
   }

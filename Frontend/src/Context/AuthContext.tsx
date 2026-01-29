@@ -1,10 +1,17 @@
-import { useState, createContext, type ReactNode, useEffect } from "react";
+import {
+  useState,
+  createContext,
+  type ReactNode,
+  useEffect,
+  useContext,
+} from "react";
 import { api } from "../api/axiosInstance";
 
-interface UserData {
+export interface UserData {
   id: number;
   email: string;
   name: string;
+  isGoogleUser: boolean;
 }
 interface userContextType {
   user: UserData | null;
@@ -29,10 +36,21 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }
     };
     initAuth();
-  });
+  }, []);
+  useEffect(() => {
+    console.log(user);
+  }, [user]);
   return (
     <UserContext.Provider value={{ user, setUser }}>
       {!loading && children}
     </UserContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const context = useContext(UserContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within Userprovider");
+  }
+  return context;
 };
