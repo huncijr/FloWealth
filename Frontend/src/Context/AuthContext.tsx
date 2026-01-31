@@ -12,6 +12,7 @@ export interface UserData {
   email: string;
   name: string;
   isGoogleUser: boolean;
+  picture?: string;
 }
 interface userContextType {
   user: UserData | null;

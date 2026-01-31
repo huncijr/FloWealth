@@ -7,6 +7,7 @@ import { Otps, Users } from "../DB/schemas";
 import { eq, and, desc } from "drizzle-orm";
 import { jwtToken } from "../routes/jwtgeneration";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
 const requestOTP = async (email: string, name: string, password: string) => {
   //  Generate a random numeric or alphanumeric string
@@ -19,6 +20,7 @@ const requestOTP = async (email: string, name: string, password: string) => {
    the actual User record only AFTER they provide the correct code.
   */
   console.log("created:", createdAt);
+
   await db.insert(Otps).values({
     email: email,
     code: code,
@@ -64,6 +66,12 @@ export const resendOTP = async (
   }
 };
 
+const hashPassword = async (password: string): Promise<string> => {
+  const saltRounds = 12;
+  const salt = await bcrypt.hash(password, saltRounds);
+  return salt;
+};
+
 export const createUser = async (
   req: AuthRequest,
   res: Response,
@@ -87,11 +95,23 @@ export const createUser = async (
           .from(Users)
           .where(eq(Users.email, userData.email))
           .limit(1);
-        console.log("existinguser", existingUser);
         if (existingUser.length > 0) {
-          return res
-            .status(409)
-            .json({ message: "account  already exist with this e-mail" });
+          const user = existingUser[0];
+          console.log("sign in google user", user);
+          if (user) {
+            CreateCookies(user.id, user.email, res);
+          }
+          return res.status(200).json({
+            success: true,
+            isGoogleUser: user?.isGoogleUser,
+            user: {
+              id: user?.id,
+              email: user?.email,
+              name: user?.name,
+              password: user?.password,
+              picture: user?.picture,
+            },
+          });
         }
         const [userId] = await db
           .insert(Users)
@@ -115,6 +135,7 @@ export const createUser = async (
             email: userData.email,
             name: userData.name,
             isGoogleUser: userData.isGoogleUser,
+            picture: userData.picture,
           },
         });
       }
@@ -141,6 +162,52 @@ export const createUser = async (
         .status(200)
         .json({ message: "OTP send", isGoogleUser: false, success: true });
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const SignInUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { email, password } = req.body;
+    if (!password || !email) {
+      return res.status(400).json({ message: "Unathorized", success: false });
+    }
+    let [existingUser] = await db
+      .select()
+      .from(Users)
+      .where(eq(email, Users.email))
+      .limit(1);
+    console.log("Login user got", existingUser);
+    if (!existingUser) {
+      return res
+        .status(401)
+        .json({ message: "Invalid e-mail or password", success: false });
+    }
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      existingUser.password!,
+    );
+    console.log("password is ", isPasswordValid);
+    if (!isPasswordValid) {
+      return res
+        .status(401)
+        .json({ message: "Invalid e-mail or password", success: false });
+    }
+    CreateCookies(existingUser.id, existingUser.email, res);
+    return res.status(200).json({
+      success: true,
+      user: {
+        email: existingUser.email,
+        id: existingUser.id,
+        name: existingUser.name,
+        isGoogleUser: false,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -194,14 +261,16 @@ export const AuthenticateUser = async (
         });
       }
       const userData: OTPTempData = dbotp.tempData;
-      console.log("userdata", userData);
+      //HASHING PASSWORD
+      const hashedPassword = await hashPassword(userData.password!);
+      console.log("hashedpassword", hashedPassword);
       // Move the user from "temporary" (Otps) to "permanent" (Users)
       const [newUser] = await db
         .insert(Users)
         .values({
           email: email,
           name: userData.name,
-          password: userData.password,
+          password: hashedPassword,
           createdAt: new Date(userData.createdAt),
         })
         .returning({ id: Users.id });
@@ -240,16 +309,15 @@ export const GetUser = async (
       id: number;
       email: string;
     };
-    console.log("decoded", decoded);
     // Query the database to get fresh user data using the ID from the token
     const [user] = await db
       .select()
       .from(Users)
       .where(eq(Users.id, decoded.id));
-    console.log("I got the with token user");
     if (!user) {
       return res.status(404).json({ success: false, message: "No user" });
     }
+    console.log(user);
     return res.status(200).json({
       success: true,
       user: {
@@ -257,6 +325,7 @@ export const GetUser = async (
         email: user.email,
         name: user.name,
         isGoogleUser: false,
+        ...(user.picture && { picture: user.picture }),
       },
     });
   } catch (error) {

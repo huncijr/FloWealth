@@ -1,12 +1,14 @@
 import { useAuth } from "../Context/AuthContext";
 const Home = () => {
   const { user } = useAuth();
+
   return (
-    <>
-      <p className="flex flex-col items-center">
+    <div>
+      <p className="flex flex-col items-center bg-secondary">
         "email":{user?.email},"name:"{user?.name},"id:" {user?.id}
       </p>
-    </>
+      <div className="absolute right-0 top-0"></div>
+    </div>
   );
 };
 

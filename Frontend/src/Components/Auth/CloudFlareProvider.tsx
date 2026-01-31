@@ -10,6 +10,10 @@ const VerifySecurity = ({
       siteKey={import.meta.env.VITE_CLOUDFLARE_SITE_KEY}
       onSuccess={(token) => onTokenReceived(token)}
       onExpire={() => onTokenReceived("")}
+      options={{
+        responseField: true,
+        responseFieldName: "cf-turnstile-response",
+      }}
     />
   );
 };

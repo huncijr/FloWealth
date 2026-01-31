@@ -15,10 +15,14 @@ import { useAuth, type UserData } from "../Context/AuthContext";
 
 const Login = () => {
   const [googletoken, setGoogleToken] = useState<String>("");
-  const [cloudflaretoken, setCloudFlareToken] = useState<String>("");
+  const [registertoken, SetRegisterToken] = useState<String>("");
+  const [logintoken, SetLoginToken] = useState<String>("");
+
   const { user, setUser } = useAuth();
   const [email, setEmail] = useState<string>("");
   const [name, setName] = useState<string>("");
+  const [loginemail, setLoginEmail] = useState<string>("");
+  const [loginpassword, setLoginPassword] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmpassword, setConfirmPassword] = useState<string>("");
   const [tempUser, setTempUser] = useState<UserData | null>(null);
@@ -42,14 +46,14 @@ const Login = () => {
       const formData = new FormData(form);
       const data = Object.fromEntries(formData.entries());
       if (!data.email || !data.password || !data.name) {
-        console.log("nincs minden kitoltve");
+        console.log("Not all user input form registered!");
         return;
       }
     }
     try {
       const response = await api.post("/register", {
         googletoken,
-        cloudflaretoken,
+        cloudflaretoken: registertoken,
         email,
         name,
         password,
@@ -69,6 +73,22 @@ const Login = () => {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const response = await api.post("/login", {
+        email: loginemail,
+        password: loginpassword,
+        cloudflaretoken: logintoken,
+      });
+      const userData = response.data;
+      console.log(userData);
+      if (userData.success) {
+        setUser(userData.user);
+      }
+    } catch (error) {}
   };
   useEffect(() => {
     console.log(verification);
@@ -192,60 +212,94 @@ const Login = () => {
         </div>
       ) : (
         /* CASE 3: Initial state - Registration form */
-        <div className="flex flex-col items-center py-10 gap-2">
-          <form onSubmit={handleRegister}>
-            <GoogleLoginButton onTokenReceived={setGoogleToken} />
-            <div className="flex flex-col gap-1 py-3">
-              <Label>Email</Label>
-              <Input
-                name="email"
-                placeholder="Enter Your Email..."
-                type="email"
-                onChange={(e) => setEmail(e.target.value)}
-                value={email}
-              />
-              <Label>Name</Label>
-              <Input
-                placeholder="Enter Your Name..."
-                type="text"
-                name="name"
-                onChange={(e) => setName(e.target.value)}
-                value={name}
-              />
-              <Label>Password</Label>
-              <div
-                className="cursor-pointer"
-                onClick={() => setShowPassword(!showpassword)}
-              >
-                {showpassword ? <LockKeyhole /> : <LockKeyholeOpen />}
+        <div className="flex flex-col items-center  py-10 ">
+          <GoogleLoginButton onTokenReceived={setGoogleToken} />
+          <div className="flex gap-5 justify-around ">
+            <form onSubmit={handleRegister}>
+              <div className="flex flex-col gap-1 py-3">
+                <Label>Email</Label>
+                <Input
+                  name="email"
+                  placeholder="Enter Your Email..."
+                  type="email"
+                  onChange={(e) => setEmail(e.target.value)}
+                  value={email}
+                />
+                <Label>Name</Label>
+                <Input
+                  placeholder="Enter Your Name..."
+                  type="text"
+                  name="name"
+                  onChange={(e) => setName(e.target.value)}
+                  value={name}
+                />
+                <Label>Password</Label>
+                <div
+                  className="cursor-pointer"
+                  onClick={() => setShowPassword(!showpassword)}
+                >
+                  {showpassword ? <LockKeyhole /> : <LockKeyholeOpen />}
+                </div>
+                <Input
+                  name="password"
+                  placeholder="Enter Your Password..."
+                  type={showpassword ? "password" : "text"}
+                  onChange={(e) => setPassword(e.target.value)}
+                  value={password}
+                />
+                <Label>Repeat password</Label>
+                <div
+                  className="cursor-pointer"
+                  onClick={() => setConfirmShowPassword(!confirmshowpassword)}
+                >
+                  {confirmshowpassword ? <LockKeyhole /> : <LockKeyholeOpen />}
+                </div>
+                <Input
+                  name="password"
+                  placeholder="Repeat Your Password..."
+                  type={confirmshowpassword ? "password" : "text"}
+                  value={confirmpassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                <VerifySecurity onTokenReceived={SetRegisterToken} />
+                <Button type="submit" isDisabled={!registertoken}>
+                  Submit
+                </Button>
               </div>
-              <Input
-                name="password"
-                placeholder="Enter Your Password..."
-                type={showpassword ? "password" : "text"}
-                onChange={(e) => setPassword(e.target.value)}
-                value={password}
-              />
-              <Label>Repeat password</Label>
-              <div
-                className="cursor-pointer"
-                onClick={() => setConfirmShowPassword(!confirmshowpassword)}
-              >
-                {confirmshowpassword ? <LockKeyhole /> : <LockKeyholeOpen />}
-              </div>
-              <Input
-                name="password"
-                placeholder="Repeat Your Password..."
-                type={confirmshowpassword ? "password" : "text"}
-                value={confirmpassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
+            </form>
+            <div className="flex flex-col justify-center gap-2">
+              <p className="text-center">Or sign in!</p>
+              <form onSubmit={handleLogin}>
+                <div className="flex flex-col justify-center gap-2">
+                  <Label>Email</Label>
+                  <Input
+                    name="email"
+                    placeholder="Enter Your Email"
+                    value={loginemail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                  />
+                  <Label>Password</Label>
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => setShowPassword(!showpassword)}
+                  >
+                    {showpassword ? <LockKeyhole /> : <LockKeyholeOpen />}
+                  </div>
+                  <Input
+                    name="password"
+                    placeholder="Enter Your Password"
+                    value={loginpassword}
+                    type={showpassword ? "password" : "text"}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                  />
+                  <VerifySecurity onTokenReceived={SetLoginToken} />
+                  <Button type="submit" isDisabled={!registertoken}>
+                    Submit
+                  </Button>
+                </div>
+              </form>
             </div>
-            <VerifySecurity onTokenReceived={setCloudFlareToken} />
-            <Button type="submit" isDisabled={!cloudflaretoken}>
-              Submit
-            </Button>
-          </form>
+          </div>
         </div>
       )}
     </div>
