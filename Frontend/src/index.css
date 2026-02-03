@@ -3,12 +3,17 @@
 
 @theme {
   --color-main-bg: #f5bc47;
-  --color-main-foreground: #ad711d;
+  --color-main-foreground: #c6c6c6;
 
   --color-primary: #ce9613;
   --color-secondary: #bf6a02;
+  --color-third: #ad711d;
 }
 .dark {
-  --color-main-bg: #52ac3f;
+  --color-main-bg: #0f0542;
   --color-main-foreground: #ffffff;
+}
+
+.Alfa-slab-one {
+  font-family: "Alfa Slab One", serif;
 }

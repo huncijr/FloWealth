@@ -71,16 +71,14 @@ const hashPassword = async (password: string): Promise<string> => {
   const salt = await bcrypt.hash(password, saltRounds);
   return salt;
 };
-
-export const createUser = async (
+export const createGoogleUser = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    let userData;
     if (req.user && req.user.isGoogleUser) {
-      userData = {
+      let userData = {
         sub: req.user.sub,
         email: req.user.email,
         name: req.user.name,
@@ -103,12 +101,11 @@ export const createUser = async (
           }
           return res.status(200).json({
             success: true,
-            isGoogleUser: user?.isGoogleUser,
             user: {
               id: user?.id,
               email: user?.email,
               name: user?.name,
-              password: user?.password,
+              isGoogleUser: user?.isGoogleUser,
               picture: user?.picture,
             },
           });
@@ -129,7 +126,6 @@ export const createUser = async (
         }
         return res.status(201).json({
           success: true,
-          isGoogleUser: userData.isGoogleUser,
           user: {
             id: userId?.id,
             email: userData.email,
@@ -139,29 +135,36 @@ export const createUser = async (
           },
         });
       }
-    } else {
-      const { email, name, password } = req.body;
-      console.log("name", name, "email", email, "password", password);
-      if (!email || !name || !password) {
-        return res.status(400).json({
-          message: "All input is required",
-        });
-      }
-      const existingUser = await db
-        .select()
-        .from(Users)
-        .where(eq(Users.email, email))
-        .limit(1);
-      if (existingUser.length > 0) {
-        return res
-          .status(409)
-          .json({ message: "account  already exist with this e-mail" });
-      }
-      await requestOTP(email, name, password);
-      return res
-        .status(200)
-        .json({ message: "OTP send", isGoogleUser: false, success: true });
     }
+  } catch (error) {
+    next(error);
+  }
+};
+export const createUser = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { email, name, password } = req.body;
+    console.log("name", name, "email", email, "password", password);
+    if (!email || !name || !password) {
+      return res.status(400).json({
+        message: "All input is required",
+      });
+    }
+    const existingUser = await db
+      .select()
+      .from(Users)
+      .where(eq(Users.email, email))
+      .limit(1);
+    if (existingUser.length > 0) {
+      return res
+        .status(409)
+        .json({ message: "account  already exist with this e-mail" });
+    }
+    await requestOTP(email, name, password);
+    return res.status(200).json({ message: "OTP send", success: true });
   } catch (error) {
     next(error);
   }

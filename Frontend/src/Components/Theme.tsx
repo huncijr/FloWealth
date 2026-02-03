@@ -1,18 +1,17 @@
 import { Sun, MoonStar } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
+import useDarkMode from "./Mode";
 const Theme = () => {
   const [mounted, setMounted] = useState<boolean>(false);
-  const { theme, setTheme } = useTheme();
+  const { isDark, toggleTheme } = useDarkMode();
   useEffect(() => {
     setMounted(true);
   }, []);
   if (!mounted) return null;
-  const isDark = theme === "dark";
   return (
-    <div>
-      <button onClick={() => setTheme(isDark ? "light" : "dark")}>
+    <div className=" p-10 ">
+      <button onClick={toggleTheme}>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={isDark ? "dark" : "light"}
@@ -22,9 +21,9 @@ const Theme = () => {
             transition={{ duration: 0.2 }}
           >
             {isDark ? (
-              <MoonStar className="text-[#3b3256]" />
+              <Sun className="text-secondary cursor-pointer" />
             ) : (
-              <Sun className="text-main-foreground" />
+              <MoonStar className="text-[#3b3256] cursor-pointer" />
             )}
           </motion.div>
         </AnimatePresence>
