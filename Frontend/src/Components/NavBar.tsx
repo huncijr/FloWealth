@@ -8,23 +8,28 @@ const NavBar = () => {
   return (
     <header className="relative">
       <div
-        className={`flex flex-col sm:flex-row sm:items-center sm:justify-between
+        className={`flex flex-col md:flex-row md:items-center md:justify-between
        gap-4 p-3 border-b-2 ${isDark ? "shadow-[0_4px_15px_rgba(206,206,206,0.7)]" : "shadow-[0_4px_15px_rgba(44,44,44,0.7)]"}`}
       >
         <div className="flex justify-between shrink-0">
           <img
             src={isDark ? DarkFlowealth : Flowealth}
-            className="h-12 sm:h-20 md:h-25 lg:h-30 w-auto "
+            className="h-20 md:h-24 lg:h-28 xl:h-33 w-auto "
             alt="FloWealth Logo"
           />
-          <div className="sm:hidden border-2 border-gray-600 rounded-lg p-2">
-            <User />
-          </div>
+          <NavLink
+            to="/Account"
+            className={({ isActive }) =>
+              `border-2 md:hidden  rounded-lg p-2  ${isActive ? "border-secondary" : "border-gray-600"} mt-3`
+            }
+          >
+            <User size={30} />
+          </NavLink>
         </div>
-        <div className="flex justify-center sm:justify-end sm:items-center gap-6">
+        <div className="flex justify-center md:justify-end sm:items-center gap-6">
           <div
-            className="flex justify-center sm:justify-end  gap-4 Alfa-slab-one
-          text-primary tracking-wider whitespace-nowrap sm:text-xl text-base  md:text-3xl transition-all"
+            className="flex justify-center md:justify-end  gap-4 Alfa-slab-one
+          text-primary tracking-wider whitespace-nowrap text-xl sm:text-1xl  md:text-2xl lg:text-3xl xl:text-4xl transition-all"
             style={{
               color: "transparent",
               WebkitTextStroke: "2px #ad711d",
@@ -59,9 +64,14 @@ const NavBar = () => {
               MY EXPENSES{" "}
             </NavLink>
           </div>
-          <div className="invisible sm:flex sm:visible border-2 border-gray-600 rounded-lg p-1 ">
+          <NavLink
+            to="/Account"
+            className={({ isActive }) =>
+              `border-2   rounded-lg p-1 md:h-10 ${isActive ? "border-secondary" : "border-gray-600"} invisible md:flex md:visible`
+            }
+          >
             <User />
-          </div>
+          </NavLink>
         </div>
       </div>
     </header>

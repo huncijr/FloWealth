@@ -10,7 +10,7 @@ const Theme = () => {
   }, []);
   if (!mounted) return null;
   return (
-    <div className=" p-10 ">
+    <div className="p-10">
       <button onClick={toggleTheme}>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
