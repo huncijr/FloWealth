@@ -23,7 +23,7 @@ export const GoogleLoginButton = () => {
       <GoogleLogin
         onSuccess={handleGoogleSuccess}
         onError={() => console.log("Google Login Failed!")}
-        theme={isDark ? "filled_black" : ""}
+        theme={isDark ? "filled_black" : "outline"}
         shape="pill"
         size="large"
         text="continue_with"

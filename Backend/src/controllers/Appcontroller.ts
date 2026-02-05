@@ -320,7 +320,6 @@ export const GetUser = async (
     if (!user) {
       return res.status(404).json({ success: false, message: "No user" });
     }
-    console.log(user);
     return res.status(200).json({
       success: true,
       user: {

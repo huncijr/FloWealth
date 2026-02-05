@@ -55,7 +55,7 @@ const NavBar = () => {
               ANALYTICS
             </NavLink>
             <NavLink
-              to="/Account"
+              to="/Expenses"
               className={({ isActive }) =>
                 `${isActive && "border-b-2 border-secondary "} cursor-pointer hover:opacity-80 transition-opacity`
               }
@@ -67,10 +67,14 @@ const NavBar = () => {
           <NavLink
             to="/Account"
             className={({ isActive }) =>
-              `border-2   rounded-lg p-1 md:h-10 ${isActive ? "border-secondary" : "border-gray-600"} invisible md:flex md:visible`
+              `border-2   rounded-lg p-1 md:h-10 ${
+                isActive
+                  ? "border-secondary hover:border-secondary/70"
+                  : "border-gray-600 hover:border-gray-600/70 "
+              } invisible md:flex md:visible`
             }
           >
-            <User />
+            <User className="hover:text-black/70" />
           </NavLink>
         </div>
       </div>

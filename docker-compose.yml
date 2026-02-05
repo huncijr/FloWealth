@@ -7,7 +7,13 @@ services:
       - ./Backend/.env
 
   frontend:
-    build: ./Frontend
+    build:
+      context: ./Frontend
+      args:
+        - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
+        - VITE_CLOUDFLARE_SITE_KEY=${VITE_CLOUDFLARE_SITE_KEY}
+    env_file:
+      - ./Frontend/.env
     ports:
       - "80:80"
     depends_on:

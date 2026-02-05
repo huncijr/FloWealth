@@ -11,3 +11,7 @@ export interface OTPTempData {
   password: string;
   createdAt: Date;
 }
+
+export interface UserIdRequest extends Request {
+  userId?: number;
+}

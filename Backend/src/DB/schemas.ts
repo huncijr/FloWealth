@@ -5,7 +5,11 @@ import {
   boolean,
   timestamp,
   jsonb,
+  integer,
   check,
+  decimal,
+  varchar,
+  smallint,
 } from "drizzle-orm/pg-core";
 import { OTPTempData } from "../types/interfaces";
 import { sql } from "drizzle-orm";
@@ -32,4 +36,30 @@ export const Otps = pgTable("Otps", {
   code: text("code").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   tempData: jsonb("temp_user_data").notNull().$type<OTPTempData>(),
+});
+
+export const Themes = pgTable("Themes", {
+  id: serial("id").primaryKey().notNull(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => Users.id),
+  themes: jsonb("themes").$type<string[]>().default([]).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const nodesTable = pgTable("Nodes", {
+  id: serial("id").primaryKey().notNull(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => Users.id),
+  themeId: integer("themes_id")
+    .notNull()
+    .references(() => Themes.id),
+  productName: varchar("product_name", { length: 40 }).notNull(),
+  productTitle: varchar("product_title", { length: 40 }).notNull(),
+  estimatedTime: timestamp("estimated_time"), // Date helyett
+  quantity: smallint("quantity").notNull(),
+  estPrice: decimal("est_price", { precision: 10, scale: 2 }).$type<string>(),
+  cost: decimal("cost", { precision: 10, scale: 2 }).$type<string>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });

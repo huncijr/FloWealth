@@ -8,6 +8,20 @@
       "when": 1769544547815,
       "tag": "0000_numerous_purifiers",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770303959171,
+      "tag": "0001_absurd_eternity",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770305413166,
+      "tag": "0002_mature_jack_power",
+      "breakpoints": true
     }
   ]
 }

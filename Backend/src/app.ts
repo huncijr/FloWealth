@@ -14,6 +14,8 @@ if (!isDevelopment && !process.env.URL) {
   throw new Error("URL is not Valid!");
 }
 
+app.use(cookieParser());
+app.use(express.json());
 app.use(
   cors({
     origin: isDevelopment ? process.env.URL : "http://localhost:5173",
@@ -22,8 +24,6 @@ app.use(
   }),
 );
 
-app.use(express.json());
-app.use(cookieParser());
 app.use("/API", router);
 
 app.use(errorHandler);

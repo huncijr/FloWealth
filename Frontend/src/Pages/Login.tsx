@@ -21,6 +21,7 @@ import {
   UserRoundSearch,
   User,
   Mail,
+  BadgeCheck,
 } from "lucide-react";
 import {
   CheckPassword,
@@ -29,6 +30,7 @@ import {
 } from "../Components/FormChecker";
 import { useAuth, type UserData } from "../Context/AuthContext";
 import CustomCarousel from "../Components/CustomCarousel";
+import useDarkMode from "../Components/Mode";
 
 const Login = () => {
   const [googletoken] = useState<String>("");
@@ -57,14 +59,14 @@ const Login = () => {
     }
   }, [user]);
   const [logintoast, setLoginToast] = useState<boolean>(false);
-
+  const [submittoast, setSubmitToast] = useState<boolean>(false);
+  const { isDark } = useDarkMode();
   const togglelogin = {
     off: UserRoundPlus,
     on: UserRoundSearch,
     selectedControlClass: "bg-primary",
   };
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-    console.log("I got called");
     e.preventDefault();
     if (!googletoken) {
       const form = e.currentTarget as HTMLFormElement;
@@ -121,8 +123,12 @@ const Login = () => {
   }, [verification, tempUser]);
 
   useEffect(() => {
-    console.log(user);
-  }, [user]);
+    if (submittoast) {
+      setTimeout(() => {
+        setSubmitToast(false);
+      }, 2000);
+    }
+  }, [submittoast]);
 
   const handleOTPsubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,10 +138,10 @@ const Login = () => {
       const response = await api.post("/authenticate", { email, otpvalue });
       console.log(response.data.user);
       if (response.data.success) {
+        setUser(response.data.user);
+        setVerification(true);
         setTimeout(() => {
-          setUser(response.data.user);
-          setError("Success");
-          setVerification(true);
+          setIsSubmiting(false);
         }, 3000);
       } else {
         setError("Something happened, Please try again later!");
@@ -151,22 +157,19 @@ const Login = () => {
   const LinkResend = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      setIsSubmiting(true);
       setError("");
+      setSubmitToast(true);
       const response = await api.post("/resendOTP", {
         name,
         email,
         password,
       });
+      console.log(response.data);
       if (response.data.success) {
         setUser(response.data.user);
-        setError("Success");
         setVerification(true);
       }
-    } catch (error) {
-    } finally {
-      setIsSubmiting(false);
-    }
+    } catch (error) {}
   };
   return (
     <div className="min-h-screen">
@@ -182,56 +185,68 @@ const Login = () => {
       ) : /* CASE 2: Account created but needs email verification (OTP) */
       tempUser && !verification ? (
         <div className="flex flex-col justify-center items-center min-h-screen">
-          <div className="flex flex-col gap-2">
+          <div
+            className={`flex flex-col gap-2 border-2 p-[4%] ${isDark ? "bg-gray-900" : "bg-gray-300"}`}
+          >
             <form onSubmit={(e) => handleOTPsubmit(e)}>
-              <Label> Verify account</Label>
-              <p> We've sent the code to {tempUser.email}</p>
-              <InputOTP
-                maxLength={6}
-                pattern={REGEXP_ONLY_DIGITS}
-                value={otpvalue}
-                onChange={(val) => setOTPValue(val)}
-              >
-                <InputOTP.Group>
-                  <InputOTP.Slot index={0} />
-                  <InputOTP.Slot index={1} />
-                  <InputOTP.Slot index={2} />
-                  <InputOTP.Separator />
-                  <InputOTP.Slot index={3} />
-                  <InputOTP.Slot index={4} />
-                  <InputOTP.Slot index={5} />
-                </InputOTP.Group>
-              </InputOTP>
-              <span
-                className={`${error === "Success" ? "text-green-900" : "text-red-800"}`}
-                data-visible={!!error}
-              >
-                {error}
-              </span>
-              <p>Didn't receive the code?</p>
-              <span
-                className="underline cursor-pointer"
-                onClick={(e) => {
-                  LinkResend(e);
-                  setOTPValue("");
-                }}
-              >
-                Resend
-              </span>
-              <Button
-                isDisabled={otpvalue.length !== 6}
-                isPending={issubmiting}
-                type="submit"
-              >
-                {issubmiting ? (
-                  <>
-                    <Spinner color="current" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit"
-                )}
-              </Button>
+              <div className="flex flex-col">
+                <div className="flex justify-center items-center pb-5 gap-2">
+                  <BadgeCheck className="h-full" />
+                  <Label className="text-3xl font-bold"> Verify account</Label>
+                </div>
+                <p className="py-3"> We've sent the code to {tempUser.email}</p>
+                <InputOTP
+                  maxLength={6}
+                  pattern={REGEXP_ONLY_DIGITS}
+                  value={otpvalue}
+                  onChange={(val) => setOTPValue(val)}
+                >
+                  <InputOTP.Group>
+                    <InputOTP.Slot index={0} />
+                    <InputOTP.Slot index={1} />
+                    <InputOTP.Slot index={2} />
+                    <InputOTP.Separator
+                      className={`${isDark ? "bg-white" : "bg-black"}`}
+                    />
+                    <InputOTP.Slot index={3} />
+                    <InputOTP.Slot index={4} />
+                    <InputOTP.Slot index={5} />
+                  </InputOTP.Group>
+                </InputOTP>
+
+                <span className="text-red-800" data-visible={!!error}>
+                  {error}
+                </span>
+                <div className="flex flex-col gap-1">
+                  <p>Didn't receive the code?</p>
+                  <span
+                    className="underline cursor-pointer hover:text-blue-400"
+                    onClick={(e) => {
+                      LinkResend(e);
+                      setOTPValue("");
+                    }}
+                  >
+                    Resend
+                  </span>
+                  <div className="w-full items-center justify-center">
+                    <Button
+                      isDisabled={otpvalue.length !== 6 || issubmiting}
+                      isPending={issubmiting}
+                      type="submit"
+                      className="w-full"
+                    >
+                      {issubmiting ? (
+                        <>
+                          <Spinner color="current" />
+                          Submitting
+                        </>
+                      ) : (
+                        "Submit here"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </form>
           </div>
         </div>
@@ -488,6 +503,16 @@ const Login = () => {
             <Alert.Indicator />
             <Alert.Content>
               <Alert.Title>Username or password is not correct</Alert.Title>
+            </Alert.Content>
+          </Alert>
+        </div>
+      )}
+      {submittoast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 ">
+          <Alert status="success">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>Submitted</Alert.Title>
             </Alert.Content>
           </Alert>
         </div>

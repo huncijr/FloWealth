@@ -2,13 +2,20 @@ FROM node:20-alpine AS build
 
 WORKDIR /FloWealth
 
-COPY package*.json ./
 
+ARG VITE_GOOGLE_CLIENT_ID
+ARG VITE_CLOUDFLARE_SITE_KEY
+
+COPY package*.json ./
 RUN npm install
+
+ENV VITE_CLOUDFLARE_SITE_KEY=$VITE_CLOUDFLARE_SITE_KEY
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+
 
 COPY . .
 
-RUN npm run build
+RUN  npm run build
 
 FROM nginx:stable-alpine
 
