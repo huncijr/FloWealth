@@ -22,6 +22,20 @@
       "when": 1770305413166,
       "tag": "0002_mature_jack_power",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770453434615,
+      "tag": "0003_breezy_phil_sheldon",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770453490941,
+      "tag": "0004_peaceful_dark_beast",
+      "breakpoints": true
     }
   ]
 }

@@ -7,7 +7,7 @@ import {
   resendOTP,
   SignInUser,
 } from "../controllers/Appcontroller";
-import { AddNewThemes } from "../controllers/Nodecontroller";
+import { AddNewThemes, GetThemes } from "../controllers/Nodecontroller";
 import { VerifyGoogleAuth } from "../middlewares/GoogleAuth";
 import { VerifyCloudflare } from "../middlewares/CloudflareAuth";
 import { userAuth } from "../middlewares/Usermiddleware";
@@ -21,6 +21,7 @@ router.post("/authenticate", AuthenticateUser);
 router.post("/resendOTP", resendOTP);
 router.get("/getUser", GetUser);
 
+router.get("/gettheme", userAuth, GetThemes);
 router.post("/newtheme", userAuth, AddNewThemes);
 
 export default router;

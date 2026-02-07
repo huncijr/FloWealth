@@ -47,16 +47,17 @@ export const Themes = pgTable("Themes", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const nodesTable = pgTable("Nodes", {
+export const nodesTable = pgTable("nodes", {
   id: serial("id").primaryKey().notNull(),
   userId: integer("user_id")
     .notNull()
-    .references(() => Users.id),
+    .references(() => Users.id, { onDelete: "cascade" }),
   themeId: integer("themes_id")
     .notNull()
     .references(() => Themes.id),
-  productName: varchar("product_name", { length: 40 }).notNull(),
+  picture: text("picture"),
   productTitle: varchar("product_title", { length: 40 }).notNull(),
+  productName: varchar("product_name", { length: 40 }).notNull(),
   estimatedTime: timestamp("estimated_time"), // Date helyett
   quantity: smallint("quantity").notNull(),
   estPrice: decimal("est_price", { precision: 10, scale: 2 }).$type<string>(),
