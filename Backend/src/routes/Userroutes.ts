@@ -7,7 +7,12 @@ import {
   resendOTP,
   SignInUser,
 } from "../controllers/Appcontroller";
-import { AddNewThemes, GetThemes } from "../controllers/Nodecontroller";
+import {
+  AddNewThemes,
+  GetThemes,
+  AddNotes,
+  GetNotes,
+} from "../controllers/Notecontroller";
 import { VerifyGoogleAuth } from "../middlewares/GoogleAuth";
 import { VerifyCloudflare } from "../middlewares/CloudflareAuth";
 import { userAuth } from "../middlewares/Usermiddleware";
@@ -23,5 +28,7 @@ router.get("/getUser", GetUser);
 
 router.get("/gettheme", userAuth, GetThemes);
 router.post("/newtheme", userAuth, AddNewThemes);
+router.get("/getnotes", userAuth, GetNotes);
+router.post("/addnote", userAuth, AddNotes);
 
 export default router;

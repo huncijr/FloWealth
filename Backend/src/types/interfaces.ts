@@ -12,6 +12,12 @@ export interface OTPTempData {
   createdAt: Date;
 }
 
+export interface Product {
+  name: string;
+  quantity: number | null;
+  estprice: number | null;
+}
+
 export interface UserIdRequest extends Request {
   userId?: number;
 }

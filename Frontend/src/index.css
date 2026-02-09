@@ -9,6 +9,7 @@
   --color-secondary: #bf6a02;
   --color-third: #ad711d;
 }
+
 .dark {
   --color-main-bg: #0f0542;
   --color-main-foreground: #ffffff;
@@ -20,4 +21,9 @@
 
 .Nanum-Gothic {
   font-family: "Nanum Gothic", sans-serif;
+}
+
+.Oswald {
+  font-family: "Oswald", sans-serif;
+  font-weight: 400;
 }

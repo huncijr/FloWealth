@@ -11,7 +11,7 @@ import {
   varchar,
   smallint,
 } from "drizzle-orm/pg-core";
-import { OTPTempData } from "../types/interfaces";
+import { OTPTempData, Product } from "../types/interfaces";
 import { sql } from "drizzle-orm";
 
 export const Users = pgTable(
@@ -47,20 +47,18 @@ export const Themes = pgTable("Themes", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const nodesTable = pgTable("nodes", {
+export const notesTable = pgTable("notes", {
   id: serial("id").primaryKey().notNull(),
-  userId: integer("user_id")
-    .notNull()
-    .references(() => Users.id, { onDelete: "cascade" }),
-  themeId: integer("themes_id")
-    .notNull()
-    .references(() => Themes.id),
+  userId: integer("user_id").references(() => Users.id, {
+    onDelete: "cascade",
+  }),
+  themeId: integer("themes_id").references(() => Themes.id),
+  theme: text("theme"),
   picture: text("picture"),
   productTitle: varchar("product_title", { length: 40 }).notNull(),
-  productName: varchar("product_name", { length: 40 }).notNull(),
-  estimatedTime: timestamp("estimated_time"), // Date helyett
-  quantity: smallint("quantity").notNull(),
-  estPrice: decimal("est_price", { precision: 10, scale: 2 }).$type<string>(),
+  products: jsonb("products").notNull().$type<Product>(),
+  estimatedTime: timestamp("estimated_time"), // Date
+  estcost: decimal("estcost", { precision: 10, scale: 2 }).$type<string>(),
   cost: decimal("cost", { precision: 10, scale: 2 }).$type<string>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

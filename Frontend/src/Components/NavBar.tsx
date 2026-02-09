@@ -74,7 +74,9 @@ const NavBar = () => {
               } invisible md:flex md:visible`
             }
           >
-            <User className="hover:text-black/70" />
+            <User
+              className={`${isDark ? "hover:text-gray-400" : "hover:text-black/70"}`}
+            />
           </NavLink>
         </div>
       </div>

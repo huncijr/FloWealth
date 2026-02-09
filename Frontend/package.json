@@ -12,6 +12,7 @@
   "dependencies": {
     "@heroui/react": "^3.0.0-beta.5",
     "@heroui/styles": "^3.0.0-beta.5",
+    "@internationalized/date": "^3.11.0",
     "@marsidev/react-turnstile": "^1.4.1",
     "@react-oauth/google": "^0.13.4",
     "@tailwindcss/vite": "^4.1.18",
