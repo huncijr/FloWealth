@@ -2,6 +2,7 @@ import {
   Button,
   FieldError,
   Input,
+  InputGroup,
   ScrollShadow,
   TextField,
 } from "@heroui/react";
@@ -137,15 +138,18 @@ const ProductTable: React.FC<ProductTableProps> = ({ rows, setRows }) => {
                       return undefined;
                     }}
                   >
-                    <Input
-                      placeholder="0"
-                      type="Number"
-                      value={row.estPrice ?? ""}
-                      onChange={(e) =>
-                        handleInputChange(row.id, "estPrice", e.target.value)
-                      }
-                      className="min-w-0 w-full"
-                    />
+                    <InputGroup>
+                      <InputGroup.Prefix>$</InputGroup.Prefix>
+                      <InputGroup.Input
+                        placeholder="0"
+                        type="Number"
+                        value={row.estPrice ?? ""}
+                        onChange={(e) =>
+                          handleInputChange(row.id, "estPrice", e.target.value)
+                        }
+                        className="min-w-0 w-full"
+                      />
+                    </InputGroup>
                     <FieldError className="text-sm text-danger" />
                   </TextField>
                 </td>

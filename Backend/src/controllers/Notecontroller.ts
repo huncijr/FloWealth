@@ -199,7 +199,7 @@ export const AddNotes = async (
       success: true,
       note: {
         theme: newnote?.theme,
-        title: newnote?.productTitle,
+        productTitle: newnote?.productTitle,
         products: newnote?.products,
         estcost: newnote?.estcost,
         estimatedTime: newnote?.estimatedTime,

@@ -15,7 +15,15 @@ import {
 } from "@heroui/react";
 
 import { useAuth } from "../Context/AuthContext";
-import { BadgePlus, BookX, CheckLine } from "lucide-react";
+import {
+  BadgePlus,
+  BookX,
+  Check,
+  CheckLine,
+  ClockCheck,
+  PencilLine,
+  Trash,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { api } from "../api/axiosInstance";
 import useDarkMode from "../Components/Mode";
@@ -210,14 +218,93 @@ const Expenses = () => {
   return (
     <div>
       {notes && notes.length > 0 ? (
-        <div className="flex gap-4 p-10">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,2fr))] lg:grid-cols-3 gap-4 w-[80%] p-8 items-stretch">
           {notes.map((note, i) => (
-            <div key={i} className="border-2 p-3">
-              <p>title: {note.productTitle}</p>
-              <p>theme: {note?.theme}</p>
-              <p>estcost: {note.estcost}</p>
-              <p>time: {note.estimatedTime || "no time"}</p>
-              <p>created: {note.createdAt}</p>
+            <div key={i} className="relative w-fit mx-auto h-full">
+              <div className="flex items-center gap-3 bg-gray-300 transform -skew-x-9 shadow-lg overflow-hidden ">
+                <div className="flex gap-2 relative z-10 overflow-hidden w-full skew-x-9 m-1 ">
+                  <div className="cursor-pointer -top-10  bg-red-600 text-white px-1 hover:bg-red-500 py-1 rounded text-xs">
+                    <Trash />
+                  </div>
+                  <div className="cursor-pointer -top-10  bg-green-600 hover:bg-green-500 text-white px-1 py-1 rounded text-xs">
+                    <Check />
+                  </div>
+                  <div className="flex items-end ml-auto -top-10 text-blue-900 px-1 py-1 rounded text-xs">
+                    <PencilLine className=" cursor-pointer" />
+                  </div>
+                </div>
+                <div className="absolute -left-1 top-0 w-[65%]  h-full bg-blue-400/70 transform -skew-x-9 origin-left" />{" "}
+              </div>
+              <div className="relative flex flex-col border-2 p-3 bg-secondary   overflow-y-auto">
+                <div className="flex flex-col ">
+                  <div className="flex justify-between items-start z-10">
+                    <div className="flex flex-col">
+                      <p className="Ubuntu line-clamp-2">{note.productTitle}</p>
+                      <div className=" shrink-0 text-sm text-muted capitalize">
+                        <Chip
+                          variant="secondary"
+                          color="default"
+                          className="py-1"
+                        >
+                          <ClockCheck />
+                          <p>
+                            {note.estimatedTime?.split("T")[0] ||
+                              "no time selected"}
+                          </p>
+                        </Chip>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <p className="Archivo-Black rounded-xl bg-red-700 px-5 py-1 shadow-[0_0_0_2px_#b91c1c] z-10">
+                        {note?.theme || "No theme added"}
+                      </p>
+                      <div className="bg-gradient-to-b  from-gray-700 to-gray-800 text-white pb-1 px-2 mx-1 pt-2 -mt-2 rounded-b-xl font-bold shadow-md transform translate-y-0 ">
+                        {new Intl.NumberFormat("en-US", {
+                          style: "currency",
+                          currency: "USD",
+                        }).format(Number(note.estcost) || 0)}
+                        <div
+                          className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3
+                        bg-gray-800 rotate-45 border-gray-600"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-1 relative mt-4 w-full bg-gray-600" />
+                  <div className="mt-4">
+                    <h4 className="text-sm font-semibold text-gray-400 mb-2 uppercase tracking-wide">
+                      Products
+                    </h4>
+                    <div className="bg-gray-800/30 rounded-lg overflow-hidden">
+                      <div className="grid grid-cols-3 gap-2 bg-gray-700/50 px-3 py-2 text-xs font-medium text-gray-400 uppercase">
+                        <span>Name</span>
+                        <span className="text-center">Qty</span>
+                        <span className="text-right">Price</span>
+                      </div>
+
+                      {note.products.map((product, i) => (
+                        <div
+                          key={i}
+                          className="grid grid-cols-3 gap-2 px-3 py-2 text-sm border-t border-gray-700/50 hover:bg-gray-700/30 transition-colors"
+                        >
+                          <span className="truncate font-medium">
+                            {product.name}
+                          </span>
+                          <span className="text-center text-gray-400">
+                            {product.quantity}
+                          </span>
+                          <span className="text-right font-bold text-emerald-400">
+                            ${Number(product.estprice).toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-auto">
+                  <p>created: {note.createdAt}</p>
+                </div>
+              </div>
             </div>
           ))}
         </div>
