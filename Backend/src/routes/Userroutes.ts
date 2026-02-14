@@ -12,6 +12,8 @@ import {
   GetThemes,
   AddNotes,
   GetNotes,
+  DeleteNote,
+  CompleteNote,
 } from "../controllers/Notecontroller";
 import { VerifyGoogleAuth } from "../middlewares/GoogleAuth";
 import { VerifyCloudflare } from "../middlewares/CloudflareAuth";
@@ -30,5 +32,6 @@ router.get("/gettheme", userAuth, GetThemes);
 router.post("/newtheme", userAuth, AddNewThemes);
 router.get("/getnotes", userAuth, GetNotes);
 router.post("/addnote", userAuth, AddNotes);
-
+router.delete("/deletenote/:id", userAuth, DeleteNote);
+router.post("/completenote/:id", userAuth, CompleteNote);
 export default router;

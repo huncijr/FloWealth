@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { db } from "../DB/db";
 import { notesTable, Themes } from "../DB/schemas";
-import { sql, eq } from "drizzle-orm";
+import { sql, eq, and } from "drizzle-orm";
 import { UserIdRequest } from "../types/interfaces";
 
 const CheckThemes = async (theme: string, userId: number): Promise<Boolean> => {
@@ -106,10 +106,12 @@ export const GetNotes = async (
     }
     const result = await db
       .select({
+        id: notesTable.id,
         theme: notesTable.theme,
         productTitle: notesTable.productTitle,
         products: notesTable.products,
         estcost: notesTable.estcost,
+        completed: notesTable.completed,
         estimatedTime: notesTable.estimatedTime,
         createdAt: notesTable.createdAt,
       })
@@ -198,14 +200,71 @@ export const AddNotes = async (
     return res.status(201).json({
       success: true,
       note: {
+        id: newnote?.id,
         theme: newnote?.theme,
         productTitle: newnote?.productTitle,
         products: newnote?.products,
         estcost: newnote?.estcost,
         estimatedTime: newnote?.estimatedTime,
+        completed: newnote?.completed,
         createdAt: newnote?.createdAt,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const DeleteNote = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.userId;
+    const id = parseInt(req.params.id as string);
+    console.log(id, userId);
+    if (!userId || isNaN(id)) {
+      return res.status(400).json({ message: "Missing data", success: false });
+    }
+    const deleted = await db
+      .delete(notesTable)
+      .where(and(eq(notesTable.id, id), eq(notesTable.userId, userId)))
+      .returning();
+    if (deleted.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Note not found" });
+    }
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const CompleteNote = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.userId;
+    const id = parseInt(req.params.id as string);
+    if (!userId || isNaN(id)) {
+      return res.status(400).json({ message: "Missing data", success: false });
+    }
+    const completedNote = await db
+      .update(notesTable)
+      .set({ completed: true })
+      .where(and(eq(notesTable.userId, userId), eq(notesTable.id, id)))
+      .returning();
+    console.log(completedNote);
+    if (!completedNote) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Note not found" });
+    }
+    return res.status(200).json({ success: true, note: completedNote });
   } catch (error) {
     next(error);
   }

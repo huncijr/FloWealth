@@ -47,7 +47,7 @@ export const Themes = pgTable("Themes", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const notesTable = pgTable("notes", {
+export const notesTable = pgTable("Notes", {
   id: serial("id").primaryKey().notNull(),
   userId: integer("user_id").references(() => Users.id, {
     onDelete: "cascade",
@@ -60,5 +60,6 @@ export const notesTable = pgTable("notes", {
   estimatedTime: timestamp("estimated_time"), // Date
   estcost: decimal("estcost", { precision: 10, scale: 2 }).$type<string>(),
   cost: decimal("cost", { precision: 10, scale: 2 }).$type<string>(),
+  completed: boolean("completed").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
