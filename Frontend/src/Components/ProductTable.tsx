@@ -7,7 +7,7 @@ import {
   TextField,
 } from "@heroui/react";
 import useDarkMode from "./Mode";
-import { Diff, Minus } from "lucide-react";
+import { Diff, DollarSign, Minus, PencilLine } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 
 // Interface for a single product row
@@ -115,16 +115,21 @@ const ProductTable: React.FC<ProductTableProps> = ({ rows, setRows }) => {
                       return undefined;
                     }}
                   >
-                    <Input
-                      placeholder="0"
-                      type="Number"
-                      value={row.quantity}
-                      maxLength={3}
-                      onChange={(e) =>
-                        handleInputChange(row.id, "quantity", e.target.value)
-                      }
-                      className="min-w-0 w-full"
-                    />
+                    <InputGroup>
+                      <InputGroup.Prefix>
+                        <PencilLine />
+                      </InputGroup.Prefix>
+                      <InputGroup.Input
+                        placeholder="0"
+                        type="Number"
+                        maxLength={3}
+                        value={row.quantity}
+                        onChange={(e) =>
+                          handleInputChange(row.id, "quantity", e.target.value)
+                        }
+                        className="min-w-0 w-full"
+                      />
+                    </InputGroup>
                     <FieldError className="text-danger text-sm" />
                   </TextField>
                 </td>
@@ -139,7 +144,9 @@ const ProductTable: React.FC<ProductTableProps> = ({ rows, setRows }) => {
                     }}
                   >
                     <InputGroup>
-                      <InputGroup.Prefix>$</InputGroup.Prefix>
+                      <InputGroup.Prefix>
+                        <DollarSign />
+                      </InputGroup.Prefix>
                       <InputGroup.Input
                         placeholder="0"
                         type="Number"

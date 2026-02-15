@@ -13,6 +13,7 @@ import {
   TextField,
   Alert,
   ScrollShadow,
+  InputGroup,
 } from "@heroui/react";
 
 import { useAuth } from "../Context/AuthContext";
@@ -23,14 +24,21 @@ import {
   CheckCheck,
   CheckLine,
   ClockCheck,
+  DollarSign,
   PencilLine,
   Trash,
+  X,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { api } from "../api/axiosInstance";
 import useDarkMode from "../Components/Mode";
 import ProductTable from "../Components/ProductTable";
-import { getLocalTimeZone, now, type DateValue } from "@internationalized/date";
+import {
+  getLocalTimeZone,
+  now,
+  parseAbsoluteToLocal,
+  type DateValue,
+} from "@internationalized/date";
 const Expenses = () => {
   // Interface for product rows in the table
   interface ProductRow {
@@ -62,6 +70,7 @@ const Expenses = () => {
 
   const [notes, setNotes] = useState<Note[]>([]);
   const [isdeletednotes, setIsDeletedNotes] = useState<boolean>(false);
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
 
   const [isnewnote, setIsNewNote] = useState<boolean>(false);
 
@@ -257,61 +266,153 @@ const Expenses = () => {
                      lg:grid-cols-3 gap-4 gap-y-14 w-[80%] p-8 items-stretch auto-rows-fr"
         >
           {notes.map((note) => (
-            <div
-              key={note.id}
-              className="relative w-full mx-auto h-full min-h-[300px] "
-            >
+            <div key={note.id} className="relative w-full mx-auto h-[450px]">
               {!note.completed ? (
                 <div className="h-full flex flex-col">
                   <div className="flex items-center gap-3 bg-gray-300 transform -skew-x-9 shadow-lg overflow-hidden ">
                     <div className="flex gap-2 relative z-10 overflow-hidden w-full skew-x-9 m-1 ">
-                      <div className="-top-10  bg-red-600 text-white px-1 hover:bg-red-500 py-1 rounded text-xs">
-                        <button
-                          onClick={() => handleDelete(note.id)}
-                          className="cursor-pointer"
-                        >
-                          <Trash />
-                        </button>
-                      </div>
-                      <div className=" -top-10  bg-green-600 hover:bg-green-500 text-white px-1 py-1 rounded text-xs">
-                        <button
-                          onClick={() => handleaddCompleted(note.id)}
-                          className="cursor-pointer"
-                        >
-                          <Check />
-                        </button>
-                      </div>
-                      <div className="flex items-end ml-auto -top-10 text-blue-900 px-1 py-1 rounded text-xs">
-                        <PencilLine className=" cursor-pointer" />
+                      {editingNoteId !== note.id ? (
+                        <>
+                          <div
+                            className="cursor-pointer bg-red-600 text-white px-1 hover:bg-red-500 py-1 rounded text-xs"
+                            onClick={() => handleDelete(note.id)}
+                          >
+                            <Trash size={16} />
+                          </div>
+                          <div
+                            className="cursor-pointer bg-green-600 hover:bg-green-500 text-white px-1 py-1 rounded text-xs"
+                            onClick={() => handleaddCompleted(note.id)}
+                          >
+                            <Check size={16} />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-1 bg-yellow-500/20 text-yellow-600 px-2 py-1 rounded text-xs font-medium">
+                          <PencilLine size={16} />
+                          <span>Editing...</span>
+                        </div>
+                      )}
+                      <div
+                        className="cursor-pointer flex items-end ml-auto  px-1 py-1 rounded text-xs"
+                        onClick={() => setEditingNoteId(editingNoteId === note.id ? null : note.id)}
+                      >
+                        {editingNoteId === note.id ? (
+                          <X
+                            size={16}
+                            className="text-red-900 hover:text-red-800"
+                          />
+                        ) : (
+                          <PencilLine
+                            size={16}
+                            className="text-blue-900 hover:text-blue-800"
+                          />
+                        )}
                       </div>
                     </div>
-                    <div className="absolute -left-1 top-0 w-[65%]  h-full bg-blue-400/70 transform -skew-x-9 origin-left" />{" "}
+                    <div
+                      className={`absolute -left-1 top-0 w-[65%]  h-full ${editingNoteId === note.id ? "bg-gray-400/70" : "bg-blue-400/70"}
+                                   transform -skew-x-9 origin-left`}
+                    />{" "}
                   </div>
-                  <div className="relative flex flex-col border-2 p-3 bg-secondary h-full overflow-y-auto">
+                  <div
+                    className={`mt-1 relative flex flex-col border-2  ${editingNoteId !== note.id ? (isDark ? "border-gray-800" : "border-white") : "border-red-700"}
+                     p-3 ${editingNoteId === note.id ? "bg-secondary/90" : "bg-secondary"} h-full overflow-y-auto`}
+                  >
                     <div className="flex flex-col ">
                       <div className="flex justify-between items-start z-10">
                         <div className="flex flex-col">
-                          <p className="Ubuntu line-clamp-2">
-                            {note.productTitle}
-                          </p>
-                          <div className="shrink-0 text-sm text-muted capitalize">
+                          {editingNoteId !== note.id ? (
+                            <p className="Ubuntu line-clamp-2 min-h-[40px]">
+                              {note.productTitle}
+                            </p>
+                          ) : (
+                            <div className="w-[50%] min-h-[40px]">
+                              <Input
+                                aria-label="Name"
+                                className="w-full"
+                                placeholder="Enter a new title"
+                                value={note.productTitle}
+                              />
+                            </div>
+                          )}
+                          <div className="shrink-0 text-sm text-muted capitalize w-[50%]">
                             <Chip
                               variant="secondary"
                               color="default"
-                              className="py-1"
+                              className="py-1 min-h-[40px]"
                             >
-                              <ClockCheck />
-                              <p>
-                                {note.estimatedTime?.split("T")[0] ||
-                                  "no time selected"}
-                              </p>
+                              <ClockCheck className="shrink-0" />
+
+                              {editingNoteId === note.id ? (
+                                <div className="w-32">
+                                  <DateField
+                                    aria-label="Estimated time"
+                                    className="w-full"
+                                    granularity="minute"
+                                    value={
+                                      note.estimatedTime !== null
+                                        ? parseAbsoluteToLocal(
+                                            note.estimatedTime,
+                                          )
+                                        : null
+                                    }
+                                    onChange={setSelectedDate}
+                                    minValue={now(getLocalTimeZone())}
+                                  >
+                                    <DateInputGroup className="text-xs">
+                                      <DateInputGroup.Input>
+                                        {(segment) => (
+                                          <DateInputGroup.Segment
+                                            segment={segment}
+                                          />
+                                        )}
+                                      </DateInputGroup.Input>
+                                    </DateInputGroup>
+                                  </DateField>
+                                </div>
+                              ) : (
+                                <p className="truncate">
+                                  {note.estimatedTime?.split("T")[0] ||
+                                    "no time selected"}
+                                </p>
+                              )}
                             </Chip>
                           </div>
                         </div>
                         <div className="flex flex-col items-center">
-                          <p className="Archivo-Black rounded-xl bg-red-700 px-5 py-1 shadow-[0_0_0_2px_#b91c1c] z-10">
-                            {note?.theme || "No theme added"}
-                          </p>
+                          {editingNoteId === note.id ? (
+                            <Dropdown>
+                              <Button
+                                variant="secondary"
+                                className="relative z-10 border-2 px-5 py-1 shadow-[0_0_0_2px_#a6a6a8]  "
+                              >
+                                {note.theme}
+                              </Button>
+                              <Dropdown.Popover className="min-w-[200px]">
+                                <Dropdown.Menu>
+                                  <Dropdown.Section>
+                                    <Header>Themes</Header>
+                                    {themes &&
+                                      themes.length > 0 &&
+                                      themes.map((theme, index) => (
+                                        <Dropdown.Item key={index}>
+                                          <div className="cursor-pointer flex justify-between items-center w-full">
+                                            <Label>{theme}</Label>
+                                            <Kbd>
+                                              <Kbd.Content>Theme</Kbd.Content>
+                                            </Kbd>
+                                          </div>
+                                        </Dropdown.Item>
+                                      ))}
+                                  </Dropdown.Section>
+                                </Dropdown.Menu>
+                              </Dropdown.Popover>
+                            </Dropdown>
+                          ) : (
+                            <p className="Archivo-Black rounded-xl bg-red-700 px-5 py-1 shadow-[0_0_0_2px_#b91c1c] z-10">
+                              {note?.theme || "No theme added"}
+                            </p>
+                          )}
                           <div className="bg-gradient-to-b  from-gray-700 to-gray-800 text-white pb-1 px-2 mx-1 pt-2 -mt-2 rounded-b-xl font-bold shadow-md transform translate-y-0 ">
                             {new Intl.NumberFormat("en-US", {
                               style: "currency",
@@ -338,19 +439,52 @@ const Expenses = () => {
 
                           <ScrollShadow className="max-h-[100px] sm:max-h-[125px] md:max-h-[150px] lg:max-h-[200px] w-full">
                             {note.products.map((product, i) => (
-                              <div
-                                key={i}
-                                className="grid grid-cols-3 gap-2 px-3 py-2 text-sm border-t border-gray-700/50 hover:bg-gray-700/30 transition-colors"
-                              >
-                                <span className="truncate font-medium">
-                                  {product.name}
-                                </span>
-                                <span className="text-center text-gray-400">
-                                  {product.quantity}
-                                </span>
-                                <span className="text-right font-bold text-emerald-400">
-                                  ${Number(product.estprice).toFixed(2)}
-                                </span>
+                              <div key={i} className="h-full w-full">
+                                {editingNoteId !== note.id ? (
+                                  <div className="grid grid-cols-3 text-sm border-t border-gray-700/50 hover:bg-gray-700/30 transition-colors gap-2 px-3 py-2 ">
+                                    <span className="truncate font-medium">
+                                      {product.name}
+                                    </span>
+                                    <span className="text-center text-gray-400">
+                                      {product.quantity}
+                                    </span>
+                                    <span className="text-right font-bold text-emerald-400">
+                                      ${Number(product.estprice).toFixed(2)}
+                                    </span>{" "}
+                                  </div>
+                                ) : (
+                                  <div className="grid grid-cols-3 text-sm border-t border-gray-700/50 hover:bg-gray-700/30 transition-colors gap-2 px-3 py-2">
+                                    <Input
+                                      fullWidth
+                                      placeholder="Enter a new Product title"
+                                      variant="secondary"
+                                      value={product.name}
+                                    />
+                                    <InputGroup className="min-w-[60px]">
+                                      <InputGroup.Prefix>
+                                        <PencilLine size={20} />
+                                      </InputGroup.Prefix>
+                                      <InputGroup.Input
+                                        placeholder="0"
+                                        type="Number"
+                                        value={product.quantity || 0}
+                                        className="min-w-13 w-full"
+                                      />
+                                    </InputGroup>
+                                    <InputGroup className="min-w-[60px]">
+                                      <InputGroup.Prefix>
+                                        <DollarSign className="w-3 sm:w-4 md:w-5 lg:w-6" />
+                                      </InputGroup.Prefix>
+                                      <InputGroup.Input
+                                        placeholder="0"
+                                        type="Number"
+                                        value={product.estprice || 0}
+                                        className="min-w-13 w-full"
+                                      />
+                                    </InputGroup>
+                                    <Button variant="tertiary">+</Button>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </ScrollShadow>
@@ -374,20 +508,20 @@ const Expenses = () => {
                     className={`flex items-center gap-3 transform -skew-x-9 shadow-lg overflow-hidden ${isDark ? "bg-gray-700" : "bg-gray-300"}`}
                   >
                     <div className="flex gap-2 relative z-10 overflow-hidden w-full skew-x-9 m-1 items-center">
-                      <div className="bg-green-600 italic font-semibold text-sm lg:text-base text-white px-3 py-1.5 rounded shadow-lg">
+                      <div className="bg-green-600 italic font-semibold text-sm lg:text-base text-white px-3  rounded shadow-lg">
                         ✓ COMPLETED
                       </div>
                       <div className="flex items-end ml-auto text-blue-600 px-1 py-1">
                         <PencilLine
-                          className="cursor-pointer hover:text-blue-500 transition-colors"
-                          size={18}
+                          className="cursor-pointer transition-colors"
+                          size={16}
                         />
                       </div>
                     </div>
                     <div className="absolute -left-1 top-0 w-[65%] h-full bg-green-500/30 transform -skew-x-9 origin-left" />
                   </div>
                   <div
-                    className={`relative flex flex-col border-2 p-4 grow overflow-y-auto ${isDark ? "bg-gray-800 border-gray-600" : "bg-gray-50 border-gray-300"}`}
+                    className={`mt-1 relative flex flex-col border-2 p-4 grow overflow-y-auto ${isDark ? "bg-gray-800 border-gray-600" : "bg-gray-50 border-gray-300"}`}
                   >
                     <div className="flex items-center gap-2 mb-3">
                       <ClockCheck
@@ -482,7 +616,7 @@ const Expenses = () => {
       )}
       {user ? (
         <div>
-          <Button onClick={() => setIsNewTheme(true)}>
+          <Button onClick={() => setIsNewTheme(true)} variant="ghost">
             <BadgePlus /> ADD NEW THEME
           </Button>
           {isnewtheme && (
