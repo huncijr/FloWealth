@@ -22,10 +22,12 @@ import {
   BookX,
   Check,
   CheckCheck,
+  CheckCircle,
   CheckLine,
   ClockCheck,
   DollarSign,
   PencilLine,
+  Plus,
   Trash,
   X,
 } from "lucide-react";
@@ -67,10 +69,12 @@ const Expenses = () => {
   const [addtheme, setAddTheme] = useState<string>("");
   const [themes, setThemes] = useState<string[] | null>([]);
   const [selectedtheme, setSelectedTheme] = useState<string | null>(null);
+  const [dateerror, setDateError] = useState<string | null>(null);
 
   const [notes, setNotes] = useState<Note[]>([]);
   const [isdeletednotes, setIsDeletedNotes] = useState<boolean>(false);
-  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+  const [draftnote, setDraftNote] = useState<Note | null>(null);
+  const [editingnoteid, setEditingNoteId] = useState<number | null>(null);
 
   const [isnewnote, setIsNewNote] = useState<boolean>(false);
 
@@ -146,29 +150,6 @@ const Expenses = () => {
     console.log(notes);
   }, [notes]);
 
-  // Handle adding a new theme to the backend
-  const handleAddtheme = async (e: React.FormEvent, themes: string) => {
-    e.preventDefault();
-
-    if (themes?.trim()) {
-      try {
-        const response = await api.post("/newtheme", {
-          themes: themes,
-        });
-        console.log(response.data.allthemes);
-        if (response.data.success) {
-          let newthemes = response.data.allthemes;
-          console.log(newthemes);
-          setThemes(newthemes);
-        }
-      } catch (error) {
-      } finally {
-        setIsNewTheme(false);
-        setAddTheme("");
-      }
-    }
-  };
-
   // Validate payload before submitting to backend
   // Checks if required fields are present and not empty
   const validatePayload = (payload: any) => {
@@ -184,6 +165,55 @@ const Expenses = () => {
       return false;
     }
     return true;
+  };
+
+  const handleAddNewProduct = () => {
+    if (!draftnote) return;
+    setDraftNote({
+      ...draftnote,
+      products: [
+        ...draftnote.products,
+        { name: "", quantity: null, estprice: null },
+      ],
+    });
+  };
+  const handleChangeProduct = (
+    productindex: number,
+    field: "name" | "quantity" | "estprice",
+    value: string | number,
+  ) => {
+    if (!draftnote) return;
+    setDraftNote({
+      ...draftnote,
+      products: draftnote.products.map((p, i) =>
+        i === productindex ? { ...p, [field]: value } : p,
+      ),
+    });
+  };
+  const handleDeleteProduct = (productIndex: number) => {
+    if (!draftnote) return;
+    setDraftNote({
+      ...draftnote,
+      products: draftnote.products.filter((_, i) => i != productIndex),
+    });
+  };
+  const handleChangeTitle = (newTitle: string) => {
+    if (!draftnote) return;
+    setDraftNote({ ...draftnote, productTitle: newTitle });
+  };
+
+  const handleChangeDate = (date: DateValue | null) => {
+    if (!draftnote) return;
+    if (!date) {
+      setDraftNote({ ...draftnote, estimatedTime: null });
+      return;
+    }
+    const jsDate = date.toDate(getLocalTimeZone());
+
+    setDraftNote({
+      ...draftnote,
+      estimatedTime: jsDate.toISOString(),
+    });
   };
 
   // Collects data from rows, builds payload, validates and sends to backend
@@ -229,6 +259,29 @@ const Expenses = () => {
     } catch (error) {}
   };
 
+  // Handle adding a new theme to the backend
+  const handleAddtheme = async (e: React.FormEvent, themes: string) => {
+    e.preventDefault();
+
+    if (themes?.trim()) {
+      try {
+        const response = await api.post("/newtheme", {
+          themes: themes,
+        });
+        console.log(response.data.allthemes);
+        if (response.data.success) {
+          let newthemes = response.data.allthemes;
+          console.log(newthemes);
+          setThemes(newthemes);
+        }
+      } catch (error) {
+      } finally {
+        setIsNewTheme(false);
+        setAddTheme("");
+      }
+    }
+  };
+
   const handleDelete = async (id: number) => {
     try {
       const response = await api.delete(`/deletenote/${id}`);
@@ -260,18 +313,24 @@ const Expenses = () => {
 
   return (
     <div>
+      {/* ==========================================
+          NOTES GRID - Main container for all notes
+          ========================================== */}
       {notes && notes.length > 0 ? (
         <div
           className="grid grid-cols-[repeat(auto-fit,minmax(200px,2fr))]
                      lg:grid-cols-3 gap-4 gap-y-14 w-[80%] p-8 items-stretch auto-rows-fr"
         >
+          {/* ==========================================
+                  ACTIVE NOTE (not completed)
+                  ========================================== */}
           {notes.map((note) => (
             <div key={note.id} className="relative w-full mx-auto h-[450px]">
               {!note.completed ? (
                 <div className="h-full flex flex-col">
                   <div className="flex items-center gap-3 bg-gray-300 transform -skew-x-9 shadow-lg overflow-hidden ">
                     <div className="flex gap-2 relative z-10 overflow-hidden w-full skew-x-9 m-1 ">
-                      {editingNoteId !== note.id ? (
+                      {editingnoteid !== note.id ? (
                         <>
                           <div
                             className="cursor-pointer bg-red-600 text-white px-1 hover:bg-red-500 py-1 rounded text-xs"
@@ -287,16 +346,31 @@ const Expenses = () => {
                           </div>
                         </>
                       ) : (
-                        <div className="flex items-center gap-1 bg-yellow-500/20 text-yellow-600 px-2 py-1 rounded text-xs font-medium">
-                          <PencilLine size={16} />
-                          <span>Editing...</span>
+                        /* EDIT MODE: "Editing..." badge */
+                        <div className="flex items-center gap-1  px-2 py-1  text-xs font-medium ">
+                          <div className="flex cursor-pointer rounded hover:bg-green-700/40 text-green-900 bg-green-700/20">
+                            <CheckCircle size={16} />
+                            <p>UPDATE</p>
+                          </div>
+                          <div className="flex bg-yellow-500/20 rounded text-yellow-600">
+                            <PencilLine size={16} />
+                            <span>Editing...</span>
+                          </div>
                         </div>
                       )}
                       <div
                         className="cursor-pointer flex items-end ml-auto  px-1 py-1 rounded text-xs"
-                        onClick={() => setEditingNoteId(editingNoteId === note.id ? null : note.id)}
+                        onClick={() => {
+                          if (editingnoteid === note.id) {
+                            (setEditingNoteId(null), setDraftNote(null));
+                          } else {
+                            setEditingNoteId(note.id);
+                            setDraftNote({ ...note });
+                          }
+                        }}
                       >
-                        {editingNoteId === note.id ? (
+                        {/* Toggle Edit Mode Button (Pencil/X) */}
+                        {editingnoteid === note.id ? (
                           <X
                             size={16}
                             className="text-red-900 hover:text-red-800"
@@ -310,18 +384,21 @@ const Expenses = () => {
                       </div>
                     </div>
                     <div
-                      className={`absolute -left-1 top-0 w-[65%]  h-full ${editingNoteId === note.id ? "bg-gray-400/70" : "bg-blue-400/70"}
+                      className={`absolute -left-1 top-0 w-[65%]  h-full ${editingnoteid === note.id ? "bg-gray-400/70" : "bg-blue-400/70"}
                                    transform -skew-x-9 origin-left`}
                     />{" "}
                   </div>
+                  {/* ==========================================
+                      MAIN CONTENT - Title, Date, Theme, Cost
+                      ========================================== */}
                   <div
-                    className={`mt-1 relative flex flex-col border-2  ${editingNoteId !== note.id ? (isDark ? "border-gray-800" : "border-white") : "border-red-700"}
-                     p-3 ${editingNoteId === note.id ? "bg-secondary/90" : "bg-secondary"} h-full overflow-y-auto`}
+                    className={`mt-1 relative flex flex-col border-2  ${editingnoteid !== note.id ? (isDark ? "border-gray-800" : "border-white") : "border-red-700"}
+                     p-3 ${editingnoteid === note.id ? "bg-secondary/90" : "bg-secondary"} h-full overflow-y-auto`}
                   >
                     <div className="flex flex-col ">
                       <div className="flex justify-between items-start z-10">
                         <div className="flex flex-col">
-                          {editingNoteId !== note.id ? (
+                          {editingnoteid !== note.id ? (
                             <p className="Ubuntu line-clamp-2 min-h-[40px]">
                               {note.productTitle}
                             </p>
@@ -331,7 +408,10 @@ const Expenses = () => {
                                 aria-label="Name"
                                 className="w-full"
                                 placeholder="Enter a new title"
-                                value={note.productTitle}
+                                value={draftnote?.productTitle}
+                                onChange={(e) =>
+                                  handleChangeTitle(e.target.value)
+                                }
                               />
                             </div>
                           )}
@@ -343,20 +423,20 @@ const Expenses = () => {
                             >
                               <ClockCheck className="shrink-0" />
 
-                              {editingNoteId === note.id ? (
+                              {editingnoteid === note.id ? (
                                 <div className="w-32">
                                   <DateField
                                     aria-label="Estimated time"
                                     className="w-full"
                                     granularity="minute"
                                     value={
-                                      note.estimatedTime !== null
+                                      draftnote?.estimatedTime
                                         ? parseAbsoluteToLocal(
-                                            note.estimatedTime,
+                                            draftnote?.estimatedTime,
                                           )
                                         : null
                                     }
-                                    onChange={setSelectedDate}
+                                    onChange={(date) => handleChangeDate(date)}
                                     minValue={now(getLocalTimeZone())}
                                   >
                                     <DateInputGroup className="text-xs">
@@ -380,13 +460,13 @@ const Expenses = () => {
                           </div>
                         </div>
                         <div className="flex flex-col items-center">
-                          {editingNoteId === note.id ? (
+                          {editingnoteid === note.id ? (
                             <Dropdown>
                               <Button
                                 variant="secondary"
                                 className="relative z-10 border-2 px-5 py-1 shadow-[0_0_0_2px_#a6a6a8]  "
                               >
-                                {note.theme}
+                                {draftnote?.theme || ""}
                               </Button>
                               <Dropdown.Popover className="min-w-[200px]">
                                 <Dropdown.Menu>
@@ -395,7 +475,16 @@ const Expenses = () => {
                                     {themes &&
                                       themes.length > 0 &&
                                       themes.map((theme, index) => (
-                                        <Dropdown.Item key={index}>
+                                        <Dropdown.Item
+                                          key={index}
+                                          onClick={() => {
+                                            if (draftnote)
+                                              setDraftNote({
+                                                ...draftnote,
+                                                theme,
+                                              });
+                                          }}
+                                        >
                                           <div className="cursor-pointer flex justify-between items-center w-full">
                                             <Label>{theme}</Label>
                                             <Kbd>
@@ -437,10 +526,14 @@ const Expenses = () => {
                             <span className="text-right">Price</span>
                           </div>
 
+                          {/* VIEW MODE: Display products | EDIT MODE: Editable inputs */}
                           <ScrollShadow className="max-h-[100px] sm:max-h-[125px] md:max-h-[150px] lg:max-h-[200px] w-full">
-                            {note.products.map((product, i) => (
+                            {(editingnoteid === note.id
+                              ? draftnote?.products
+                              : note.products
+                            )?.map((product, i) => (
                               <div key={i} className="h-full w-full">
-                                {editingNoteId !== note.id ? (
+                                {editingnoteid !== note.id ? (
                                   <div className="grid grid-cols-3 text-sm border-t border-gray-700/50 hover:bg-gray-700/30 transition-colors gap-2 px-3 py-2 ">
                                     <span className="truncate font-medium">
                                       {product.name}
@@ -453,12 +546,20 @@ const Expenses = () => {
                                     </span>{" "}
                                   </div>
                                 ) : (
+                                  /* EDIT MODE: Editable product row with inputs */
                                   <div className="grid grid-cols-3 text-sm border-t border-gray-700/50 hover:bg-gray-700/30 transition-colors gap-2 px-3 py-2">
                                     <Input
                                       fullWidth
                                       placeholder="Enter a new Product title"
                                       variant="secondary"
-                                      value={product.name}
+                                      value={draftnote?.products[i].name || ""}
+                                      onChange={(e) =>
+                                        handleChangeProduct(
+                                          i,
+                                          "name",
+                                          e.target.value || "",
+                                        )
+                                      }
                                     />
                                     <InputGroup className="min-w-[60px]">
                                       <InputGroup.Prefix>
@@ -467,8 +568,18 @@ const Expenses = () => {
                                       <InputGroup.Input
                                         placeholder="0"
                                         type="Number"
-                                        value={product.quantity || 0}
+                                        value={
+                                          draftnote?.products[i]?.quantity || ""
+                                        }
                                         className="min-w-13 w-full"
+                                        onChange={(e) =>
+                                          handleChangeProduct(
+                                            i,
+                                            "quantity",
+                                            parseFloat(e.target.value) || 0,
+                                          )
+                                        }
+                                        min={0}
                                       />
                                     </InputGroup>
                                     <InputGroup className="min-w-[60px]">
@@ -478,19 +589,49 @@ const Expenses = () => {
                                       <InputGroup.Input
                                         placeholder="0"
                                         type="Number"
-                                        value={product.estprice || 0}
+                                        value={
+                                          draftnote?.products[i]?.estprice || ""
+                                        }
                                         className="min-w-13 w-full"
+                                        onChange={(e) =>
+                                          handleChangeProduct(
+                                            i,
+                                            "estprice",
+                                            parseFloat(e.target.value) || 0,
+                                          )
+                                        }
+                                        min={0}
                                       />
                                     </InputGroup>
-                                    <Button variant="tertiary">+</Button>
+                                    <Button
+                                      variant="danger-soft"
+                                      onClick={() => handleDeleteProduct(i)}
+                                      size="sm"
+                                    >
+                                      <Trash size={14} />
+                                    </Button>
                                   </div>
                                 )}
                               </div>
                             ))}
                           </ScrollShadow>
+                          {editingnoteid === note.id && (
+                            <div className="flex justify-center py-2 border-t border-gray-700/50">
+                              <Button
+                                variant="tertiary"
+                                onClick={() => handleAddNewProduct()}
+                                size="sm"
+                              >
+                                <Plus size={16} /> Add Product
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
+                    {/* ==========================================
+                        FOOTER - Created date chip
+                        ========================================== */}
                     <div className="mt-auto flex justify-end pt-4">
                       <Chip
                         variant="secondary"
@@ -503,6 +644,9 @@ const Expenses = () => {
                   </div>
                 </div>
               ) : (
+                /* ==========================================
+                    COMPLETED NOTE (simplified view)
+                    ========================================== */
                 <div className="h-full flex flex-col opacity-70">
                   <div
                     className={`flex items-center gap-3 transform -skew-x-9 shadow-lg overflow-hidden ${isDark ? "bg-gray-700" : "bg-gray-300"}`}
@@ -732,10 +876,18 @@ const Expenses = () => {
                   {showtable && <ProductTable rows={rows} setRows={setRows} />}
                   <div className="flex justify-between py-5">
                     <DateField
+                      isInvalid={!!dateerror}
                       className="w-[256px] "
                       granularity="minute"
                       value={selecteddate}
-                      onChange={setSelectedDate}
+                      onChange={(date) => {
+                        setSelectedDate(date);
+                        if (date && date < now(getLocalTimeZone())) {
+                          setDateError("Invalid time");
+                        } else {
+                          setDateError(null);
+                        }
+                      }}
                       minValue={now(getLocalTimeZone())}
                     >
                       <Label> Choose a date(optional) </Label>
@@ -746,6 +898,7 @@ const Expenses = () => {
                           )}
                         </DateInputGroup.Input>
                       </DateInputGroup>
+                      <FieldError>{dateerror}</FieldError>
                     </DateField>
                     <div className="flex justify-center gap-2 Oswald">
                       <h1 className="tracking tracking-wider">Totalcost: </h1>
