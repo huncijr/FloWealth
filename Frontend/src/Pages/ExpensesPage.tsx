@@ -29,6 +29,7 @@ import {
   PencilLine,
   Plus,
   Trash,
+  TriangleAlert,
   X,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
@@ -75,8 +76,8 @@ const Expenses = () => {
   const [isdeletednotes, setIsDeletedNotes] = useState<boolean>(false);
   const [draftnote, setDraftNote] = useState<Note | null>(null);
   const [editingnoteid, setEditingNoteId] = useState<number | null>(null);
-
-  const [isnewnote, setIsNewNote] = useState<boolean>(false);
+  const [isvalidnote, setIsValidNote] = useState<string[]>([]);
+  const [isupdating, setIsUpdating] = useState<boolean>(false);
 
   const [selecteddate, setSelectedDate] = useState<DateValue | null>(null);
   const [producttitle, setProductTitle] = useState<string | null>(null);
@@ -146,9 +147,14 @@ const Expenses = () => {
       }, 2500);
     }
   }, [missingtoast]);
+
   useEffect(() => {
-    console.log(notes);
-  }, [notes]);
+    if (isvalidnote.length > 0) {
+      setTimeout(() => {
+        setIsValidNote([]);
+      }, 2000);
+    }
+  }, [isvalidnote]);
 
   // Validate payload before submitting to backend
   // Checks if required fields are present and not empty
@@ -214,6 +220,77 @@ const Expenses = () => {
       ...draftnote,
       estimatedTime: jsDate.toISOString(),
     });
+  };
+
+  const validateDraftNote = (
+    draft: Note | null,
+  ): { valid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    if (!draft) {
+      return { valid: false, errors: ["No draft note"] };
+    }
+    if (!draft.productTitle.trim()) {
+      errors.push("Title cannot be empty");
+    }
+    if (draft.estimatedTime && new Date(draft.estimatedTime) < new Date()) {
+      console.log(new Date(draft.estimatedTime));
+      console.log(new Date());
+      errors.push("Date can't be less than todays time");
+    }
+    if (!draft.products || draft.products.length === 0) {
+      errors.push("At least one product is required");
+    } else {
+      draft.products.forEach((product) => {
+        if (!product.name?.trim()) {
+          errors.push("Product Names cannot be empty");
+        }
+        if (product.quantity === null || product.quantity < 0) {
+          errors.push("Product Quantities must be at least 0");
+        }
+        if (product.estprice === null || product.estprice < 0) {
+          errors.push(`Product Prices must be at least 0`);
+        }
+      });
+    }
+    console.log(errors);
+    return { valid: errors.length === 0, errors };
+  };
+
+  const handleUpdateNote = async () => {
+    if (!draftnote) return;
+    console.log(draftnote);
+    const { valid, errors } = validateDraftNote(draftnote);
+    if (!valid) {
+      setIsValidNote(errors);
+      return;
+    }
+    try {
+      const newCost = draftnote.products.reduce((acc, p) => {
+        return acc + (Number(p.estprice) || 0) * Number(p.quantity || 0);
+      }, 0);
+      const payload = {
+        id: draftnote.id,
+        theme: draftnote.theme,
+        productTitle: draftnote.productTitle,
+        products: draftnote.products,
+        estimatedTime: draftnote.estimatedTime,
+        estcost: newCost.toString(),
+      };
+      const response = await api.patch("/updatenotes", payload);
+      if (response.data.success && response.data.changed) {
+        setIsUpdating(true);
+        setNotes((prev) =>
+          prev.map((n) => (n.id === draftnote.id ? response.data.note : n)),
+        );
+        setDraftNote(null);
+        setEditingNoteId(null);
+      }
+    } catch (error) {
+    } finally {
+      setTimeout(() => {
+        setIsUpdating(false);
+      }, 2000);
+    }
   };
 
   // Collects data from rows, builds payload, validates and sends to backend
@@ -348,7 +425,10 @@ const Expenses = () => {
                       ) : (
                         /* EDIT MODE: "Editing..." badge */
                         <div className="flex items-center gap-1  px-2 py-1  text-xs font-medium ">
-                          <div className="flex cursor-pointer rounded hover:bg-green-700/40 text-green-900 bg-green-700/20">
+                          <div
+                            className="flex cursor-pointer rounded hover:bg-green-700/40 text-green-900 bg-green-700/20"
+                            onClick={handleUpdateNote}
+                          >
                             <CheckCircle size={16} />
                             <p>UPDATE</p>
                           </div>
@@ -788,6 +868,19 @@ const Expenses = () => {
             <Dropdown.Popover className="min-w-[200px]">
               <Dropdown.Menu>
                 <Dropdown.Section>
+                  <Header> No themes</Header>
+                  <Dropdown.Item>
+                    <div
+                      className="cursor-pointer flex justify-between items-center w-full"
+                      onClick={() => {
+                        setSelectedTheme("No theme ");
+                        setClose(true);
+                      }}
+                    >
+                      <Label className="text-gray-400">No theme Selected</Label>
+                    </div>
+                  </Dropdown.Item>
+                  <Separator />
                   <Header>Themes</Header>
                   {themes &&
                     themes.length > 0 &&
@@ -811,7 +904,12 @@ const Expenses = () => {
                 <Separator />
                 <Dropdown.Section>
                   <Header>Subscription</Header>
-                  <Dropdown.Item>a</Dropdown.Item>
+                  <Dropdown.Item>
+                    <Label>Netflix</Label>
+                    <Kbd>
+                      <Kbd.Content>Subscriptions</Kbd.Content>
+                    </Kbd>
+                  </Dropdown.Item>
                 </Dropdown.Section>
               </Dropdown.Menu>
             </Dropdown.Popover>
@@ -930,7 +1028,7 @@ const Expenses = () => {
         </div>
       )}
       {missingtoast && (
-        <div className="absolute top-2 inset-x-0 mx-auto w-fit">
+        <div className="fixed top-2 inset-x-0 mx-auto w-fit">
           <Alert status="danger">
             <Alert.Indicator />
             <Alert.Content>
@@ -943,7 +1041,7 @@ const Expenses = () => {
         </div>
       )}
       {isdeletednotes && (
-        <div className="absolute top-2 inset-x-0 mx-auto w-fit  ">
+        <div className="fixed top-2 inset-x-0 mx-auto w-fit  ">
           <Alert status="success">
             <Alert.Indicator>
               <CheckCheck />
@@ -951,6 +1049,33 @@ const Expenses = () => {
                 <Alert.Title className="ml-2">
                   {" "}
                   Note is succesfully has been deleted
+                </Alert.Title>
+              </Alert.Content>
+            </Alert.Indicator>
+          </Alert>
+        </div>
+      )}
+      {isvalidnote.length > 0 && (
+        <div className="fixed top-2 inset-x-0 mx-auto w-fit  ">
+          <Alert status="warning">
+            <Alert.Indicator>
+              <TriangleAlert />
+              <Alert.Content>
+                <Alert.Title className="ml-2"> {isvalidnote[0]}</Alert.Title>
+              </Alert.Content>
+            </Alert.Indicator>
+          </Alert>
+        </div>
+      )}
+      {isupdating && (
+        <div className="fixed top-2 inset-x-0 mx-auto w-fit  ">
+          <Alert status="success">
+            <Alert.Indicator>
+              <CheckCheck />
+              <Alert.Content>
+                <Alert.Title className="ml-2">
+                  {" "}
+                  Note is succesfully has been updated
                 </Alert.Title>
               </Alert.Content>
             </Alert.Indicator>

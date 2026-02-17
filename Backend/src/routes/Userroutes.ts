@@ -14,6 +14,7 @@ import {
   GetNotes,
   DeleteNote,
   CompleteNote,
+  UpdateNote,
 } from "../controllers/Notecontroller";
 import { VerifyGoogleAuth } from "../middlewares/GoogleAuth";
 import { VerifyCloudflare } from "../middlewares/CloudflareAuth";
@@ -34,4 +35,5 @@ router.get("/getnotes", userAuth, GetNotes);
 router.post("/addnote", userAuth, AddNotes);
 router.delete("/deletenote/:id", userAuth, DeleteNote);
 router.post("/completenote/:id", userAuth, CompleteNote);
+router.patch("/updatenotes", userAuth, UpdateNote);
 export default router;

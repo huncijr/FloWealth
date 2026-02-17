@@ -38,9 +38,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     };
     initAuth();
   }, []);
-  useEffect(() => {
-    console.log(user);
-  }, [user]);
+  // useEffect(() => {
+  //   console.log(user);
+  // }, [user]);
   return (
     <UserContext.Provider value={{ user, setUser }}>
       {!loading && children}

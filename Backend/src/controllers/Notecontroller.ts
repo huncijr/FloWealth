@@ -269,3 +269,91 @@ export const CompleteNote = async (
     next(error);
   }
 };
+
+export const UpdateNote = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.userId;
+    console.log(userId);
+    const { id, theme, productTitle, products, estimatedTime, estcost } =
+      req.body;
+    console.log("Products from request:", products);
+    console.log("Products type:", typeof products, Array.isArray(products));
+    if (!userId || !id) {
+      return res
+        .status(400)
+        .json({ success: false, changed: false, message: "Missing data" });
+    }
+    const [existingNote] = await db
+      .select()
+      .from(notesTable)
+      .where(and(eq(notesTable.id, id), eq(notesTable.userId, userId)))
+      .limit(1);
+
+    if (!existingNote) {
+      return res
+        .status(404)
+        .json({ success: false, changed: false, message: "Note not found" });
+    }
+    const currentData = {
+      theme: existingNote.theme,
+      productTitle: existingNote.productTitle,
+      products: existingNote.products,
+      estimatedTime: existingNote.estimatedTime?.toISOString() || null,
+      estcost: existingNote.estcost,
+    };
+    const newData = {
+      theme: theme || null,
+      productTitle: productTitle,
+      products: products,
+      estimatedTime: estimatedTime || null,
+      estcost: estcost,
+    };
+    if (JSON.stringify(currentData) === JSON.stringify(newData)) {
+      return res.status(200).json({
+        success: true,
+        changed: false,
+        message: "No changes detected",
+      });
+    }
+
+    const [updatedNote] = await db
+      .update(notesTable)
+      .set({
+        theme: theme || null,
+        productTitle: productTitle,
+        products: products,
+        estimatedTime: estimatedTime ? new Date(estimatedTime) : null,
+        estcost: estcost?.toString() || 0,
+      })
+      .where(and(eq(notesTable.id, id), eq(notesTable.userId, userId)))
+      .returning();
+    console.log(updatedNote);
+    if (!updatedNote) {
+      return res.status(404).json({
+        success: false,
+        changed: false,
+        message: "Not not found",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      changed: true,
+      note: {
+        id: updatedNote.id,
+        theme: updatedNote.theme,
+        productTitle: updatedNote.productTitle,
+        products: updatedNote.products,
+        estcost: updatedNote.estcost,
+        estimatedTime: updatedNote.estimatedTime,
+        completed: updatedNote.completed,
+        createdAt: updatedNote.createdAt,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
