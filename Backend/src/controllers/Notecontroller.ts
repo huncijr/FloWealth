@@ -13,11 +13,11 @@ const CheckThemes = async (theme: string, userId: number): Promise<Boolean> => {
   existingThemes = Array.isArray(existingThemes)
     ? existingThemes
     : [existingThemes];
-  console.log("existingthemes", existingThemes);
+  // console.log("existingthemes", existingThemes);
   if (Array.isArray(existingThemes) && existingThemes.includes(theme)) {
     return true;
   }
-  console.log(existingThemes);
+  // console.log(existingThemes);
   return false;
 };
 
@@ -36,10 +36,10 @@ export const GetThemes = async (
       .select({ themes: Themes.themes })
       .from(Themes)
       .where(eq(Themes.userId, userId));
-    console.log("allthemes", allThemes);
+    // console.log("allthemes", allThemes);
     let result = allThemes[0]?.themes || [];
     result = Array.isArray(result) ? result : result ? [result] : [];
-    console.log(result);
+    // console.log(result);
     return res.status(200).json({ success: true, allthemes: result });
   } catch (error) {
     next(error);
@@ -81,7 +81,7 @@ export const AddNewThemes = async (
       updatedTheme = inserted;
     }
     const themesonly = updatedTheme[0]?.themes;
-    console.log(themesonly);
+    // console.log(themesonly);
     const existingThemes = Array.isArray(themesonly)
       ? themesonly
       : themesonly
@@ -118,7 +118,7 @@ export const GetNotes = async (
       .from(notesTable)
       .where(eq(notesTable.userId, userId!));
 
-    console.log(result);
+    // console.log(result);
     return res.status(200).json({
       success: true,
       note: result,
@@ -144,16 +144,7 @@ export const AddNotes = async (
       Cost,
       Date: dateData,
     } = req.body;
-    console.log(
-      userId,
-      Theme,
-      ProductTitle,
-      ProductNames,
-      Quantities,
-      EstPrices,
-      Cost,
-      dateData,
-    );
+
     if (!userId && !ProductTitle && !ProductNames) {
       return res.status(400).json({ message: "Missing Data", success: false });
     }
@@ -196,7 +187,7 @@ export const AddNotes = async (
         estcost: Cost,
       })
       .returning();
-    console.log(newnote);
+    // console.log(newnote);
     return res.status(201).json({
       success: true,
       note: {
@@ -223,7 +214,7 @@ export const DeleteNote = async (
   try {
     const userId = req.userId;
     const id = parseInt(req.params.id as string);
-    console.log(id, userId);
+    // console.log(id, userId);
     if (!userId || isNaN(id)) {
       return res.status(400).json({ message: "Missing data", success: false });
     }
@@ -250,15 +241,21 @@ export const CompleteNote = async (
   try {
     const userId = req.userId;
     const id = parseInt(req.params.id as string);
+    const { picture, message } = req.body;
     if (!userId || isNaN(id)) {
       return res.status(400).json({ message: "Missing data", success: false });
     }
     const completedNote = await db
       .update(notesTable)
-      .set({ completed: true })
+      .set({
+        completed: true,
+        picture: picture ?? null,
+        message: message ?? null,
+      })
       .where(and(eq(notesTable.userId, userId), eq(notesTable.id, id)))
       .returning();
-    console.log(completedNote);
+
+    console.log("completenote", completedNote);
     if (!completedNote) {
       return res
         .status(404)
@@ -278,10 +275,17 @@ export const UpdateNote = async (
   try {
     const userId = req.userId;
     console.log(userId);
-    const { id, theme, productTitle, products, estimatedTime, estcost } =
-      req.body;
-    console.log("Products from request:", products);
-    console.log("Products type:", typeof products, Array.isArray(products));
+    const {
+      id,
+      theme,
+      productTitle,
+      products,
+      estimatedTime,
+      estcost,
+      message,
+      picture,
+    } = req.body;
+
     if (!userId || !id) {
       return res
         .status(400)
@@ -292,7 +296,7 @@ export const UpdateNote = async (
       .from(notesTable)
       .where(and(eq(notesTable.id, id), eq(notesTable.userId, userId)))
       .limit(1);
-
+    console.log(existingNote);
     if (!existingNote) {
       return res
         .status(404)
@@ -328,10 +332,13 @@ export const UpdateNote = async (
         products: products,
         estimatedTime: estimatedTime ? new Date(estimatedTime) : null,
         estcost: estcost?.toString() || 0,
+        message: message,
+        picture: picture,
       })
       .where(and(eq(notesTable.id, id), eq(notesTable.userId, userId)))
       .returning();
-    console.log(updatedNote);
+
+    console.log("updatenote", updatedNote);
     if (!updatedNote) {
       return res.status(404).json({
         success: false,

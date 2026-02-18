@@ -60,6 +60,7 @@ export const notesTable = pgTable("Notes", {
   estimatedTime: timestamp("estimated_time"), // Date
   estcost: decimal("estcost", { precision: 10, scale: 2 }).$type<string>(),
   cost: decimal("cost", { precision: 10, scale: 2 }).$type<string>(),
+  message: text("message"),
   completed: boolean("completed").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

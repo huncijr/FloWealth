@@ -14,6 +14,8 @@ import {
   Alert,
   ScrollShadow,
   InputGroup,
+  TextArea,
+  Description,
 } from "@heroui/react";
 
 import { useAuth } from "../Context/AuthContext";
@@ -42,6 +44,7 @@ import {
   parseAbsoluteToLocal,
   type DateValue,
 } from "@internationalized/date";
+import ImageUpload from "../Components/ImageUpload";
 const Expenses = () => {
   // Interface for product rows in the table
   interface ProductRow {
@@ -63,6 +66,8 @@ const Expenses = () => {
     estcost: string;
     estimatedTime: string | null;
     createdAt: string;
+    picture?: string;
+    message?: string;
   }
 
   const { isDark } = useDarkMode();
@@ -74,6 +79,7 @@ const Expenses = () => {
 
   const [notes, setNotes] = useState<Note[]>([]);
   const [isdeletednotes, setIsDeletedNotes] = useState<boolean>(false);
+  const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [draftnote, setDraftNote] = useState<Note | null>(null);
   const [editingnoteid, setEditingNoteId] = useState<number | null>(null);
   const [isvalidnote, setIsValidNote] = useState<string[]>([]);
@@ -375,15 +381,32 @@ const Expenses = () => {
   };
 
   const handleaddCompleted = async (id: number) => {
+    if (!draftnote) return;
+
+    console.log(draftnote);
     try {
-      const note = notes.find((n) => n.id === id);
-      if (note) {
-        const response = await api.post(`/completenote/${id}`);
-        if (response.data.success) {
-          setNotes((prev) =>
-            prev.map((p) => (p.id === id ? { ...p, completed: true } : p)),
-          );
-        }
+      await api.patch("/updatenotes", {
+        id: draftnote.id,
+        theme: draftnote.theme,
+        productTitle: draftnote.productTitle,
+        products: draftnote.products,
+        estimatedTime: draftnote.estimatedTime,
+        estcost: draftnote.estcost,
+        picture: draftnote.picture || null,
+        message: draftnote.message || null,
+      });
+      const response = await api.post(`/completenote/${id}`, {
+        picture: draftnote.picture,
+        message: draftnote.message,
+      });
+      console.log(response.data);
+      if (response.data.success) {
+        setNotes((prev) =>
+          prev.map((n) => (n.id === id ? response.data.note[0] : n)),
+        );
+        setDraftNote(null);
+        setEditingNoteId(null);
+        setIsCompleted(false);
       }
     } catch (error) {}
   };
@@ -417,7 +440,15 @@ const Expenses = () => {
                           </div>
                           <div
                             className="cursor-pointer bg-green-600 hover:bg-green-500 text-white px-1 py-1 rounded text-xs"
-                            onClick={() => handleaddCompleted(note.id)}
+                            onClick={() => {
+                              if (editingnoteid === note.id) {
+                                (setEditingNoteId(null), setDraftNote(null));
+                              } else {
+                                setEditingNoteId(note.id);
+                                setDraftNote({ ...note });
+                                setIsCompleted(true);
+                              }
+                            }}
                           >
                             <Check size={16} />
                           </div>
@@ -818,6 +849,29 @@ const Expenses = () => {
                           </p>
                         )}
                       </div>
+                      {note.message && (
+                        <div className="py-3 flex flex-col gap-2">
+                          <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            Your message
+                          </Label>
+                          <TextArea
+                            aria-label="message"
+                            rows={3}
+                            value={note.message}
+                            readOnly
+                            className="text-sm rounded-lg"
+                          />
+                        </div>
+                      )}
+                      {note.picture && (
+                        <div className="w-full overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                          <img
+                            src={note?.picture}
+                            alt="Product Image"
+                            className="w-full h-full max-h-64 object-cover"
+                          />
+                        </div>
+                      )}
                     </div>
                     <div
                       className={`mt-auto pt-3 flex items-center gap-2 text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
@@ -1027,6 +1081,66 @@ const Expenses = () => {
           Login
         </div>
       )}
+      {isCompleted && (
+        <div className=" fixed flex items-center justify-center bg-black/50 inset-0 z-50 w-full border-2 ">
+          <div
+            className={`w-[80%] relative overflow-y-auto h-[80%] border-2 ${isDark ? "bg-black" : "bg-white"} p-6 shadow-xl`}
+          >
+            <div
+              className="absolute right-3 top-2 cursor-pointer"
+              onClick={() => {
+                setDraftNote(null);
+                setEditingNoteId(null);
+                setIsCompleted(false);
+              }}
+            >
+              <X />
+            </div>
+            <div className="flex flex-col text-center justify-center items-center">
+              <h2 className="Archivo-Black text-3xl">
+                {draftnote?.productTitle}
+              </h2>
+            </div>
+            <Label> Message</Label>
+            <TextArea
+              aria-label="message"
+              fullWidth
+              className="mt-2"
+              placeholder="review message about the note..."
+              value={draftnote?.message}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 300 && draftnote)
+                  setDraftNote({ ...draftnote, message: value });
+              }}
+            />
+            <Description>
+              Characters:{draftnote?.message?.length || 0}/300
+            </Description>
+            <ImageUpload
+              onImageSelect={(file) => {
+                const imageURL = URL.createObjectURL(file);
+                if (draftnote) {
+                  setDraftNote({ ...draftnote, picture: imageURL });
+                }
+              }}
+            />
+            <div className="flex items-end justify-end py-10">
+              <Button
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  if (draftnote) {
+                    handleaddCompleted(draftnote.id);
+                  }
+                }}
+              >
+                Submit note
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {missingtoast && (
         <div className="fixed top-2 inset-x-0 mx-auto w-fit">
           <Alert status="danger">
