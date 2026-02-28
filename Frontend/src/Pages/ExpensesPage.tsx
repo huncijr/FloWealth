@@ -16,6 +16,7 @@ import {
   InputGroup,
   TextArea,
   Description,
+  Card,
 } from "@heroui/react";
 
 import { useAuth } from "../Context/AuthContext";
@@ -25,7 +26,6 @@ import {
   Check,
   CheckCheck,
   CheckCircle,
-  CheckLine,
   ClockCheck,
   DollarSign,
   PencilLine,
@@ -33,6 +33,7 @@ import {
   Trash,
   TriangleAlert,
   X,
+  XCircleIcon,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { api } from "../api/axiosInstance";
@@ -68,12 +69,23 @@ const Expenses = () => {
     createdAt: string;
     picture?: string;
     message?: string;
+    color: string;
   }
 
   const { isDark } = useDarkMode();
   const [isnewtheme, setIsNewTheme] = useState<boolean>(false);
   const [addtheme, setAddTheme] = useState<string>("");
-  const [themes, setThemes] = useState<string[] | null>([]);
+  const [themes, setThemes] = useState<
+    { name: string; color: string }[] | null
+  >([]);
+  const [selectedcolor, setSelectedColor] = useState<string | null>(null);
+  const allcolors: string[] = [
+    "#e82929",
+    "#69d10e",
+    "#0d25ad",
+    "#dda808",
+    "#c409c4",
+  ];
   const [selectedtheme, setSelectedTheme] = useState<string | null>(null);
   const [dateerror, setDateError] = useState<string | null>(null);
 
@@ -262,6 +274,10 @@ const Expenses = () => {
     return { valid: errors.length === 0, errors };
   };
 
+  useEffect(() => {
+    console.log(selectedcolor);
+  }, [selectedcolor]);
+
   const handleUpdateNote = async () => {
     if (!draftnote) return;
     console.log(draftnote);
@@ -277,6 +293,7 @@ const Expenses = () => {
       const payload = {
         id: draftnote.id,
         theme: draftnote.theme,
+        color: draftnote.color,
         productTitle: draftnote.productTitle,
         products: draftnote.products,
         estimatedTime: draftnote.estimatedTime,
@@ -345,11 +362,11 @@ const Expenses = () => {
   // Handle adding a new theme to the backend
   const handleAddtheme = async (e: React.FormEvent, themes: string) => {
     e.preventDefault();
-
     if (themes?.trim()) {
       try {
         const response = await api.post("/newtheme", {
           themes: themes,
+          color: selectedcolor,
         });
         console.log(response.data.allthemes);
         if (response.data.success) {
@@ -361,6 +378,7 @@ const Expenses = () => {
       } finally {
         setIsNewTheme(false);
         setAddTheme("");
+        setSelectedColor(null);
       }
     }
   };
@@ -592,12 +610,13 @@ const Expenses = () => {
                                             if (draftnote)
                                               setDraftNote({
                                                 ...draftnote,
-                                                theme,
+                                                theme: theme.name,
+                                                color: theme.color,
                                               });
                                           }}
                                         >
                                           <div className="cursor-pointer flex justify-between items-center w-full">
-                                            <Label>{theme}</Label>
+                                            <Label>{theme.name}</Label>
                                             <Kbd>
                                               <Kbd.Content>Theme</Kbd.Content>
                                             </Kbd>
@@ -609,7 +628,13 @@ const Expenses = () => {
                               </Dropdown.Popover>
                             </Dropdown>
                           ) : (
-                            <p className="Archivo-Black rounded-xl bg-red-700 px-5 py-1 shadow-[0_0_0_2px_#b91c1c] z-10">
+                            <p
+                              className="Archivo-Black rounded-xl  px-5 py-1 z-10"
+                              style={{
+                                backgroundColor: note.color,
+                                boxShadow: `0 0 0 2px ${note.color}`,
+                              }}
+                            >
                               {note?.theme || "No theme added"}
                             </p>
                           )}
@@ -892,189 +917,275 @@ const Expenses = () => {
       ) : (
         <div>No new notes added</div>
       )}
+      {/* Add new theme */}
       {user ? (
         <div>
-          <Button onClick={() => setIsNewTheme(true)} variant="ghost">
-            <BadgePlus /> ADD NEW THEME
-          </Button>
-          {isnewtheme && (
-            <div className="relative  max-w-sm">
-              <Input
-                aria-label="Name"
-                className="pr-10 w-full"
-                placeholder="Enter the new theme..."
-                value={addtheme}
-                onChange={(e) => setAddTheme(e.target.value)}
-              />
-              <button onClick={(e) => handleAddtheme(e, addtheme)}>
-                <CheckLine className="absolute right-2 top-1/2 -translate-y-1/2 border-2  rounded-lg cursor-pointer" />
-              </button>
-            </div>
-          )}
-          {themes ? (
-            themes.length > 0 &&
-            themes.map((theme, index) => <div key={index}>{theme}</div>)
-          ) : (
-            <p>No themes</p>
-          )}
-          <Dropdown>
-            <Button variant="secondary">Add new node</Button>
-            <Dropdown.Popover className="min-w-[200px]">
-              <Dropdown.Menu>
-                <Dropdown.Section>
-                  <Header> No themes</Header>
-                  <Dropdown.Item>
-                    <div
-                      className="cursor-pointer flex justify-between items-center w-full"
-                      onClick={() => {
-                        setSelectedTheme("No theme ");
-                        setClose(true);
-                      }}
-                    >
-                      <Label className="text-gray-400">No theme Selected</Label>
-                    </div>
-                  </Dropdown.Item>
-                  <Separator />
-                  <Header>Themes</Header>
-                  {themes &&
-                    themes.length > 0 &&
-                    themes.map((theme, index) => (
-                      <Dropdown.Item key={index}>
-                        <div
-                          className="cursor-pointer flex justify-between items-center w-full"
-                          onClick={() => {
-                            setSelectedTheme(theme);
-                            setClose(true);
-                          }}
-                        >
-                          <Label>{theme}</Label>
-                          <Kbd>
-                            <Kbd.Content>Theme</Kbd.Content>
-                          </Kbd>
-                        </div>
-                      </Dropdown.Item>
-                    ))}
-                </Dropdown.Section>
-                <Separator />
-                <Dropdown.Section>
-                  <Header>Subscription</Header>
-                  <Dropdown.Item>
-                    <Label>Netflix</Label>
-                    <Kbd>
-                      <Kbd.Content>Subscriptions</Kbd.Content>
-                    </Kbd>
-                  </Dropdown.Item>
-                </Dropdown.Section>
-              </Dropdown.Menu>
-            </Dropdown.Popover>
-          </Dropdown>
-          {selectedtheme != null && close && (
-            <form onSubmit={(e) => handleAddNote(e)}>
-              <div className=" fixed flex items-center justify-center bg-black/50 inset-0 z-50 w-full border-2 ">
+          <div className="relative inline-block">
+            <Button onClick={() => setIsNewTheme(true)} variant="ghost">
+              <BadgePlus /> ADD NEW THEME
+            </Button>
+            {isnewtheme && (
+              <>
                 <div
-                  className={`w-[80%] overflow-y-auto h-[80%] border-2 ${isDark ? "bg-black" : "bg-white"} p-6 shadow-xl`}
-                >
-                  <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:gap-10">
-                    <div className="flex-1">
-                      <TextField
-                        isRequired
-                        name="name"
-                        validate={(value) => {
-                          if (value.trim() === "") {
-                            return "Please enter a title!";
-                          }
-                          if (value.length > 30) {
-                            return "The title is too long!";
-                          }
-                          return undefined;
-                        }}
-                      >
-                        <Label>Title</Label>
-                        <Input
-                          fullWidth
-                          placeholder="Title"
-                          value={producttitle || ""}
-                          onChange={(e) => setProductTitle(e.target.value)}
-                        />
-                        <FieldError className="text-sm text-danger" />
-                      </TextField>
-                    </div>
-                    <div className="justify-between  my-3 sm:my-auto flex shrink-0 gap-3">
-                      <div className="flex-[.3]">
-                        <Chip
-                          color="accent"
-                          variant="soft"
+                  className="fixed inset-0 bg-black/50 z-40"
+                  onClick={() => {
+                    setIsNewTheme(false);
+                    setAddTheme("");
+                    setSelectedColor(null);
+                  }}
+                />
+
+                <div className="absolute left-full top-0 ml-2 z-50 w-[400px] max-w-[90vw]">
+                  <Card variant="default" className="shadow-xl">
+                    <Card.Header>
+                      <div className="flex justify-between items-center">
+                        <span>Add new theme</span>
+                        <div
+                          onClick={() => {
+                            setIsNewTheme(false);
+                            setAddTheme("");
+                            setSelectedColor(null);
+                          }}
                           className="cursor-pointer"
                         >
-                          {selectedtheme}
-                        </Chip>
+                          <XCircleIcon className="text-red-700" />
+                        </div>
                       </div>
+                    </Card.Header>
+                    <Card.Content>
+                      <div className="flex flex-col">
+                        <div className="relative max-w-sm">
+                          <TextField
+                            isRequired
+                            aria-label="name"
+                            validationBehavior="aria"
+                            validate={(value) => {
+                              if (!value.trim()) {
+                                return "Theme name is required";
+                              }
+                              return undefined;
+                            }}
+                          >
+                            <Input
+                              aria-label="Name"
+                              className="pr-10 w-full"
+                              placeholder="Enter the new theme..."
+                              value={addtheme}
+                              onChange={(e) => setAddTheme(e.target.value)}
+                            />
+                            <FieldError className="text-sm text-danger" />
+                          </TextField>
+
+                          <div className="mt-4">
+                            <Label>Select a Color</Label>
+                            <div className="flex justify-evenly">
+                              {allcolors.map((color, i) => (
+                                <div
+                                  key={i}
+                                  className="mt-2 relative cursor-pointer rounded-full border-black w-6 h-6"
+                                  style={{ backgroundColor: color }}
+                                  onClick={() => setSelectedColor(color)}
+                                >
+                                  {selectedcolor === color && (
+                                    <div
+                                      className={`absolute -right-1 -top-1 w-4 h-4 bg-green-700 rounded-full ${isDark ? "text-white" : "text-black"}`}
+                                    >
+                                      <Check className="w-4 h-4" />
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex justify-end mt-5">
+                            <Button
+                              variant="secondary"
+                              onClick={(e) => handleAddtheme(e, addtheme)}
+                            >
+                              <Plus />
+                              Add theme
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </Card.Content>
+                  </Card>
+                </div>
+              </>
+            )}
+            {themes ? (
+              themes.length > 0 &&
+              themes.map((theme, index) => <div key={index}>{theme.name}</div>)
+            ) : (
+              <p>No themes</p>
+            )}
+            <Dropdown>
+              <Button variant="secondary">Add new note</Button>
+              <Dropdown.Popover className="min-w-[200px]">
+                <Dropdown.Menu>
+                  <Dropdown.Section>
+                    <Header> No themes</Header>
+                    <Dropdown.Item>
                       <div
-                        onClick={() => (setSelectedTheme(null), setClose(true))}
+                        className="cursor-pointer flex justify-between items-center w-full"
+                        onClick={() => {
+                          setSelectedTheme("No theme ");
+                          setClose(true);
+                        }}
                       >
-                        <BookX
-                          className={`${isDark ? " text-white" : "text-black"} cursor-pointer`}
-                        />
+                        <Label className="text-gray-400">
+                          No theme Selected
+                        </Label>
+                      </div>
+                    </Dropdown.Item>
+                    <Separator />
+                    <Header>Themes</Header>
+                    {themes &&
+                      themes.length > 0 &&
+                      themes.map((theme, index) => (
+                        <Dropdown.Item key={index}>
+                          <div
+                            className="cursor-pointer flex justify-between items-center w-full"
+                            onClick={() => {
+                              setSelectedTheme(theme.name);
+                              setClose(true);
+                            }}
+                          >
+                            <Label>{theme.name}</Label>
+                            <Kbd>
+                              <Kbd.Content>Theme</Kbd.Content>
+                            </Kbd>
+                          </div>
+                        </Dropdown.Item>
+                      ))}
+                  </Dropdown.Section>
+                  <Separator />
+                  <Dropdown.Section>
+                    <Header>Subscription</Header>
+                    <Dropdown.Item>
+                      <Label>Netflix</Label>
+                      <Kbd>
+                        <Kbd.Content>Subscriptions</Kbd.Content>
+                      </Kbd>
+                    </Dropdown.Item>
+                  </Dropdown.Section>
+                </Dropdown.Menu>
+              </Dropdown.Popover>
+            </Dropdown>
+            {selectedtheme != null && close && (
+              <form onSubmit={(e) => handleAddNote(e)}>
+                <div className=" fixed flex items-center justify-center bg-black/50 inset-0 z-50 w-full border-2 ">
+                  <div
+                    className={`w-[80%] overflow-y-auto h-[80%] border-2 ${isDark ? "bg-black" : "bg-white"} p-6 shadow-xl`}
+                  >
+                    <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:gap-10">
+                      <div className="flex-1">
+                        <TextField
+                          isRequired
+                          name="name"
+                          validate={(value) => {
+                            if (value.trim() === "") {
+                              return "Please enter a title!";
+                            }
+                            if (value.length > 30) {
+                              return "The title is too long!";
+                            }
+                            return undefined;
+                          }}
+                        >
+                          <Label>Title</Label>
+                          <Input
+                            fullWidth
+                            placeholder="Title"
+                            value={producttitle || ""}
+                            onChange={(e) => setProductTitle(e.target.value)}
+                          />
+                          <FieldError className="text-sm text-danger" />
+                        </TextField>
+                      </div>
+                      <div className="justify-between  my-3 sm:my-auto flex shrink-0 gap-3">
+                        <div className="flex-[.3]">
+                          <Chip
+                            color="accent"
+                            variant="soft"
+                            className="cursor-pointer"
+                          >
+                            {selectedtheme}
+                          </Chip>
+                        </div>
+                        <div
+                          onClick={() => (
+                            setSelectedTheme(null),
+                            setClose(true)
+                          )}
+                        >
+                          <BookX
+                            className={`${isDark ? " text-white" : "text-black"} cursor-pointer`}
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <Button
-                    className="my-5"
-                    variant={showtable ? "tertiary" : "outline"}
-                    onClick={() => setShowTable(!showtable)}
-                  >
-                    {showtable ? "Hide Table" : "View Table"}
-                  </Button>
-                  {showtable && <ProductTable rows={rows} setRows={setRows} />}
-                  <div className="flex justify-between py-5">
-                    <DateField
-                      isInvalid={!!dateerror}
-                      className="w-[256px] "
-                      granularity="minute"
-                      value={selecteddate}
-                      onChange={(date) => {
-                        setSelectedDate(date);
-                        if (date && date < now(getLocalTimeZone())) {
-                          setDateError("Invalid time");
-                        } else {
-                          setDateError(null);
-                        }
-                      }}
-                      minValue={now(getLocalTimeZone())}
-                    >
-                      <Label> Choose a date(optional) </Label>
-                      <DateInputGroup>
-                        <DateInputGroup.Input>
-                          {(segment) => (
-                            <DateInputGroup.Segment segment={segment} />
-                          )}
-                        </DateInputGroup.Input>
-                      </DateInputGroup>
-                      <FieldError>{dateerror}</FieldError>
-                    </DateField>
-                    <div className="flex justify-center gap-2 Oswald">
-                      <h1 className="tracking tracking-wider">Totalcost: </h1>
-                      <span className="font-bold tracking-wide text-green-900">
-                        {new Intl.NumberFormat("en-US", {
-                          style: "currency",
-                          currency: "USD",
-                        }).format(cost)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex justify-center">
                     <Button
-                      className="w-[80%]"
-                      variant="tertiary"
-                      type="submit"
+                      className="my-5"
+                      variant={showtable ? "tertiary" : "outline"}
+                      onClick={() => setShowTable(!showtable)}
                     >
-                      Create new node
+                      {showtable ? "Hide Table" : "View Table"}
                     </Button>
+                    {showtable && (
+                      <ProductTable rows={rows} setRows={setRows} />
+                    )}
+                    <div className="flex justify-between py-5">
+                      <DateField
+                        isInvalid={!!dateerror}
+                        className="w-[256px] "
+                        granularity="minute"
+                        value={selecteddate}
+                        onChange={(date) => {
+                          setSelectedDate(date);
+                          if (date && date < now(getLocalTimeZone())) {
+                            setDateError("Invalid time");
+                          } else {
+                            setDateError(null);
+                          }
+                        }}
+                        minValue={now(getLocalTimeZone())}
+                      >
+                        <Label> Choose a date(optional) </Label>
+                        <DateInputGroup>
+                          <DateInputGroup.Input>
+                            {(segment) => (
+                              <DateInputGroup.Segment segment={segment} />
+                            )}
+                          </DateInputGroup.Input>
+                        </DateInputGroup>
+                        <FieldError>{dateerror}</FieldError>
+                      </DateField>
+                      <div className="flex justify-center gap-2 Oswald">
+                        <h1 className="tracking tracking-wider">Totalcost: </h1>
+                        <span className="font-bold tracking-wide text-green-900">
+                          {new Intl.NumberFormat("en-US", {
+                            style: "currency",
+                            currency: "USD",
+                          }).format(cost)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex justify-center">
+                      <Button
+                        className="w-[80%]"
+                        variant="tertiary"
+                        type="submit"
+                      >
+                        Create new node
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </form>
-          )}
+              </form>
+            )}
+          </div>
         </div>
       ) : (
         <div className="justify-center items-center w-full flex  min-h-screen">

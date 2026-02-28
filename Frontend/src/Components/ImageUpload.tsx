@@ -1,5 +1,4 @@
 import { Button } from "@heroui/react";
-import { picture } from "framer-motion/client";
 import { Trash, Upload } from "lucide-react";
 import React, { useRef, useState } from "react";
 

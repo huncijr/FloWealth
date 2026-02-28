@@ -4,6 +4,16 @@ import { notesTable, Themes } from "../DB/schemas";
 import { sql, eq, and } from "drizzle-orm";
 import { UserIdRequest } from "../types/interfaces";
 
+const getThemeColor = async (themeid: number) => {
+  const result = await db
+    .select({ color: Themes.color })
+    .from(Themes)
+    .where(eq(Themes.id, themeid))
+    .limit(1);
+  console.log("Color result", result);
+  return result;
+};
+
 const CheckThemes = async (theme: string, userId: number): Promise<Boolean> => {
   const currentThemes = await db
     .select()
@@ -33,14 +43,20 @@ export const GetThemes = async (
       return res.status(401).json({ message: "Unathorized", success: false });
     }
     const allThemes = await db
-      .select({ themes: Themes.themes })
+      .select({ themes: Themes.themes, color: Themes.color })
       .from(Themes)
       .where(eq(Themes.userId, userId));
     // console.log("allthemes", allThemes);
     let result = allThemes[0]?.themes || [];
+    const themeColor = allThemes[0]?.color || "#b7b7b7";
+
     result = Array.isArray(result) ? result : result ? [result] : [];
+    const themesWithColors = result.map((themeName: string) => ({
+      name: themeName,
+      color: themeColor,
+    }));
     // console.log(result);
-    return res.status(200).json({ success: true, allthemes: result });
+    return res.status(200).json({ success: true, allthemes: themesWithColors });
   } catch (error) {
     next(error);
   }
@@ -53,7 +69,8 @@ export const AddNewThemes = async (
   next: NextFunction,
 ) => {
   try {
-    const { themes } = req.body;
+    const { themes, color } = req.body;
+    console.log(themes, color);
     const userId = req.userId;
     if (!themes || !userId) {
       return res.status(400).json({ message: "Missing Data", success: false });
@@ -70,25 +87,31 @@ export const AddNewThemes = async (
       .update(Themes)
       .set({
         themes: sql`${Themes.themes} || ${JSON.stringify([themes])}::jsonb`,
+        color: color || "#b7b7b7",
       })
       .where(eq(Themes.userId, userId))
-      .returning({ themes: Themes.themes });
+      .returning({ themes: Themes.themes, color: Themes.color });
     if (updatedTheme.length === 0) {
       const inserted = await db
         .insert(Themes)
-        .values({ userId: userId, themes: themes })
-        .returning({ themes: Themes.themes });
+        .values({ userId: userId, themes: themes, color: color || "#b7b7b7" })
+        .returning({ themes: Themes.themes, color: Themes.color });
       updatedTheme = inserted;
     }
     const themesonly = updatedTheme[0]?.themes;
+    const themecolor = updatedTheme[0]?.color || "#b7b7b7";
     // console.log(themesonly);
     const existingThemes = Array.isArray(themesonly)
       ? themesonly
       : themesonly
         ? [themesonly]
         : [];
+    const themesWithColors = existingThemes.map((name: string) => ({
+      name: name,
+      color: themecolor,
+    }));
     // console.log(existingThemes);
-    return res.status(201).json({ success: true, allthemes: existingThemes });
+    return res.status(201).json({ success: true, allthemes: themesWithColors });
   } catch (error) {
     next(error);
   }
@@ -108,6 +131,7 @@ export const GetNotes = async (
       .select({
         id: notesTable.id,
         theme: notesTable.theme,
+        color: Themes.color,
         productTitle: notesTable.productTitle,
         products: notesTable.products,
         estcost: notesTable.estcost,
@@ -116,6 +140,7 @@ export const GetNotes = async (
         createdAt: notesTable.createdAt,
       })
       .from(notesTable)
+      .leftJoin(Themes, eq(notesTable.themeId, Themes.id))
       .where(eq(notesTable.userId, userId!));
 
     // console.log(result);
@@ -127,6 +152,7 @@ export const GetNotes = async (
     next(error);
   }
 };
+
 //ADDING NEW NOTES
 export const AddNotes = async (
   req: UserIdRequest,
@@ -149,16 +175,18 @@ export const AddNotes = async (
       return res.status(400).json({ message: "Missing Data", success: false });
     }
     let result;
+    let themecolor = null;
     if (Theme) {
       result = await db
-        .select({ id: Themes.id })
+        .select({ id: Themes.id, color: Themes.color })
         .from(Themes)
         .where(eq(Themes.userId, userId!))
         .limit(1);
     }
     let themeid;
-    if (result) {
+    if (result && result.length > 0) {
       themeid = result[0]?.id || null;
+      themecolor = result[0]?.color || null;
     }
     const products = ProductNames.map((name: string, index: number) => ({
       name: name,
@@ -193,6 +221,7 @@ export const AddNotes = async (
       note: {
         id: newnote?.id,
         theme: newnote?.theme,
+        color: themecolor,
         productTitle: newnote?.productTitle,
         products: newnote?.products,
         estcost: newnote?.estcost,
@@ -278,6 +307,7 @@ export const UpdateNote = async (
     const {
       id,
       theme,
+      color,
       productTitle,
       products,
       estimatedTime,
@@ -285,7 +315,7 @@ export const UpdateNote = async (
       message,
       picture,
     } = req.body;
-
+    console.log(color);
     if (!userId || !id) {
       return res
         .status(400)
@@ -346,12 +376,24 @@ export const UpdateNote = async (
         message: "Not not found",
       });
     }
+
+    let themecolor = color;
+    if (!themecolor && theme) {
+      const themeResult = await db
+        .select({ color: Themes.color })
+        .from(Themes)
+        .where(and(eq(Themes.userId, userId)))
+        .limit(1);
+      themecolor = themeResult[0]?.color || "#b7b7b7";
+    }
+    themecolor = themecolor || "#b7b7b7";
     return res.status(200).json({
       success: true,
       changed: true,
       note: {
         id: updatedNote.id,
         theme: updatedNote.theme,
+        color: themecolor,
         productTitle: updatedNote.productTitle,
         products: updatedNote.products,
         estcost: updatedNote.estcost,
