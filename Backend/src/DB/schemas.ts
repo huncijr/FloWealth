@@ -43,9 +43,11 @@ export const Themes = pgTable("Themes", {
   userId: integer("user_id")
     .notNull()
     .references(() => Users.id),
-  themes: jsonb("themes").$type<string[]>().default([]).notNull(),
+  themes: jsonb("themes")
+    .$type<{ name: string; color: string }[]>()
+    .default([])
+    .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  color: varchar("color", { length: 7 }),
 });
 
 export const notesTable = pgTable("Notes", {

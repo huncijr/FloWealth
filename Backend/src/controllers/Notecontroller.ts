@@ -1,18 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { db } from "../DB/db";
 import { notesTable, Themes } from "../DB/schemas";
-import { sql, eq, and } from "drizzle-orm";
+import { sql, eq, and, ne } from "drizzle-orm";
 import { UserIdRequest } from "../types/interfaces";
 
-const getThemeColor = async (themeid: number) => {
-  const result = await db
-    .select({ color: Themes.color })
-    .from(Themes)
-    .where(eq(Themes.id, themeid))
-    .limit(1);
-  console.log("Color result", result);
-  return result;
-};
+interface ThemeName {
+  name: string;
+  color: string;
+}
 
 const CheckThemes = async (theme: string, userId: number): Promise<Boolean> => {
   const currentThemes = await db
@@ -43,20 +38,13 @@ export const GetThemes = async (
       return res.status(401).json({ message: "Unathorized", success: false });
     }
     const allThemes = await db
-      .select({ themes: Themes.themes, color: Themes.color })
+      .select({ themes: Themes.themes })
       .from(Themes)
       .where(eq(Themes.userId, userId));
     // console.log("allthemes", allThemes);
     let result = allThemes[0]?.themes || [];
-    const themeColor = allThemes[0]?.color || "#b7b7b7";
-
-    result = Array.isArray(result) ? result : result ? [result] : [];
-    const themesWithColors = result.map((themeName: string) => ({
-      name: themeName,
-      color: themeColor,
-    }));
     // console.log(result);
-    return res.status(200).json({ success: true, allthemes: themesWithColors });
+    return res.status(200).json({ success: true, allthemes: result });
   } catch (error) {
     next(error);
   }
@@ -69,49 +57,44 @@ export const AddNewThemes = async (
   next: NextFunction,
 ) => {
   try {
-    const { themes, color } = req.body;
-    console.log(themes, color);
+    const { themes: ThemeName, color } = req.body;
+    console.log(ThemeName, color);
     const userId = req.userId;
-    if (!themes || !userId) {
+    if (!ThemeName || !userId) {
       return res.status(400).json({ message: "Missing Data", success: false });
     }
-    const duplicatethemes = await CheckThemes(themes, userId);
+    const duplicatethemes = await CheckThemes(ThemeName, userId);
     if (duplicatethemes) {
       return res.status(400).json({
         success: false,
         message: "Theme already exists",
       });
     }
+    const newThemeItem = { name: ThemeName, color: color || "#b7b7b7" };
     let updatedTheme;
     updatedTheme = await db
       .update(Themes)
       .set({
-        themes: sql`${Themes.themes} || ${JSON.stringify([themes])}::jsonb`,
-        color: color || "#b7b7b7",
+        themes: sql`${Themes.themes} || ${JSON.stringify([newThemeItem])}::jsonb`,
       })
       .where(eq(Themes.userId, userId))
-      .returning({ themes: Themes.themes, color: Themes.color });
+      .returning({ themes: Themes.themes });
     if (updatedTheme.length === 0) {
       const inserted = await db
         .insert(Themes)
-        .values({ userId: userId, themes: themes, color: color || "#b7b7b7" })
-        .returning({ themes: Themes.themes, color: Themes.color });
+        .values({ userId: userId, themes: [newThemeItem] })
+        .returning({ themes: Themes.themes });
       updatedTheme = inserted;
     }
-    const themesonly = updatedTheme[0]?.themes;
-    const themecolor = updatedTheme[0]?.color || "#b7b7b7";
-    // console.log(themesonly);
-    const existingThemes = Array.isArray(themesonly)
-      ? themesonly
-      : themesonly
-        ? [themesonly]
-        : [];
-    const themesWithColors = existingThemes.map((name: string) => ({
-      name: name,
-      color: themecolor,
-    }));
-    // console.log(existingThemes);
-    return res.status(201).json({ success: true, allthemes: themesWithColors });
+
+    console.log(updatedTheme);
+    const existingThemes = updatedTheme[0]?.themes || [];
+    const result = Array.isArray(existingThemes)
+      ? existingThemes
+      : [existingThemes];
+
+    console.log(result);
+    return res.status(201).json({ success: true, allthemes: result });
   } catch (error) {
     next(error);
   }
@@ -127,11 +110,17 @@ export const GetNotes = async (
     if (!userId) {
       return res.status(400).json({ success: false, message: "Missing Data" });
     }
-    const result = await db
+    const userThemesData = await db
+      .select({ themes: Themes.themes })
+      .from(Themes)
+      .where(eq(Themes.userId, userId!));
+    const allThemes: { name: string; color: string }[] =
+      userThemesData[0]?.themes || [];
+
+    const notes = await db
       .select({
         id: notesTable.id,
         theme: notesTable.theme,
-        color: Themes.color,
         productTitle: notesTable.productTitle,
         products: notesTable.products,
         estcost: notesTable.estcost,
@@ -140,9 +129,12 @@ export const GetNotes = async (
         createdAt: notesTable.createdAt,
       })
       .from(notesTable)
-      .leftJoin(Themes, eq(notesTable.themeId, Themes.id))
       .where(eq(notesTable.userId, userId!));
 
+    const result = notes.map((note) => {
+      const themeObj = allThemes.find((t) => t.name === note.theme);
+      return { ...note, color: themeObj?.color || "#b7b7b7" };
+    });
     // console.log(result);
     return res.status(200).json({
       success: true,
@@ -163,6 +155,7 @@ export const AddNotes = async (
     const userId = req.userId;
     const {
       Theme,
+      Color,
       ProductTitle,
       ProductNames,
       Quantities,
@@ -174,20 +167,18 @@ export const AddNotes = async (
     if (!userId && !ProductTitle && !ProductNames) {
       return res.status(400).json({ message: "Missing Data", success: false });
     }
-    let result;
-    let themecolor = null;
+    let themeid = null;
     if (Theme) {
-      result = await db
-        .select({ id: Themes.id, color: Themes.color })
+      const themeResult = await db
+        .select({ id: Themes.id })
         .from(Themes)
         .where(eq(Themes.userId, userId!))
         .limit(1);
+      themeid = themeResult[0]?.id || null;
     }
-    let themeid;
-    if (result && result.length > 0) {
-      themeid = result[0]?.id || null;
-      themecolor = result[0]?.color || null;
-    }
+
+    let themecolor = Color || "#b7b7b7";
+
     const products = ProductNames.map((name: string, index: number) => ({
       name: name,
       quantity: Quantities[index],
@@ -207,7 +198,7 @@ export const AddNotes = async (
       .insert(notesTable)
       .values({
         userId: userId!,
-        themeId: themeid!,
+        themeId: themeid,
         theme: Theme || null,
         productTitle: ProductTitle,
         products: products,
@@ -321,6 +312,7 @@ export const UpdateNote = async (
         .status(400)
         .json({ success: false, changed: false, message: "Missing data" });
     }
+
     const [existingNote] = await db
       .select()
       .from(notesTable)
@@ -332,6 +324,7 @@ export const UpdateNote = async (
         .status(404)
         .json({ success: false, changed: false, message: "Note not found" });
     }
+
     const currentData = {
       theme: existingNote.theme,
       productTitle: existingNote.productTitle,
@@ -379,13 +372,17 @@ export const UpdateNote = async (
 
     let themecolor = color;
     if (!themecolor && theme) {
-      const themeResult = await db
-        .select({ color: Themes.color })
+      const userThemes = await db
+        .select({ themes: Themes.themes })
         .from(Themes)
         .where(and(eq(Themes.userId, userId)))
         .limit(1);
-      themecolor = themeResult[0]?.color || "#b7b7b7";
+      const themesArray: { name: string; color: string }[] =
+        userThemes[0]?.themes || [];
+      const foundTheme = themesArray.find((t: any) => t.name === theme);
+      themecolor = foundTheme?.color || "#b7b7b7";
     }
+
     themecolor = themecolor || "#b7b7b7";
     return res.status(200).json({
       success: true,
@@ -402,6 +399,72 @@ export const UpdateNote = async (
         createdAt: updatedNote.createdAt,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const GetThemeStats = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unathorized" });
+    }
+    const daysBack = 30;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - daysBack);
+    const userThemes = await db
+      .select({ themes: Themes.themes })
+      .from(Themes)
+      .where(eq(Themes.userId, userId));
+
+    const themes: ThemeName[] = userThemes[0]?.themes || [];
+    const themesWithStats = await Promise.all(
+      themes.map(async (theme) => {
+        const notes = await db
+          .select({
+            id: notesTable.id,
+            productTitle: notesTable.productTitle,
+            createdAt: notesTable.createdAt,
+          })
+          .from(notesTable)
+          .where(
+            and(
+              eq(notesTable.userId, userId),
+              eq(notesTable.theme, theme.name),
+              sql`${notesTable.createdAt} >= ${startDate.toISOString()}`,
+            ),
+          );
+        const dailyStats: Record<string, { count: number; notes: string[] }> =
+          {};
+        for (let i = 0; i < daysBack; i++) {
+          const date = new Date();
+          date.setDate(date.getDate() - i);
+          const dateKey = date.toISOString().split("T")[0]!;
+          dailyStats[dateKey] = { count: 0, notes: [] };
+        }
+
+        notes.forEach((note) => {
+          const dateKey = new Date(note.createdAt).toISOString().split("T")[0];
+          if (dateKey) {
+            if (dailyStats[dateKey]) {
+              dailyStats[dateKey].count += 1;
+              dailyStats[dateKey].notes.push(note.productTitle);
+            }
+          }
+        });
+        return {
+          name: theme.name,
+          color: theme.color,
+          dailyStats,
+        };
+      }),
+    );
+    return res.status(200).json({ success: true, stats: themesWithStats });
   } catch (error) {
     next(error);
   }
