@@ -43,7 +43,7 @@ const NavBar = () => {
               }
             >
               {" "}
-              Home
+              HOME
             </NavLink>
             <NavLink
               to="/"

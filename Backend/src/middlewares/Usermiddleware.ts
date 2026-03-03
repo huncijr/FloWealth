@@ -20,7 +20,7 @@ export const userAuth = (
       id: number;
       email: string;
     };
-    console.log(decoded);
+    // console.log(decoded);
     req.userId = decoded.id;
     next();
   } catch (error) {

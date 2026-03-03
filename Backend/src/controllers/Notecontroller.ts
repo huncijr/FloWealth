@@ -9,7 +9,10 @@ interface ThemeName {
   color: string;
 }
 
-const CheckThemes = async (theme: string, userId: number): Promise<Boolean> => {
+const CheckThemes = async (
+  themeName: string,
+  userId: number,
+): Promise<Boolean> => {
   const currentThemes = await db
     .select()
     .from(Themes)
@@ -19,7 +22,7 @@ const CheckThemes = async (theme: string, userId: number): Promise<Boolean> => {
     ? existingThemes
     : [existingThemes];
   // console.log("existingthemes", existingThemes);
-  if (Array.isArray(existingThemes) && existingThemes.includes(theme)) {
+  if (existingThemes.some((t) => t.name === themeName)) {
     return true;
   }
   // console.log(existingThemes);
@@ -294,7 +297,6 @@ export const UpdateNote = async (
 ) => {
   try {
     const userId = req.userId;
-    console.log(userId);
     const {
       id,
       theme,
@@ -404,6 +406,35 @@ export const UpdateNote = async (
   }
 };
 
+export const DeleteTheme = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.userId;
+    const themename = parseInt(req.params.themename as string);
+    console.log(themeid);
+    if (!userId || !themeid) {
+      return res.status(401).json({ message: "Unathorized", success: false });
+    }
+
+    const deletedNotes = await db
+      .delete(notesTable)
+      .where(
+        and(eq(notesTable.userId, userId), eq(notesTable.theme, themename)),
+      );
+
+    await db
+      .delete(Themes)
+      .where(and(eq(Themes.userId, userId), eq(Themes.themes, themename)));
+
+    return res.status(200).json({ success: true, message: "Theme deleted" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const GetThemeStats = async (
   req: UserIdRequest,
   res: Response,
@@ -422,7 +453,9 @@ export const GetThemeStats = async (
       .from(Themes)
       .where(eq(Themes.userId, userId));
 
-    const themes: ThemeName[] = userThemes[0]?.themes || [];
+    const themes: ThemeName[] = (userThemes[0]?.themes as ThemeName[]) || [];
+    console.log("themes", themes);
+
     const themesWithStats = await Promise.all(
       themes.map(async (theme) => {
         const notes = await db
@@ -436,7 +469,7 @@ export const GetThemeStats = async (
             and(
               eq(notesTable.userId, userId),
               eq(notesTable.theme, theme.name),
-              sql`${notesTable.createdAt} >= ${startDate.toISOString()}`,
+              sql`${notesTable.createdAt} >= ${startDate.toISOString().slice(0, 10)}::date`,
             ),
           );
         const dailyStats: Record<string, { count: number; notes: string[] }> =
@@ -447,6 +480,8 @@ export const GetThemeStats = async (
           const dateKey = date.toISOString().split("T")[0]!;
           dailyStats[dateKey] = { count: 0, notes: [] };
         }
+        console.log(notes.length);
+        console.log(dailyStats);
 
         notes.forEach((note) => {
           const dateKey = new Date(note.createdAt).toISOString().split("T")[0];

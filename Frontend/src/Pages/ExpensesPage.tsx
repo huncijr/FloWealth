@@ -1163,7 +1163,11 @@ const Expenses = () => {
                 </div>
               </>
             )}
-            {themes ? <ThemeList themes={themes} /> : <p>No themes</p>}
+            {themes ? (
+              <ThemeList themes={themes} notes={notes} />
+            ) : (
+              <p>No themes</p>
+            )}
 
             {selectedtheme != null && close && (
               <form onSubmit={(e) => handleAddNote(e)}>

@@ -16,6 +16,7 @@ import {
   CompleteNote,
   UpdateNote,
   GetThemeStats,
+  DeleteTheme,
 } from "../controllers/Notecontroller";
 import { VerifyGoogleAuth } from "../middlewares/GoogleAuth";
 import { VerifyCloudflare } from "../middlewares/CloudflareAuth";
@@ -38,4 +39,5 @@ router.delete("/deletenote/:id", userAuth, DeleteNote);
 router.post("/completenote/:id", userAuth, CompleteNote);
 router.patch("/updatenotes", userAuth, UpdateNote);
 router.get("/themestats", userAuth, GetThemeStats);
+router.delete("/deletetheme/:id", userAuth, DeleteTheme);
 export default router;
