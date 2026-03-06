@@ -39,5 +39,5 @@ router.delete("/deletenote/:id", userAuth, DeleteNote);
 router.post("/completenote/:id", userAuth, CompleteNote);
 router.patch("/updatenotes", userAuth, UpdateNote);
 router.get("/themestats", userAuth, GetThemeStats);
-router.delete("/deletetheme/:id", userAuth, DeleteTheme);
+router.delete("/deletetheme/:themeId", userAuth, DeleteTheme);
 export default router;

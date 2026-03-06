@@ -44,7 +44,7 @@ export const Themes = pgTable("Themes", {
     .notNull()
     .references(() => Users.id),
   themes: jsonb("themes")
-    .$type<{ name: string; color: string }[]>()
+    .$type<{ id: number; name: string; color: string }[]>()
     .default([])
     .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -55,7 +55,7 @@ export const notesTable = pgTable("Notes", {
   userId: integer("user_id").references(() => Users.id, {
     onDelete: "cascade",
   }),
-  themeId: integer("themes_id").references(() => Themes.id),
+  themeId: integer("themes_id"),
   theme: text("theme"),
   picture: text("picture"),
   productTitle: varchar("product_title", { length: 40 }).notNull(),

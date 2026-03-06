@@ -70,8 +70,8 @@ const Expenses = () => {
     estcost: string;
     estimatedTime: string | null;
     createdAt: string;
-    picture?: string;
-    message?: string;
+    picture?: string | null;
+    message?: string | null;
     color: string;
   }
 
@@ -79,7 +79,7 @@ const Expenses = () => {
   const [isnewtheme, setIsNewTheme] = useState<boolean>(false);
   const [addtheme, setAddTheme] = useState<string>("");
   const [themes, setThemes] = useState<
-    { name: string; color: string }[] | null
+    { id: number; name: string; color: string }[] | null
   >([]);
   const [selectedcolor, setSelectedColor] = useState<string | null>(null);
   const allcolors: string[] = [
@@ -403,6 +403,18 @@ const Expenses = () => {
       }, 2500);
     }
   };
+
+  const handleThemeDeletedWithNotes = (themeName: string) => {
+    setNotes((prev) => prev.filter((p) => p.theme !== themeName));
+    setThemes((prev) => {
+      if (!prev) return null;
+      return prev.filter((p) => p.name !== themeName);
+    });
+  };
+
+  useEffect(() => {
+    console.log(themes);
+  }, [themes]);
 
   const handleaddCompleted = async (id: number) => {
     if (!draftnote) return;
@@ -1164,7 +1176,11 @@ const Expenses = () => {
               </>
             )}
             {themes ? (
-              <ThemeList themes={themes} notes={notes} />
+              <ThemeList
+                themes={themes}
+                notes={notes}
+                onThemeDeleted={handleThemeDeletedWithNotes}
+              />
             ) : (
               <p>No themes</p>
             )}
@@ -1314,7 +1330,7 @@ const Expenses = () => {
               fullWidth
               className="mt-2"
               placeholder="review message about the note..."
-              value={draftnote?.message}
+              value={draftnote?.message || ""}
               onChange={(e) => {
                 const value = e.target.value;
                 if (value.length <= 300 && draftnote)
@@ -1325,10 +1341,10 @@ const Expenses = () => {
               Characters:{draftnote?.message?.length || 0}/300
             </Description>
             <ImageUpload
-              onImageSelect={(file) => {
-                const imageURL = URL.createObjectURL(file);
+              initialImage={draftnote?.picture || null}
+              onImageSelect={(base64String) => {
                 if (draftnote) {
-                  setDraftNote({ ...draftnote, picture: imageURL });
+                  setDraftNote({ ...draftnote, picture: base64String });
                 }
               }}
             />

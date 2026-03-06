@@ -15,7 +15,10 @@ if (!isDevelopment && !process.env.URL) {
 }
 
 app.use(cookieParser());
-app.use(express.json());
+
+app.use(express.json({ limit: "4mb" }));
+app.use(express.urlencoded({ limit: "4mb", extended: true }));
+
 app.use(
   cors({
     origin: isDevelopment ? process.env.URL : "http://localhost:5173",

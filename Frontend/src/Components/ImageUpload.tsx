@@ -2,13 +2,14 @@ import { Button } from "@heroui/react";
 import { Trash, Upload } from "lucide-react";
 import React, { useRef, useState } from "react";
 
-const ImageUpload = ({
-  onImageSelect,
-}: {
-  onImageSelect: (file: File) => void;
-}) => {
+interface ImageUploadProps {
+  onImageSelect: (base64String: string | null) => void;
+  initialImage?: string | null | undefined;
+}
+
+const ImageUpload = ({ onImageSelect, initialImage }: ImageUploadProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(initialImage || null);
   const handleClick = () => {
     inputRef.current?.click();
   };
@@ -16,10 +17,13 @@ const ImageUpload = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
-      const url = URL.createObjectURL(file);
-      setPreview(url);
-      onImageSelect(file);
-    } else {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setPreview(base64String);
+        onImageSelect(base64String);
+      };
+      reader.readAsDataURL(file);
     }
   };
   return (
@@ -55,9 +59,9 @@ const ImageUpload = ({
             variant="danger-soft"
             onClick={() => {
               setPreview(null);
+              onImageSelect(null);
               if (inputRef.current) inputRef.current.value = "";
             }}
-            className=""
           >
             <Trash className="h-4 sm:h-6 md:h-7 lg:h-8 " />
           </Button>

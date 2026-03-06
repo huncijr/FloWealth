@@ -5,6 +5,7 @@ import { sql, eq, and, ne } from "drizzle-orm";
 import { UserIdRequest } from "../types/interfaces";
 
 interface ThemeName {
+  id: number;
   name: string;
   color: string;
 }
@@ -63,9 +64,12 @@ export const AddNewThemes = async (
     const { themes: ThemeName, color } = req.body;
     console.log(ThemeName, color);
     const userId = req.userId;
+
     if (!ThemeName || !userId) {
       return res.status(400).json({ message: "Missing Data", success: false });
     }
+
+    // Check if theme with this name already exists
     const duplicatethemes = await CheckThemes(ThemeName, userId);
     if (duplicatethemes) {
       return res.status(400).json({
@@ -73,7 +77,31 @@ export const AddNewThemes = async (
         message: "Theme already exists",
       });
     }
-    const newThemeItem = { name: ThemeName, color: color || "#b7b7b7" };
+
+    // Fetch existing themes from DB to determine the next ID
+    const currentThemeResult = await db
+      .select({ themes: Themes.themes })
+      .from(Themes)
+      .where(eq(Themes.userId, userId));
+
+    const existingThemes = currentThemeResult[0]?.themes || [];
+
+    // Calculate next ID:
+    const maxId =
+      existingThemes.length > 0
+        ? Math.max(...existingThemes.map((t: any) => t.id || 0))
+        : 0;
+    const nextId = maxId + 1;
+
+    // Create new theme object WITH the auto-generated ID
+    const newThemeItem = {
+      id: nextId,
+      name: ThemeName,
+      color: color || "#b7b7b7",
+    };
+    console.log(newThemeItem);
+
+    // Try to update existing row (append new theme to JSONB array)
     let updatedTheme;
     updatedTheme = await db
       .update(Themes)
@@ -82,6 +110,8 @@ export const AddNewThemes = async (
       })
       .where(eq(Themes.userId, userId))
       .returning({ themes: Themes.themes });
+
+    // If no row was updated (user has no themes yet), insert new row
     if (updatedTheme.length === 0) {
       const inserted = await db
         .insert(Themes)
@@ -91,10 +121,9 @@ export const AddNewThemes = async (
     }
 
     console.log(updatedTheme);
-    const existingThemes = updatedTheme[0]?.themes || [];
-    const result = Array.isArray(existingThemes)
-      ? existingThemes
-      : [existingThemes];
+
+    // Get the actual updated themes from the DB result
+    const result = updatedTheme[0]?.themes || [];
 
     console.log(result);
     return res.status(201).json({ success: true, allthemes: result });
@@ -130,6 +159,8 @@ export const GetNotes = async (
         completed: notesTable.completed,
         estimatedTime: notesTable.estimatedTime,
         createdAt: notesTable.createdAt,
+        picture: notesTable.picture,
+        message: notesTable.message,
       })
       .from(notesTable)
       .where(eq(notesTable.userId, userId!));
@@ -173,11 +204,13 @@ export const AddNotes = async (
     let themeid = null;
     if (Theme) {
       const themeResult = await db
-        .select({ id: Themes.id })
+        .select({ themes: Themes.themes })
         .from(Themes)
         .where(eq(Themes.userId, userId!))
         .limit(1);
-      themeid = themeResult[0]?.id || null;
+      const themesArray = themeResult[0]?.themes || [];
+      const selectedTheme = themesArray.find((t: any) => t.name === Theme);
+      themeid = selectedTheme?.id || null;
     }
 
     let themecolor = Color || "#b7b7b7";
@@ -413,21 +446,32 @@ export const DeleteTheme = async (
 ) => {
   try {
     const userId = req.userId;
-    const themename = parseInt(req.params.themename as string);
-    console.log(themeid);
-    if (!userId || !themeid) {
-      return res.status(401).json({ message: "Unathorized", success: false });
+    const themeId = parseInt(req.params.themeId as string);
+
+    if (!userId || !themeId) {
+      return res.status(401).json({ message: "Unauthorized", success: false });
     }
 
-    const deletedNotes = await db
+    await db
       .delete(notesTable)
       .where(
-        and(eq(notesTable.userId, userId), eq(notesTable.theme, themename)),
+        and(eq(notesTable.userId, userId), eq(notesTable.themeId, themeId)),
       );
 
-    await db
-      .delete(Themes)
-      .where(and(eq(Themes.userId, userId), eq(Themes.themes, themename)));
+    const userThemes = await db
+      .select({ themes: Themes.themes })
+      .from(Themes)
+      .where(eq(Themes.userId, userId));
+
+    if (userThemes.length > 0) {
+      const currentThemes = userThemes[0]?.themes || [];
+      const updatedThemes = currentThemes.filter((t: any) => t.id !== themeId);
+
+      await db
+        .update(Themes)
+        .set({ themes: updatedThemes })
+        .where(eq(Themes.userId, userId));
+    }
 
     return res.status(200).json({ success: true, message: "Theme deleted" });
   } catch (error) {
@@ -463,6 +507,7 @@ export const GetThemeStats = async (
             id: notesTable.id,
             productTitle: notesTable.productTitle,
             createdAt: notesTable.createdAt,
+            completed: notesTable.completed,
           })
           .from(notesTable)
           .where(
@@ -472,8 +517,13 @@ export const GetThemeStats = async (
               sql`${notesTable.createdAt} >= ${startDate.toISOString().slice(0, 10)}::date`,
             ),
           );
-        const dailyStats: Record<string, { count: number; notes: string[] }> =
-          {};
+        const dailyStats: Record<
+          string,
+          {
+            count: number;
+            notes: Array<{ title: string; completed: boolean | null }>;
+          }
+        > = {};
         for (let i = 0; i < daysBack; i++) {
           const date = new Date();
           date.setDate(date.getDate() - i);
@@ -488,11 +538,15 @@ export const GetThemeStats = async (
           if (dateKey) {
             if (dailyStats[dateKey]) {
               dailyStats[dateKey].count += 1;
-              dailyStats[dateKey].notes.push(note.productTitle);
+              dailyStats[dateKey].notes.push({
+                title: note.productTitle,
+                completed: note.completed,
+              });
             }
           }
         });
         return {
+          id: theme.id,
           name: theme.name,
           color: theme.color,
           dailyStats,

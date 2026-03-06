@@ -1,12 +1,12 @@
-import { Button, Spinner, Tooltip } from "@heroui/react";
+import { Chip, Spinner, Tooltip } from "@heroui/react";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../api/axiosInstance";
-import { ShieldAlert, Trash2 } from "lucide-react";
+import { Check, ShieldAlert, Trash2 } from "lucide-react";
 import useDarkMode from "./Mode";
 
 interface DailyStat {
   count: number;
-  notes: string[];
+  notes: Array<{ title: string; completed: boolean | null }>;
   color: string;
 }
 interface ThemeStat {
@@ -24,6 +24,7 @@ interface ThemeWaveChartProps {
 interface ThemeListProps {
   themes: any[];
   notes: any[];
+  onThemeDeleted?: (themeName: string) => void;
 }
 
 interface ThemeCardProps {
@@ -38,7 +39,7 @@ const ThemeWaveChart = ({ dailyStats, color }: ThemeWaveChartProps) => {
 
   return (
     <div className="relative w-full h-40">
-      <div className="px-4 absolute inset-0 flex items-end justify-between gap-[2px] sm:gap-1 md:gap-2 pb-6 px-1">
+      <div className="px-4 absolute inset-0 flex items-end justify-between gap-[2px] sm:gap-1 md:gap-2 pb-6">
         {dates.map((date, index) => {
           const count = dailyStats[date].count;
           const height = Math.sqrt(count / maxCount) * 100;
@@ -74,7 +75,16 @@ const ThemeWaveChart = ({ dailyStats, color }: ThemeWaveChartProps) => {
                           >
                             •
                           </div>
-                          {note}
+                          {note.title}
+                          <div className="px-2">
+                            {note.completed && (
+                              <div className="flex items-center justify-center">
+                                <Chip color="success" className="h-5 w-5 p-1">
+                                  <Check />
+                                </Chip>
+                              </div>
+                            )}{" "}
+                          </div>
                         </div>
                       ))}
                       {dailyStats[date].notes.length > 3 && (
@@ -181,12 +191,16 @@ const ThemeCard = ({ theme, onDelete }: ThemeCardProps) => {
 };
 
 // MAIN COMPONENT
-const ThemeList = ({ themes, notes }: ThemeListProps) => {
+const ThemeList = ({ themes, notes, onThemeDeleted }: ThemeListProps) => {
   const [themestats, setThemeStats] = useState<ThemeStat[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   const handleThemeDeleted = (deletedId: number) => {
+    const deletedtheme = themestats.find((t) => t.id === deletedId);
     setThemeStats((prev) => prev.filter((theme) => theme.id !== deletedId));
+    if (deletedtheme && onThemeDeleted) {
+      onThemeDeleted(deletedtheme.name);
+    }
   };
   const fetchStats = useCallback(async () => {
     try {
