@@ -10,6 +10,17 @@
   --color-third: #ad711d;
 }
 
+html,
+body {
+  background-color: var(--color-main-foreground);
+  min-height: 100vh;
+}
+
+.dark html,
+.dark body {
+  background-color: var(--color-main-bg);
+}
+
 .dark {
   --color-main-bg: #0f0542;
   --color-main-foreground: #ffffff;

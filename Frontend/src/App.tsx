@@ -7,7 +7,7 @@ import "./index.css";
 import NavBar from "./Components/NavBar";
 import Theme from "./Components/Theme";
 import useDarkMode from "./Components/Mode";
-import { LoadingProvider } from "./Context/LogoContext";
+import { LoadingProvider } from "./Context/LoadingContext";
 import LoadingLogo from "./Components/LoadingLogo";
 const NavBarLayout = () => {
   const { isDark } = useDarkMode();
@@ -20,6 +20,7 @@ const NavBarLayout = () => {
         </div>
       </div>
       <div>
+        <LoadingLogo />
         <Outlet />
       </div>
     </main>

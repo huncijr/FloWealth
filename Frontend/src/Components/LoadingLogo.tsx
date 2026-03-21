@@ -1,14 +1,22 @@
-import { useId } from "react";
+import { useEffect, useId, useState } from "react";
 import "../../LogoLoading.css";
-import { useLoading } from "../Context/LogoContext";
+import { useLoading } from "../Context/LoadingContext";
 
 const LoadingLogo: React.FC = () => {
-  const { isLoading } = useLoading();
+  const { isLoading, setAnimationReady } = useLoading();
   const stripeGradientId = useId();
   const oArrowGradientId = useId();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimationReady();
+    }, 100);
+    return () => clearInterval(timer);
+  }, []);
+
   if (!isLoading) return null;
   return (
-    <div className="fixed inset-0 z-9999 flex items-center justify-center backdrop-blur-sm">
+    <div className="absolute inset-0 z-50 flex items-center  justify-center">
       <div className="loading-logo">
         <svg
           className="loading-logo__stripe"

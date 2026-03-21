@@ -51,7 +51,7 @@ import {
 import ImageUpload from "../Components/ImageUpload";
 import ThemeList from "../Components/Themecards";
 import CustomPagination from "../Components/Pagination";
-import { useLoading } from "../Context/LogoContext";
+import { useLoading } from "../Context/LoadingContext.tsx";
 
 const Expenses = () => {
   // Interface for product rows in the table
@@ -80,7 +80,13 @@ const Expenses = () => {
   }
 
   const { isDark } = useDarkMode();
-  const { isLoading, showLoading, hideLoading } = useLoading();
+  const {
+    isanimationready,
+    hasInitiallyLoaded,
+    setInitialLoadComplete,
+    showLoading,
+    hideLoading,
+  } = useLoading();
 
   const [isnewtheme, setIsNewTheme] = useState<boolean>(false);
   const [addtheme, setAddTheme] = useState<string>("");
@@ -135,27 +141,68 @@ const Expenses = () => {
     setCost(total);
   }, [rows]);
 
-  // Fetch themes from backend when user changes
   useEffect(() => {
+    if (!hasInitiallyLoaded) return;
     const GetThemes = async () => {
-      showLoading();
       try {
         const response = await api.get("/gettheme");
         if (response.data.success) {
           let themes = response.data.allthemes;
           setThemes(themes);
         }
-      } catch (error) {
-      } finally {
-        hideLoading();
-      }
+      } catch (error) {}
+    };
+    GetThemes();
+  }, [user]);
+
+  //First loading for the animation
+  useEffect(() => {
+    if (!isanimationready || hasInitiallyLoaded) return;
+    showLoading();
+    const animationTimer = setTimeout(() => {
+      const loadData = async () => {
+        try {
+          const themeRes = await api.get("/gettheme");
+          if (themeRes.data.success) {
+            setThemes(themeRes.data.allthemes);
+          }
+          const notesRes = await api.get("/getnotes", {
+            params: { page: 1, sort: sortby },
+          });
+          if (notesRes.data.success) {
+            setNotes(notesRes.data.note);
+            setTotalPages(notesRes.data.totalPages || 1);
+          }
+        } catch (error) {
+        } finally {
+          hideLoading();
+          setInitialLoadComplete();
+        }
+      };
+      loadData();
+    }, 4000);
+    return () => clearTimeout(animationTimer);
+  }, [isanimationready]);
+
+  // Fetch themes from backend when user changes
+  useEffect(() => {
+    if (!isanimationready || !hasInitiallyLoaded) return;
+
+    const GetThemes = async () => {
+      try {
+        const response = await api.get("/gettheme");
+        if (response.data.success) {
+          let themes = response.data.allthemes;
+          setThemes(themes);
+        }
+      } catch (error) {}
     };
     GetThemes();
   }, [user]);
 
   useEffect(() => {
+    if (!isanimationready || !hasInitiallyLoaded) return;
     const GetNotes = async () => {
-      showLoading();
       try {
         const response = await api.get("/getnotes", {
           params: { page, sort: sortby },
@@ -175,8 +222,6 @@ const Expenses = () => {
         }
       } catch (error) {
         console.error(error);
-      } finally {
-        hideLoading();
       }
     };
     GetNotes();
@@ -480,7 +525,7 @@ const Expenses = () => {
           NOTES GRID - Main container for all notes
           ========================================== */}
 
-      {notes && notes.length > 0 && !isLoading ? (
+      {notes && notes.length > 0 ? (
         <div className="border-b-2 border-secondary">
           <div className="mt-5 ml-5 flex flex-col sm:flex-row  sm:items-center ">
             <div className="sm:mr-5 py-5 sm:py-auto">
@@ -1090,7 +1135,7 @@ const Expenses = () => {
             />
           </div>
         </div>
-      ) : isLoading ? null : (
+      ) : !hasInitiallyLoaded ? null : (
         <>
           <div className="ml-5 mt-5">
             <Dropdown>
@@ -1164,7 +1209,7 @@ const Expenses = () => {
         </>
       )}
       {/* Add new theme */}
-      {user ? (
+      {user && hasInitiallyLoaded ? (
         <div>
           <div className="py-10 flex justify-center items-center">
             <h3
@@ -1268,7 +1313,7 @@ const Expenses = () => {
                 </div>
               </>
             )}
-            {themes ? (
+            {hasInitiallyLoaded && themes ? (
               <div className="my-5">
                 <ThemeList
                   themes={themes}
@@ -1394,11 +1439,7 @@ const Expenses = () => {
             )}
           </div>
         </div>
-      ) : (
-        <div className="justify-center items-center w-full flex  min-h-screen">
-          Login
-        </div>
-      )}
+      ) : null}
       {isCompleted && (
         <div className=" fixed flex items-center justify-center bg-black/50 inset-0 z-50 w-full border-2 ">
           <div

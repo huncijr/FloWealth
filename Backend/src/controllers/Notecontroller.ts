@@ -202,7 +202,7 @@ export const GetNotes = async (
       const themeObj = allThemes.find((t) => t.name === note.theme);
       return { ...note, color: themeObj?.color || "#b7b7b7" };
     });
-    // console.log(result);
+    console.log(result);
     return res.status(200).json({
       success: true,
       note: result,
