@@ -27,6 +27,7 @@ import {
   Check,
   CheckCheck,
   CheckCircle,
+  ChevronDown,
   ClockCheck,
   DollarSign,
   NotebookPen,
@@ -49,6 +50,8 @@ import {
 } from "@internationalized/date";
 import ImageUpload from "../Components/ImageUpload";
 import ThemeList from "../Components/Themecards";
+import CustomPagination from "../Components/Pagination";
+
 const Expenses = () => {
   // Interface for product rows in the table
   interface ProductRow {
@@ -103,6 +106,8 @@ const Expenses = () => {
   const [selecteddate, setSelectedDate] = useState<DateValue | null>(null);
   const [producttitle, setProductTitle] = useState<string | null>(null);
   const [cost, setCost] = useState<number>(0);
+  const [sortnotes, setSortNotes] = useState<string>("Sort by");
+  const [page, setPage] = useState<number>(0);
 
   const [missingtoast, setMissingToast] = useState<boolean>(false);
 
@@ -454,64 +459,158 @@ const Expenses = () => {
           ========================================== */}
 
       {notes && notes.length > 0 ? (
-        <>
-          <div className="mt-5 ml-5">
-            <Dropdown>
-              <Button variant="secondary">Add new note</Button>
-              <Dropdown.Popover className="min-w-[200px]">
-                <Dropdown.Menu>
-                  <Dropdown.Section>
-                    <Header> No themes</Header>
-                    <Dropdown.Item>
-                      <div
-                        className="cursor-pointer flex justify-between items-center w-full"
+        <div className="border-b-2 border-secondary">
+          <div className="mt-5 ml-5 flex flex-col sm:flex-row  sm:items-center ">
+            <div className="sm:mr-5 py-5 sm:py-auto">
+              <Dropdown>
+                <Dropdown.Trigger>
+                  <button
+                    className={`rounded-full border-2 p-0 overflow-hidden flex items-stretch ${isDark ? "border-white" : "border-black"}`}
+                  >
+                    <div className="flex items-center gap-2 bg-secondary px-3 py-1 text-white">
+                      <ChevronDown />
+                    </div>
+                    <div
+                      className={`w-[2px] self-stretch ${isDark ? "bg-white" : "bg-black"}`}
+                    />
+
+                    <div
+                      className={`flex items-center px-2 py-1 font-medium ${isDark ? "bg-black text-white" : "bg-white text-black"}`}
+                    >
+                      {sortnotes}
+                    </div>
+                  </button>
+                </Dropdown.Trigger>
+                <Dropdown.Popover>
+                  <Dropdown.Menu>
+                    <Dropdown.Section>
+                      <Header>SORT BY</Header>
+                      <Dropdown.Item
                         onClick={() => {
-                          setSelectedTheme("No theme ");
-                          setClose(true);
+                          setSortNotes("BY CREATED DATE");
+                          setNotes((prev) =>
+                            [...prev].sort(
+                              (a, b) =>
+                                new Date(b.createdAt).getTime() -
+                                new Date(a.createdAt).getTime(),
+                            ),
+                          );
                         }}
                       >
-                        <Label className="text-gray-400">
-                          No theme Selected
-                        </Label>
-                      </div>
-                    </Dropdown.Item>
+                        Created date
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() => {
+                          setSortNotes("BY AVAILABLE NOTES");
+                          setNotes((prev) =>
+                            [...prev].sort(
+                              (a, b) =>
+                                Number(a.completed) - Number(b.completed),
+                            ),
+                          );
+                        }}
+                      >
+                        Available Notes
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() => {
+                          setSortNotes("BY COMPLETED NOTES");
+                          setNotes((prev) =>
+                            [...prev].sort(
+                              (a, b) =>
+                                Number(b.completed) - Number(a.completed),
+                            ),
+                          );
+                        }}
+                      >
+                        Completed Notes
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() => {
+                          setSortNotes("BY UPCOMING NOTES");
+                          setNotes((prev) =>
+                            [...prev].sort((a, b) => {
+                              if (a.completed !== b.completed) {
+                                return (
+                                  Number(a.completed) - Number(b.completed)
+                                );
+                              }
+                              const dateA = a.estimatedTime
+                                ? new Date(a.estimatedTime).getTime()
+                                : Infinity;
+                              const dateB = b.estimatedTime
+                                ? new Date(b.estimatedTime).getTime()
+                                : Infinity;
+                              return dateA - dateB;
+                            }),
+                          );
+                        }}
+                      >
+                        Upcoming Notes
+                      </Dropdown.Item>
+                    </Dropdown.Section>
+                  </Dropdown.Menu>
+                </Dropdown.Popover>
+              </Dropdown>
+            </div>
+            <div>
+              <Dropdown>
+                <Button variant="secondary">ADD NEW NOTE</Button>
+                <Dropdown.Popover className="min-w-[200px]">
+                  <Dropdown.Menu>
+                    <Dropdown.Section>
+                      <Header> No themes</Header>
+                      <Dropdown.Item>
+                        <div
+                          className="cursor-pointer flex justify-between items-center w-full"
+                          onClick={() => {
+                            setSelectedTheme("No theme ");
+                            setClose(true);
+                          }}
+                        >
+                          <Label className="text-gray-400">
+                            No theme Selected
+                          </Label>
+                        </div>
+                      </Dropdown.Item>
+                      <Separator />
+                      <Header>Themes</Header>
+                      {themes &&
+                        themes.length > 0 &&
+                        themes.map((theme, index) => (
+                          <Dropdown.Item key={index}>
+                            <div
+                              className="cursor-pointer flex justify-between items-center w-full"
+                              onClick={() => {
+                                setSelectedTheme(theme.name);
+                                setClose(true);
+                              }}
+                            >
+                              <Label>{theme.name}</Label>
+                              <Kbd>
+                                <Kbd.Content>Theme</Kbd.Content>
+                              </Kbd>
+                            </div>
+                          </Dropdown.Item>
+                        ))}
+                    </Dropdown.Section>
                     <Separator />
-                    <Header>Themes</Header>
-                    {themes &&
-                      themes.length > 0 &&
-                      themes.map((theme, index) => (
-                        <Dropdown.Item key={index}>
-                          <div
-                            className="cursor-pointer flex justify-between items-center w-full"
-                            onClick={() => {
-                              setSelectedTheme(theme.name);
-                              setClose(true);
-                            }}
-                          >
-                            <Label>{theme.name}</Label>
-                            <Kbd>
-                              <Kbd.Content>Theme</Kbd.Content>
-                            </Kbd>
-                          </div>
-                        </Dropdown.Item>
-                      ))}
-                  </Dropdown.Section>
-                  <Separator />
-                  <Dropdown.Section>
-                    <Header>Subscription</Header>
-                    <Dropdown.Item>
-                      <Label>Netflix</Label>
-                      <Kbd>
-                        <Kbd.Content>Subscriptions</Kbd.Content>
-                      </Kbd>
-                    </Dropdown.Item>
-                  </Dropdown.Section>
-                </Dropdown.Menu>
-              </Dropdown.Popover>
-            </Dropdown>
+                    <Dropdown.Section>
+                      <Header>Subscription</Header>
+                      <Dropdown.Item>
+                        <Label>Netflix</Label>
+                        <Kbd>
+                          <Kbd.Content>Subscriptions</Kbd.Content>
+                        </Kbd>
+                      </Dropdown.Item>
+                    </Dropdown.Section>
+                  </Dropdown.Menu>
+                </Dropdown.Popover>
+              </Dropdown>
+            </div>
           </div>
           <div
-            className="border-b-2 border-secondary grid grid-cols-[repeat(auto-fit,minmax(200px,2fr))]
+            className=" grid grid-cols-[repeat(auto-fit,minmax(200px,2fr))]
                      lg:grid-cols-3 gap-4 gap-y-14 w-[80%] p-8 items-stretch auto-rows-fr"
           >
             {/* ==========================================
@@ -996,7 +1095,14 @@ const Expenses = () => {
               </div>
             ))}
           </div>
-        </>
+          <div className="py-5 flex justify-center">
+            <CustomPagination
+              pageCount={10}
+              currentPage={1}
+              onPageChange={setPage}
+            />
+          </div>
+        </div>
       ) : (
         <>
           <div className="ml-5 mt-5">
