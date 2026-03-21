@@ -139,7 +139,7 @@ const ThemeCard = ({ theme, onDelete }: ThemeCardProps) => {
   };
   return (
     <div
-      className="w-[80%] mx-5 rounded-2xl relative shadow-lg"
+      className="w-[95] mx-5 rounded-2xl relative shadow-lg "
       style={{ backgroundColor: theme.color }}
     >
       <div className="p-6 pb-2">

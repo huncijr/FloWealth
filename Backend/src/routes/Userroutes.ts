@@ -33,6 +33,7 @@ router.get("/getUser", GetUser);
 
 router.get("/gettheme", userAuth, GetThemes);
 router.post("/newtheme", userAuth, AddNewThemes);
+
 router.get("/getnotes", userAuth, GetNotes);
 router.post("/addnote", userAuth, AddNotes);
 router.delete("/deletenote/:id", userAuth, DeleteNote);

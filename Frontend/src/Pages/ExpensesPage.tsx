@@ -51,6 +51,7 @@ import {
 import ImageUpload from "../Components/ImageUpload";
 import ThemeList from "../Components/Themecards";
 import CustomPagination from "../Components/Pagination";
+import { useLoading } from "../Context/LogoContext";
 
 const Expenses = () => {
   // Interface for product rows in the table
@@ -79,6 +80,8 @@ const Expenses = () => {
   }
 
   const { isDark } = useDarkMode();
+  const { isLoading, showLoading, hideLoading } = useLoading();
+
   const [isnewtheme, setIsNewTheme] = useState<boolean>(false);
   const [addtheme, setAddTheme] = useState<string>("");
   const [themes, setThemes] = useState<
@@ -108,6 +111,9 @@ const Expenses = () => {
   const [cost, setCost] = useState<number>(0);
   const [sortnotes, setSortNotes] = useState<string>("Sort by");
   const [page, setPage] = useState<number>(0);
+  const [totalPage, setTotalPages] = useState<number>(1);
+  const [sortby, setSortBy] = useState<string>("created");
+  const [needsrefresh, setNeedsRefresh] = useState<number>(0);
 
   const [missingtoast, setMissingToast] = useState<boolean>(false);
 
@@ -132,21 +138,28 @@ const Expenses = () => {
   // Fetch themes from backend when user changes
   useEffect(() => {
     const GetThemes = async () => {
+      showLoading();
       try {
         const response = await api.get("/gettheme");
         if (response.data.success) {
           let themes = response.data.allthemes;
           setThemes(themes);
         }
-      } catch (error) {}
+      } catch (error) {
+      } finally {
+        hideLoading();
+      }
     };
     GetThemes();
   }, [user]);
 
   useEffect(() => {
     const GetNotes = async () => {
+      showLoading();
       try {
-        const response = await api.get("/getnotes");
+        const response = await api.get("/getnotes", {
+          params: { page, sort: sortby },
+        });
         if (response.data.success) {
           let allnotes = [];
           const notedata = response.data.note;
@@ -158,13 +171,16 @@ const Expenses = () => {
             allnotes = [notedata];
           }
           setNotes(allnotes);
+          setTotalPages(response.data.totalPages || 1);
         }
       } catch (error) {
         console.error(error);
+      } finally {
+        hideLoading();
       }
     };
     GetNotes();
-  }, [user]);
+  }, [user, page, sortby, needsrefresh]);
 
   useEffect(() => {
     if (missingtoast) {
@@ -355,6 +371,7 @@ const Expenses = () => {
       const response = await api.post("/addnote", payload);
       console.log(response.data);
       if (response.data.success) {
+        setNeedsRefresh((prev) => prev + 1);
         setNotes((prev) =>
           prev ? [...prev, response.data.note] : [response.data.note],
         );
@@ -398,6 +415,7 @@ const Expenses = () => {
     try {
       const response = await api.delete(`/deletenote/${id}`);
       if (response.data.success) {
+        setNeedsRefresh((prev) => prev + 1);
         setIsDeletedNotes(true);
         setNotes((prev) => prev.filter((p) => p.id !== id));
       }
@@ -451,14 +469,18 @@ const Expenses = () => {
       }
     } catch (error) {}
   };
-
+  const handleSort = (sortType: string) => {
+    setSortNotes(sortType);
+    setSortBy(sortType);
+    setPage(1);
+  };
   return (
     <div>
       {/* ==========================================
           NOTES GRID - Main container for all notes
           ========================================== */}
 
-      {notes && notes.length > 0 ? (
+      {notes && notes.length > 0 && !isLoading ? (
         <div className="border-b-2 border-secondary">
           <div className="mt-5 ml-5 flex flex-col sm:flex-row  sm:items-center ">
             <div className="sm:mr-5 py-5 sm:py-auto">
@@ -487,63 +509,28 @@ const Expenses = () => {
                       <Header>SORT BY</Header>
                       <Dropdown.Item
                         onClick={() => {
-                          setSortNotes("BY CREATED DATE");
-                          setNotes((prev) =>
-                            [...prev].sort(
-                              (a, b) =>
-                                new Date(b.createdAt).getTime() -
-                                new Date(a.createdAt).getTime(),
-                            ),
-                          );
+                          handleSort("Created");
                         }}
                       >
                         Created date
                       </Dropdown.Item>
                       <Dropdown.Item
                         onClick={() => {
-                          setSortNotes("BY AVAILABLE NOTES");
-                          setNotes((prev) =>
-                            [...prev].sort(
-                              (a, b) =>
-                                Number(a.completed) - Number(b.completed),
-                            ),
-                          );
+                          handleSort("Available");
                         }}
                       >
                         Available Notes
                       </Dropdown.Item>
                       <Dropdown.Item
                         onClick={() => {
-                          setSortNotes("BY COMPLETED NOTES");
-                          setNotes((prev) =>
-                            [...prev].sort(
-                              (a, b) =>
-                                Number(b.completed) - Number(a.completed),
-                            ),
-                          );
+                          handleSort("Completed");
                         }}
                       >
                         Completed Notes
                       </Dropdown.Item>
                       <Dropdown.Item
                         onClick={() => {
-                          setSortNotes("BY UPCOMING NOTES");
-                          setNotes((prev) =>
-                            [...prev].sort((a, b) => {
-                              if (a.completed !== b.completed) {
-                                return (
-                                  Number(a.completed) - Number(b.completed)
-                                );
-                              }
-                              const dateA = a.estimatedTime
-                                ? new Date(a.estimatedTime).getTime()
-                                : Infinity;
-                              const dateB = b.estimatedTime
-                                ? new Date(b.estimatedTime).getTime()
-                                : Infinity;
-                              return dateA - dateB;
-                            }),
-                          );
+                          handleSort("Upcoming");
                         }}
                       >
                         Upcoming Notes
@@ -611,7 +598,7 @@ const Expenses = () => {
           </div>
           <div
             className=" grid grid-cols-[repeat(auto-fit,minmax(200px,2fr))]
-                     lg:grid-cols-3 gap-4 gap-y-14 w-[80%] p-8 items-stretch auto-rows-fr"
+                     lg:grid-cols-3 gap-4 gap-y-14 w-full p-8 items-stretch auto-rows-fr"
           >
             {/* ==========================================
                   ACTIVE NOTE (not completed)
@@ -1097,13 +1084,13 @@ const Expenses = () => {
           </div>
           <div className="py-5 flex justify-center">
             <CustomPagination
-              pageCount={10}
-              currentPage={1}
+              pageCount={totalPage}
+              currentPage={page}
               onPageChange={setPage}
             />
           </div>
         </div>
-      ) : (
+      ) : isLoading ? null : (
         <>
           <div className="ml-5 mt-5">
             <Dropdown>
@@ -1282,11 +1269,13 @@ const Expenses = () => {
               </>
             )}
             {themes ? (
-              <ThemeList
-                themes={themes}
-                notes={notes}
-                onThemeDeleted={handleThemeDeletedWithNotes}
-              />
+              <div className="my-5">
+                <ThemeList
+                  themes={themes}
+                  notes={notes}
+                  onThemeDeleted={handleThemeDeletedWithNotes}
+                />
+              </div>
             ) : (
               <p>No themes</p>
             )}

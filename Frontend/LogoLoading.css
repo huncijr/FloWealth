@@ -1,0 +1,195 @@
+@import url("https://fonts.googleapis.com/css2?family=Creepster&family=Alpha+Slab+One&family=Ramabhadra&display=swap");
+
+/* ── Container ─────────────────────────────────────── */
+.loading-logo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+/* ── Z-shaped background stripe ────────────────────── */
+.loading-logo__stripe {
+  top: -3px;
+  left: 40%;
+  transform: translateX(-40%) scale(0.8);
+  position: absolute;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.loading-logo__stripe-path {
+  stroke-width: 18;
+  stroke-linecap: round;
+  fill: none;
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: stripe-draw 1s ease-out 2s forwards;
+}
+@keyframes stripe-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ── Main text row ──────────────────────────────────── */
+.loading-logo__text-row {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  line-height: 1;
+}
+
+/* ── F letter (Creepster, gradient) ─────────────────── */
+.loading-logo__letter-f {
+  font-family: "Creepster", cursive;
+  font-size: 5rem;
+  background: linear-gradient(to bottom, #f5bc47 0%, #b68c38 47%, #2b210e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+  opacity: 0;
+  animation: letter-f-glow 1s ease-out 0s forwards;
+}
+
+@keyframes letter-f-glow {
+  0% {
+    opacity: 0;
+    filter: drop-shadow(0 0 0px #f5bc47);
+  }
+  40% {
+    opacity: 1;
+    filter: drop-shadow(0 0 18px #f5bc47) drop-shadow(0 0 36px #f5bc47);
+  }
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 4px #f5bc47cc);
+  }
+}
+
+/* ── "lo" text (Alpha Slab One, outlined/stroke) ────── */
+.loading-logo__lo {
+  font-family: "Alpha Slab One", serif;
+  font-size: 3.6rem;
+  position: relative;
+  font-weight: 600;
+  opacity: 0;
+  animation: text-fade-in 0.6s ease-out 1s forwards;
+}
+
+/* ── W letter (Creepster, gradient) ─────────────────── */
+.loading-logo__letter-w {
+  font-family: "Creepster", cursive;
+  font-size: 5rem;
+  background: linear-gradient(to bottom, #f5bc47 0%, #b68c38 47%, #2b210e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0;
+  animation: text-fade-in 0.6s ease-out 1.2s forwards;
+}
+
+/* ── "ealth" text (Alpha Slab One, outlined/stroke) ─── */
+.loading-logo__ealth {
+  font-family: "Alpha Slab One", serif;
+  font-size: 3.6rem;
+  position: relative;
+  font-weight: 600;
+  opacity: 0;
+  animation: text-fade-in 0.6s ease-out 1.4s forwards;
+}
+
+@keyframes text-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Layered outlined text effect for "lo" and "ealth" */
+.loading-logo__lo,
+.loading-logo__ealth {
+  color: transparent;
+}
+
+.loading-logo__lo::before,
+.loading-logo__ealth::before {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: black;
+  z-index: 1;
+}
+
+.loading-logo__ealth::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  color: white;
+  z-index: 2;
+}
+.loading-logo__lo::after {
+  content: attr(data-text);
+  position: absolute;
+  left: -1px;
+  top: -2px;
+  color: white;
+  z-index: 2;
+}
+
+/* ── Tagline ─────────────────────────────────────────── */
+.loading-logo__tagline {
+  font-family: "Ramabhadra", sans-serif;
+  font-size: 1rem;
+  color: transparent;
+  -webkit-text-stroke: 1px #000000;
+  letter-spacing: 0.08em;
+  margin-top: 0.4rem;
+  opacity: 0;
+  animation: text-fade-in 0.7s ease-out 3s forwards;
+}
+
+.loading-logo__o-arrow {
+  position: absolute;
+  width: 20px;
+  height: 50px;
+  transform: translateY(-40%);
+  transform: translateX(-50%);
+  left: 58%;
+  top: 5%;
+  z-index: 4;
+  overflow: visible;
+  pointer-events: none;
+  opacity: 1;
+}
+
+.loading-logo__o-arrow-path {
+  position: absolute;
+  width: 24px;
+  height: 44px;
+  left: 30%;
+  top: 0;
+  z-index: 6;
+  fill: none;
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: o-arrow-draw-up 1s ease-out 2s forwards;
+}
+
+@keyframes o-arrow-draw-up {
+  to {
+    stroke-dashoffset: 0;
+  }
+}

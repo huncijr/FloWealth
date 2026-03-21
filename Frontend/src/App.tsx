@@ -7,6 +7,8 @@ import "./index.css";
 import NavBar from "./Components/NavBar";
 import Theme from "./Components/Theme";
 import useDarkMode from "./Components/Mode";
+import { LoadingProvider } from "./Context/LogoContext";
+import LoadingLogo from "./Components/LoadingLogo";
 const NavBarLayout = () => {
   const { isDark } = useDarkMode();
   return (
@@ -25,14 +27,17 @@ const NavBarLayout = () => {
 };
 function App() {
   return (
-    <Routes>
-      <Route element={<NavBarLayout />}>
-        <Route path="/Home" element={<Home />} />
-        <Route path="/Expenses" element={<Expenses />} />
-        <Route path="/Account" element={<Login />} />
-      </Route>
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+    <LoadingProvider>
+      <LoadingLogo />
+      <Routes>
+        <Route element={<NavBarLayout />}>
+          <Route path="/Home" element={<Home />} />
+          <Route path="/Expenses" element={<Expenses />} />
+          <Route path="/Account" element={<Login />} />
+        </Route>
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </LoadingProvider>
   );
 }
 

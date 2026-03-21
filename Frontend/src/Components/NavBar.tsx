@@ -3,8 +3,12 @@ import Flowealth from "../assets/FloWealth.png";
 import DarkFlowealth from "../assets/DarkFloWealth.png";
 import useDarkMode from "./Mode";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../Context/AuthContext";
+import { Avatar } from "@heroui/react";
+
 const NavBar = () => {
   const { isDark } = useDarkMode();
+  const { user } = useAuth();
   return (
     <header className="relative">
       <div
@@ -20,10 +24,18 @@ const NavBar = () => {
           <NavLink
             to="/Account"
             className={({ isActive }) =>
-              `border-2 md:hidden  rounded-lg p-2  ${isActive ? "border-secondary" : "border-gray-600"} mt-3`
+              !user?.isGoogleUser
+                ? `border-2 md:hidden  rounded-lg p-2  ${isActive ? "border-secondary" : "border-gray-600"} mt-3`
+                : " md:hidden"
             }
           >
-            <User size={30} />
+            {user?.isGoogleUser && user?.picture ? (
+              <Avatar className="mt-5 md-hidden">
+                <Avatar.Image src={user.picture} alt="Profile" />
+              </Avatar>
+            ) : (
+              <User size={30} />
+            )}
           </NavLink>
         </div>
         <div className="flex justify-center md:justify-end sm:items-center gap-6">
@@ -67,16 +79,24 @@ const NavBar = () => {
           <NavLink
             to="/Account"
             className={({ isActive }) =>
-              `border-2   rounded-lg p-1 md:h-10 ${
-                isActive
-                  ? "border-secondary hover:border-secondary/70"
-                  : "border-gray-600 hover:border-gray-600/70 "
-              } invisible md:flex md:visible`
+              !user?.isGoogleUser
+                ? `border-2   rounded-lg p-1 md:h-10 ${
+                    isActive
+                      ? "border-secondary hover:border-secondary/70"
+                      : "border-gray-600 hover:border-gray-600/70 "
+                  } invisible md:flex md:visible`
+                : "invisible md:flex md:visible"
             }
           >
-            <User
-              className={`${isDark ? "hover:text-gray-400" : "hover:text-black/70"}`}
-            />
+            {user?.isGoogleUser && user?.picture ? (
+              <Avatar>
+                <Avatar.Image src={user.picture} alt="Profile" />
+              </Avatar>
+            ) : (
+              <User
+                className={`${isDark ? "hover:text-gray-400" : "hover:text-black/70"}`}
+              />
+            )}
           </NavLink>
         </div>
       </div>

@@ -12,7 +12,7 @@ const CustomPagination = ({
   currentPage,
   onPageChange,
 }: PaginationProps) => {
-  const handlePageClick = (event: { selected: number }) => {
+  const handlePageClick = async (event: { selected: number }) => {
     onPageChange(event.selected + 1);
   };
 

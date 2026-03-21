@@ -326,7 +326,7 @@ export const GetUser = async (
         id: user.id,
         email: user.email,
         name: user.name,
-        isGoogleUser: false,
+        isGoogleUser: user.isGoogleUser,
         ...(user.picture && { picture: user.picture }),
       },
     });

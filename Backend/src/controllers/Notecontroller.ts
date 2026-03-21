@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { db } from "../DB/db";
 import { notesTable, Themes } from "../DB/schemas";
-import { sql, eq, and, ne } from "drizzle-orm";
+import { sql, eq, and, ne, desc, asc } from "drizzle-orm";
 import { UserIdRequest } from "../types/interfaces";
 
 interface ThemeName {
@@ -138,9 +138,31 @@ export const GetNotes = async (
   next: NextFunction,
 ) => {
   const userId = req.userId;
+  const page = parseInt(req.query.page as string) || 1;
+  const sort = (req.query.sort as string) || "created";
+  const limit = 5;
+  const offset = (page - 1) * limit;
+  console.log("page", page, "limit", limit, "offset", offset);
   try {
     if (!userId) {
       return res.status(400).json({ success: false, message: "Missing Data" });
+    }
+    let orderby;
+    switch (sort) {
+      case "Created":
+        orderby = desc(notesTable.createdAt);
+        break;
+      case "Completed":
+        orderby = desc(notesTable.completed);
+        break;
+      case "Upcoming":
+        orderby = asc(notesTable.estimatedTime);
+        break;
+      case "Available":
+        orderby = asc(notesTable.completed);
+        break;
+      default:
+        orderby = desc(notesTable.createdAt);
     }
     const userThemesData = await db
       .select({ themes: Themes.themes })
@@ -148,6 +170,14 @@ export const GetNotes = async (
       .where(eq(Themes.userId, userId!));
     const allThemes: { name: string; color: string }[] =
       userThemesData[0]?.themes || [];
+
+    const countresult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(notesTable)
+      .where(eq(notesTable.userId, userId));
+
+    const totalcount = countresult[0]?.count ?? 0;
+    const totalPages = Math.ceil(totalcount / limit);
 
     const notes = await db
       .select({
@@ -163,7 +193,10 @@ export const GetNotes = async (
         message: notesTable.message,
       })
       .from(notesTable)
-      .where(eq(notesTable.userId, userId!));
+      .where(eq(notesTable.userId, userId!))
+      .limit(limit)
+      .offset(offset)
+      .orderBy(orderby);
 
     const result = notes.map((note) => {
       const themeObj = allThemes.find((t) => t.name === note.theme);
@@ -173,6 +206,9 @@ export const GetNotes = async (
     return res.status(200).json({
       success: true,
       note: result,
+      totalPages,
+      currentPage: page,
+      totalCount: totalcount,
     });
   } catch (error) {
     next(error);
@@ -498,7 +534,7 @@ export const GetThemeStats = async (
       .where(eq(Themes.userId, userId));
 
     const themes: ThemeName[] = (userThemes[0]?.themes as ThemeName[]) || [];
-    console.log("themes", themes);
+    // console.log("themes", themes);
 
     const themesWithStats = await Promise.all(
       themes.map(async (theme) => {
@@ -530,8 +566,8 @@ export const GetThemeStats = async (
           const dateKey = date.toISOString().split("T")[0]!;
           dailyStats[dateKey] = { count: 0, notes: [] };
         }
-        console.log(notes.length);
-        console.log(dailyStats);
+        // console.log(notes.length);
+        // console.log(dailyStats);
 
         notes.forEach((note) => {
           const dateKey = new Date(note.createdAt).toISOString().split("T")[0];
