@@ -1,5 +1,6 @@
 import Home from "./Pages/Home";
 import Expenses from "./Pages/ExpensesPage";
+import AnalyticsPage from "./Pages/AnalyticsPage";
 import Login from "./Pages/Login";
 import NotFoundPage from "./Pages/NotFoundPage";
 import { Route, Routes, Outlet } from "react-router-dom";
@@ -34,6 +35,7 @@ function App() {
         <Route element={<NavBarLayout />}>
           <Route path="/Home" element={<Home />} />
           <Route path="/Expenses" element={<Expenses />} />
+          <Route path="/Analytics" element={<AnalyticsPage />} />
           <Route path="/Account" element={<Login />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />

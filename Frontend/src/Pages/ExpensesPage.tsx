@@ -72,6 +72,7 @@ const Expenses = () => {
     }>;
     completed: boolean;
     estcost: string;
+    cost: string;
     estimatedTime: string | null;
     createdAt: string;
     picture?: string | null;
@@ -111,6 +112,7 @@ const Expenses = () => {
   const [editingnoteid, setEditingNoteId] = useState<number | null>(null);
   const [isvalidnote, setIsValidNote] = useState<string[]>([]);
   const [isupdating, setIsUpdating] = useState<boolean>(false);
+  const [finalcost, setFinalCost] = useState<string | null>(null);
 
   const [selecteddate, setSelectedDate] = useState<DateValue | null>(null);
   const [producttitle, setProductTitle] = useState<string | null>(null);
@@ -208,6 +210,7 @@ const Expenses = () => {
           params: { page, sort: sortby },
         });
         if (response.data.success) {
+          console.log(response.data);
           let allnotes = [];
           const notedata = response.data.note;
           if (notedata?.result && Array.isArray(notedata)) {
@@ -409,7 +412,6 @@ const Expenses = () => {
 
     if (!validatePayload(payload)) {
       setMissingToast(true);
-      console.log("i am here");
       return;
     }
     try {
@@ -498,10 +500,12 @@ const Expenses = () => {
         estcost: draftnote.estcost,
         picture: draftnote.picture || null,
         message: draftnote.message || null,
+        cost: finalcost || null,
       });
       const response = await api.post(`/completenote/${id}`, {
         picture: draftnote.picture,
         message: draftnote.message,
+        cost: finalcost,
       });
       console.log(response.data);
       if (response.data.success) {
@@ -511,6 +515,7 @@ const Expenses = () => {
         setDraftNote(null);
         setEditingNoteId(null);
         setIsCompleted(false);
+        setFinalCost(null);
       }
     } catch (error) {}
   };
@@ -1038,14 +1043,55 @@ const Expenses = () => {
                         >
                           {note?.theme || "No theme"}
                         </span>
-                        <span
-                          className={`font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
-                        >
-                          {new Intl.NumberFormat("en-US", {
-                            style: "currency",
-                            currency: "USD",
-                          }).format(Number(note.estcost) || 0)}
-                        </span>
+                        <div className="flex flex-col gap-2">
+                          {/* Fő cost - nagyban */}
+                          <div className="flex items-baseline gap-1">
+                            {note.cost ? (
+                              <>
+                                <span
+                                  className={`text-3xl font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+                                >
+                                  {new Intl.NumberFormat("en-US", {
+                                    style: "currency",
+                                    currency: "USD",
+                                  }).format(Number(note.cost))}
+                                </span>
+                                <span className="text-xs text-gray-500 font-medium">
+                                  final cost
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-sm text-gray-400 italic">
+                                No cost added
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">
+                              Estimated:
+                            </span>
+                            <span
+                              className={`text-sm font-medium line-through ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                            >
+                              ${note.estcost}
+                            </span>
+                            {note.cost && (
+                              <span
+                                className={`text-xs px-1.5 py-0.5 rounded-full ${
+                                  Number(note.cost) <= Number(note.estcost)
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-red-100 text-red-700"
+                                }`}
+                              >
+                                {Number(note.cost) <= Number(note.estcost)
+                                  ? "✓ Under"
+                                  : "↑ Over"}{" "}
+                                budget
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                       <div
                         className={`h-px w-full mb-4 ${isDark ? "bg-gray-600" : "bg-gray-300"}`}
@@ -1484,9 +1530,22 @@ const Expenses = () => {
                 }
               }}
             />
-            <div className="flex items-end justify-end py-10">
+
+            <div className="flex flex-col items-stretch sm:items-end justify-end py-10 px-4 sm:px-0 w-full">
+              <div className="py-3 flex flex-col w-full sm:w-72">
+                <Label className="mb-1.5 text-sm font-medium">Final Cost</Label>
+                <Input
+                  type="number"
+                  placeholder="0.00$"
+                  className="w-full"
+                  onChange={(e) => setFinalCost(e.target.value)}
+                />
+                <span className="text-xs text-gray-500 mt-1.5 sm:text-right">
+                  What was the final cost ? (optional)
+                </span>
+              </div>
               <Button
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto mt-2"
                 onClick={() => {
                   if (draftnote) {
                     handleaddCompleted(draftnote.id);

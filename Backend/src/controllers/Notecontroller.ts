@@ -186,6 +186,7 @@ export const GetNotes = async (
         productTitle: notesTable.productTitle,
         products: notesTable.products,
         estcost: notesTable.estcost,
+        cost: notesTable.cost,
         completed: notesTable.completed,
         estimatedTime: notesTable.estimatedTime,
         createdAt: notesTable.createdAt,
@@ -288,6 +289,7 @@ export const AddNotes = async (
         productTitle: newnote?.productTitle,
         products: newnote?.products,
         estcost: newnote?.estcost,
+        cost: newnote?.cost,
         estimatedTime: newnote?.estimatedTime,
         completed: newnote?.completed,
         createdAt: newnote?.createdAt,
@@ -333,7 +335,7 @@ export const CompleteNote = async (
   try {
     const userId = req.userId;
     const id = parseInt(req.params.id as string);
-    const { picture, message } = req.body;
+    const { picture, message, cost } = req.body;
     if (!userId || isNaN(id)) {
       return res.status(400).json({ message: "Missing data", success: false });
     }
@@ -343,6 +345,7 @@ export const CompleteNote = async (
         completed: true,
         picture: picture ?? null,
         message: message ?? null,
+        cost: cost ?? null,
       })
       .where(and(eq(notesTable.userId, userId), eq(notesTable.id, id)))
       .returning();
@@ -374,6 +377,7 @@ export const UpdateNote = async (
       products,
       estimatedTime,
       estcost,
+      cost,
       message,
       picture,
     } = req.body;
@@ -426,6 +430,7 @@ export const UpdateNote = async (
         products: products,
         estimatedTime: estimatedTime ? new Date(estimatedTime) : null,
         estcost: estcost?.toString() || 0,
+        cost: cost ?? existingNote.cost,
         message: message,
         picture: picture,
       })
@@ -465,6 +470,7 @@ export const UpdateNote = async (
         productTitle: updatedNote.productTitle,
         products: updatedNote.products,
         estcost: updatedNote.estcost,
+        cost: updatedNote.cost,
         estimatedTime: updatedNote.estimatedTime,
         completed: updatedNote.completed,
         createdAt: updatedNote.createdAt,
@@ -544,6 +550,8 @@ export const GetThemeStats = async (
             productTitle: notesTable.productTitle,
             createdAt: notesTable.createdAt,
             completed: notesTable.completed,
+            cost: notesTable.cost,
+            estcost: notesTable.estcost,
           })
           .from(notesTable)
           .where(
@@ -557,7 +565,12 @@ export const GetThemeStats = async (
           string,
           {
             count: number;
-            notes: Array<{ title: string; completed: boolean | null }>;
+            notes: Array<{
+              title: string;
+              completed: boolean | null;
+              cost: string | null;
+              estcost: string | null;
+            }>;
           }
         > = {};
         for (let i = 0; i < daysBack; i++) {
@@ -577,6 +590,8 @@ export const GetThemeStats = async (
               dailyStats[dateKey].notes.push({
                 title: note.productTitle,
                 completed: note.completed,
+                cost: note.cost,
+                estcost: note.estcost,
               });
             }
           }

@@ -58,7 +58,7 @@ const NavBar = () => {
               HOME
             </NavLink>
             <NavLink
-              to="/"
+              to="/Analytics"
               className={({ isActive }) =>
                 `${isActive && "border-b-2 border-secondary "} cursor-pointer hover:opacity-80 transition-opacity`
               }
