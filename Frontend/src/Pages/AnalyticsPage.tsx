@@ -156,7 +156,8 @@ const AnalyticsPage = () => {
                           animate={{ x: 0, opacity: 1 }}
                           exit={{ x: -350, opacity: 0 }}
                           transition={{ duration: 0.3, ease: "easeInOut" }}
-                          className={`${isDark ? "bg-gray-600 border-gray-900" : "bg-white border-gray-200"} border-r-4 border-b-4 mx-1 sm:mx-auto rounded-br-lg rounded-tr-lg overflow-hidden"`}
+                          className={`${isDark ? "bg-gray-600 border-gray-900" : "bg-white border-gray-200"} 
+                          border-r-4 border-b-4 mx-1 sm:mx-auto rounded-br-lg rounded-tr-lg overflow-hidden  "`}
                           style={{
                             width: "clamp(280px,85vw,350px)",
                             position: "absolute",

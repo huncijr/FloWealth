@@ -19,6 +19,7 @@ body {
 .dark html,
 .dark body {
   background-color: var(--color-main-bg);
+  min-height: 100vh;
 }
 
 .dark {

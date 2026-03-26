@@ -24,7 +24,7 @@ export const LoadingProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const showLoading = () => {
-    if (!hasInitiallyLoaded && isanimationready) {
+    if (!hasInitiallyLoaded) {
       setIsLoading(true);
     }
   };

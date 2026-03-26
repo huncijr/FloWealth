@@ -52,6 +52,8 @@ import ImageUpload from "../Components/ImageUpload";
 import ThemeList from "../Components/Themecards";
 import CustomPagination from "../Components/Pagination";
 import { useLoading } from "../Context/LoadingContext.tsx";
+import { useThemes } from "../Context/ThemeContext.tsx";
+import { useNotes } from "../Context/Notescontext.tsx";
 
 const Expenses = () => {
   // Interface for product rows in the table
@@ -74,26 +76,31 @@ const Expenses = () => {
     estcost: string;
     cost: string;
     estimatedTime: string | null;
-    createdAt: string;
+    createdAt?: string;
     picture?: string | null;
     message?: string | null;
-    color: string;
+    color?: string;
   }
 
   const { isDark } = useDarkMode();
-  const {
-    isanimationready,
-    hasInitiallyLoaded,
-    setInitialLoadComplete,
-    showLoading,
-    hideLoading,
-  } = useLoading();
+  const { hasInitiallyLoaded, setInitialLoadComplete, isanimationready } =
+    useLoading();
 
+  const { themes, refreshThemes, updateTheme } = useThemes();
+  const {
+    notes,
+    totalPages,
+    page,
+    setPage,
+    setSortBy,
+    addNote,
+    updateNote,
+    deleteNote,
+    completeNote,
+    refreshNotes,
+  } = useNotes();
   const [isnewtheme, setIsNewTheme] = useState<boolean>(false);
   const [addtheme, setAddTheme] = useState<string>("");
-  const [themes, setThemes] = useState<
-    { id: number; name: string; color: string }[] | null
-  >([]);
   const [selectedcolor, setSelectedColor] = useState<string | null>(null);
   const allcolors: string[] = [
     "#e82929",
@@ -105,7 +112,6 @@ const Expenses = () => {
   const [selectedtheme, setSelectedTheme] = useState<string | null>(null);
   const [dateerror, setDateError] = useState<string | null>(null);
 
-  const [notes, setNotes] = useState<Note[]>([]);
   const [isdeletednotes, setIsDeletedNotes] = useState<boolean>(false);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [draftnote, setDraftNote] = useState<Note | null>(null);
@@ -118,10 +124,6 @@ const Expenses = () => {
   const [producttitle, setProductTitle] = useState<string | null>(null);
   const [cost, setCost] = useState<number>(0);
   const [sortnotes, setSortNotes] = useState<string>("Sort by");
-  const [page, setPage] = useState<number>(0);
-  const [totalPage, setTotalPages] = useState<number>(1);
-  const [sortby, setSortBy] = useState<string>("created");
-  const [needsrefresh, setNeedsRefresh] = useState<number>(0);
 
   const [missingtoast, setMissingToast] = useState<boolean>(false);
 
@@ -143,92 +145,7 @@ const Expenses = () => {
     setCost(total);
   }, [rows]);
 
-  useEffect(() => {
-    if (!hasInitiallyLoaded) return;
-    const GetThemes = async () => {
-      try {
-        const response = await api.get("/gettheme");
-        if (response.data.success) {
-          let themes = response.data.allthemes;
-          setThemes(themes);
-        }
-      } catch (error) {}
-    };
-    GetThemes();
-  }, [user]);
-
   //First loading for the animation
-  useEffect(() => {
-    if (!isanimationready || hasInitiallyLoaded) return;
-    showLoading();
-    const animationTimer = setTimeout(() => {
-      const loadData = async () => {
-        try {
-          const themeRes = await api.get("/gettheme");
-          if (themeRes.data.success) {
-            setThemes(themeRes.data.allthemes);
-          }
-          const notesRes = await api.get("/getnotes", {
-            params: { page: 1, sort: sortby },
-          });
-          if (notesRes.data.success) {
-            setNotes(notesRes.data.note);
-            setTotalPages(notesRes.data.totalPages || 1);
-          }
-        } catch (error) {
-        } finally {
-          hideLoading();
-          setInitialLoadComplete();
-        }
-      };
-      loadData();
-    }, 4000);
-    return () => clearTimeout(animationTimer);
-  }, [isanimationready]);
-
-  // Fetch themes from backend when user changes
-  useEffect(() => {
-    if (!isanimationready || !hasInitiallyLoaded) return;
-
-    const GetThemes = async () => {
-      try {
-        const response = await api.get("/gettheme");
-        if (response.data.success) {
-          let themes = response.data.allthemes;
-          setThemes(themes);
-        }
-      } catch (error) {}
-    };
-    GetThemes();
-  }, [user]);
-
-  useEffect(() => {
-    if (!isanimationready || !hasInitiallyLoaded) return;
-    const GetNotes = async () => {
-      try {
-        const response = await api.get("/getnotes", {
-          params: { page, sort: sortby },
-        });
-        if (response.data.success) {
-          console.log(response.data);
-          let allnotes = [];
-          const notedata = response.data.note;
-          if (notedata?.result && Array.isArray(notedata)) {
-            allnotes = notedata.flat();
-          } else if (Array.isArray(notedata)) {
-            allnotes = notedata;
-          } else if (notedata) {
-            allnotes = [notedata];
-          }
-          setNotes(allnotes);
-          setTotalPages(response.data.totalPages || 1);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    GetNotes();
-  }, [user, page, sortby, needsrefresh]);
 
   useEffect(() => {
     if (missingtoast) {
@@ -237,6 +154,15 @@ const Expenses = () => {
       }, 2500);
     }
   }, [missingtoast]);
+
+  useEffect(() => {
+    if (isanimationready && !hasInitiallyLoaded) {
+      const timer = setTimeout(() => {
+        setInitialLoadComplete();
+      }, 4000);
+      return () => clearInterval(timer);
+    }
+  }, [isanimationready, hasInitiallyLoaded, setInitialLoadComplete]);
 
   useEffect(() => {
     if (isvalidnote.length > 0) {
@@ -358,30 +284,23 @@ const Expenses = () => {
       setIsValidNote(errors);
       return;
     }
-    try {
-      const newCost = draftnote.products.reduce((acc, p) => {
-        return acc + (Number(p.estprice) || 0) * Number(p.quantity || 0);
-      }, 0);
-      const payload = {
-        id: draftnote.id,
-        theme: draftnote.theme,
-        color: draftnote.color,
-        productTitle: draftnote.productTitle,
-        products: draftnote.products,
-        estimatedTime: draftnote.estimatedTime,
-        estcost: newCost.toString(),
-      };
-      const response = await api.patch("/updatenotes", payload);
-      if (response.data.success && response.data.changed) {
-        setIsUpdating(true);
-        setNotes((prev) =>
-          prev.map((n) => (n.id === draftnote.id ? response.data.note : n)),
-        );
-        setDraftNote(null);
-        setEditingNoteId(null);
-      }
-    } catch (error) {
-    } finally {
+    const newCost = draftnote.products.reduce((acc, p) => {
+      return acc + (Number(p.estprice) || 0) * Number(p.quantity || 0);
+    }, 0);
+    const payload = {
+      id: draftnote.id,
+      theme: draftnote.theme,
+      color: draftnote.color,
+      productTitle: draftnote.productTitle,
+      products: draftnote.products,
+      estimatedTime: draftnote.estimatedTime,
+      estcost: newCost.toString(),
+    };
+    const success = await updateNote(payload);
+    if (success) {
+      setIsUpdating(true);
+      setDraftNote(null);
+      setEditingNoteId(null);
       setTimeout(() => {
         setIsUpdating(false);
       }, 2000);
@@ -396,7 +315,7 @@ const Expenses = () => {
     const productnames = validRows.map((row) => row.productName);
     const quantities = validRows.map((row) => Number(row.quantity) || 0);
     const estprices = validRows.map((row) => Number(row.estPrice) || 0);
-    const selectedthemeobj = themes?.find((t) => t.name === selectedtheme);
+    const selectedthemeobj = themes.find((t) => t.name === selectedtheme);
     const themecolor = selectedthemeobj?.color || "#b7b7b7";
 
     const payload = {
@@ -414,24 +333,13 @@ const Expenses = () => {
       setMissingToast(true);
       return;
     }
-    try {
-      const response = await api.post("/addnote", payload);
-      console.log(response.data);
-      if (response.data.success) {
-        setNeedsRefresh((prev) => prev + 1);
-        setNotes((prev) =>
-          prev ? [...prev, response.data.note] : [response.data.note],
-        );
-        setClose(true);
-        setSelectedTheme(null);
-        setSelectedDate(null);
-        setProductTitle(null);
-        setRows([
-          { id: Date.now(), productName: "", quantity: 1, estPrice: null },
-        ]);
-        setCost(0);
-      }
-    } catch (error) {}
+    const newNote = await addNote(payload);
+    if (newNote) {
+      setClose(true);
+      setSelectedTheme(null);
+      setSelectedDate(null);
+      setProductTitle(null);
+    }
   };
 
   // Handle adding a new theme to the backend
@@ -447,7 +355,7 @@ const Expenses = () => {
         if (response.data.success) {
           let newthemes = response.data.allthemes;
           console.log(newthemes);
-          setThemes(newthemes);
+          updateTheme(newthemes);
         }
       } catch (error) {
       } finally {
@@ -459,71 +367,58 @@ const Expenses = () => {
   };
 
   const handleDelete = async (id: number) => {
-    try {
-      const response = await api.delete(`/deletenote/${id}`);
-      if (response.data.success) {
-        setNeedsRefresh((prev) => prev + 1);
-        setIsDeletedNotes(true);
-        setNotes((prev) => prev.filter((p) => p.id !== id));
-      }
-    } catch (error) {
-    } finally {
+    const success = await deleteNote(id);
+    if (success) {
+      setIsDeletedNotes(true);
       setTimeout(() => {
         setIsDeletedNotes(false);
       }, 2500);
     }
   };
 
-  const handleThemeDeletedWithNotes = (themeName: string) => {
-    setNotes((prev) => prev.filter((p) => p.theme !== themeName));
-    setThemes((prev) => {
-      if (!prev) return null;
-      return prev.filter((p) => p.name !== themeName);
-    });
+  const handleThemeDeletedWithNotes = () => {
+    refreshThemes();
+    refreshNotes();
   };
-
-  useEffect(() => {
-    console.log(themes);
-  }, [themes]);
 
   const handleaddCompleted = async (id: number) => {
     if (!draftnote) return;
 
-    console.log(draftnote);
-    try {
-      await api.patch("/updatenotes", {
-        id: draftnote.id,
-        theme: draftnote.theme,
-        productTitle: draftnote.productTitle,
-        products: draftnote.products,
-        estimatedTime: draftnote.estimatedTime,
-        estcost: draftnote.estcost,
-        picture: draftnote.picture || null,
-        message: draftnote.message || null,
-        cost: finalcost || null,
-      });
-      const response = await api.post(`/completenote/${id}`, {
-        picture: draftnote.picture,
-        message: draftnote.message,
-        cost: finalcost,
-      });
-      console.log(response.data);
-      if (response.data.success) {
-        setNotes((prev) =>
-          prev.map((n) => (n.id === id ? response.data.note[0] : n)),
-        );
-        setDraftNote(null);
-        setEditingNoteId(null);
-        setIsCompleted(false);
-        setFinalCost(null);
-      }
-    } catch (error) {}
+    await updateNote({
+      id: draftnote.id,
+      theme: draftnote.theme,
+      productTitle: draftnote.productTitle,
+      products: draftnote.products,
+      estimatedTime: draftnote.estimatedTime,
+      estcost: draftnote.estcost,
+      picture: draftnote.picture || null,
+      message: draftnote.message || null,
+      cost: finalcost || null,
+    });
+
+    const success = await completeNote(id, {
+      picture: draftnote.picture,
+      message: draftnote.message,
+      cost: finalcost,
+    });
+
+    if (success) {
+      setDraftNote(null);
+      setEditingNoteId(null);
+      setIsCompleted(false);
+      setFinalCost(null);
+    }
   };
   const handleSort = (sortType: string) => {
     setSortNotes(sortType);
     setSortBy(sortType);
     setPage(1);
   };
+  // Amíg tart az animáció, ne jelenjen meg semmi
+  if (!hasInitiallyLoaded) {
+    return null;
+  }
+
   return (
     <div>
       {/* ==========================================
@@ -684,20 +579,22 @@ const Expenses = () => {
                             </div>
                           </>
                         ) : (
-                          /* EDIT MODE: "Editing..." badge */
-                          <div className="flex items-center gap-1  px-2 py-1  text-xs font-medium ">
-                            <div
-                              className="flex cursor-pointer rounded hover:bg-green-700/40 text-green-900 bg-green-700/20"
-                              onClick={handleUpdateNote}
-                            >
-                              <CheckCircle size={16} />
-                              <p>UPDATE</p>
+                          hasInitiallyLoaded && (
+                            /* EDIT MODE: "Editing..." badge */
+                            <div className="flex items-center gap-1  px-2 py-1  text-xs font-medium ">
+                              <div
+                                className="flex cursor-pointer rounded hover:bg-green-700/40 text-green-900 bg-green-700/20"
+                                onClick={handleUpdateNote}
+                              >
+                                <CheckCircle size={16} />
+                                <p>UPDATE</p>
+                              </div>
+                              <div className="flex bg-yellow-500/20 rounded text-yellow-600">
+                                <PencilLine size={16} />
+                                <span>Editing...</span>
+                              </div>
                             </div>
-                            <div className="flex bg-yellow-500/20 rounded text-yellow-600">
-                              <PencilLine size={16} />
-                              <span>Editing...</span>
-                            </div>
-                          </div>
+                          )
                         )}
                         <div
                           className="cursor-pointer flex items-end ml-auto  px-1 py-1 rounded text-xs"
@@ -1175,13 +1072,13 @@ const Expenses = () => {
           </div>
           <div className="py-5 flex justify-center">
             <CustomPagination
-              pageCount={totalPage}
+              pageCount={totalPages}
               currentPage={page}
               onPageChange={setPage}
             />
           </div>
         </div>
-      ) : !hasInitiallyLoaded ? null : (
+      ) : (
         <>
           <div className="ml-5 mt-5">
             <Dropdown>
@@ -1255,7 +1152,7 @@ const Expenses = () => {
         </>
       )}
       {/* Add new theme */}
-      {user && hasInitiallyLoaded ? (
+      {user ? (
         <div>
           <div className="py-10 flex justify-center items-center">
             <h3
@@ -1359,16 +1256,11 @@ const Expenses = () => {
                 </div>
               </>
             )}
-            {hasInitiallyLoaded && themes ? (
+
+            {hasInitiallyLoaded && themes?.length > 0 && (
               <div className="my-5">
-                <ThemeList
-                  themes={themes}
-                  notes={notes}
-                  onThemeDeleted={handleThemeDeletedWithNotes}
-                />
+                <ThemeList onThemeDeleted={handleThemeDeletedWithNotes} />
               </div>
-            ) : (
-              <p>No themes</p>
             )}
 
             {selectedtheme != null && close && (

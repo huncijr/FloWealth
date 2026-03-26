@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "../api/axiosInstance";
 import { Check, ShieldAlert, Trash2 } from "lucide-react";
 import useDarkMode from "./Mode";
+import { useThemes } from "../Context/ThemeContext";
 
 interface DailyStat {
   count: number;
@@ -22,9 +23,7 @@ interface ThemeWaveChartProps {
 }
 
 interface ThemeListProps {
-  themes: any[];
-  notes: any[];
-  onThemeDeleted?: (themeName: string) => void;
+  onThemeDeleted?: () => void;
 }
 
 interface ThemeCardProps {
@@ -191,15 +190,16 @@ const ThemeCard = ({ theme, onDelete }: ThemeCardProps) => {
 };
 
 // MAIN COMPONENT
-const ThemeList = ({ themes, notes, onThemeDeleted }: ThemeListProps) => {
+const ThemeList = ({ onThemeDeleted }: ThemeListProps) => {
+  const { themes, refreshThemes } = useThemes();
   const [themestats, setThemeStats] = useState<ThemeStat[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const handleThemeDeleted = (deletedId: number) => {
-    const deletedtheme = themestats.find((t) => t.id === deletedId);
+  const handleThemeDeleted = async (deletedId: number) => {
+    await refreshThemes();
     setThemeStats((prev) => prev.filter((theme) => theme.id !== deletedId));
-    if (deletedtheme && onThemeDeleted) {
-      onThemeDeleted(deletedtheme.name);
+    if (onThemeDeleted) {
+      onThemeDeleted();
     }
   };
   const fetchStats = useCallback(async () => {
@@ -216,13 +216,24 @@ const ThemeList = ({ themes, notes, onThemeDeleted }: ThemeListProps) => {
   }, []);
   useEffect(() => {
     fetchStats();
-  }, [themes, notes, fetchStats]);
+  }, [themes, fetchStats]);
 
   if (loading) return <Spinner />;
 
+  // Ha nincs statisztika, de vannak theme-ek, alapértelmezett adatokkal jelenítjük meg
+  const displayStats =
+    themestats.length > 0
+      ? themestats
+      : themes.map((t) => ({
+          id: t.id,
+          name: t.name,
+          color: t.color,
+          dailyStats: {},
+        }));
+
   return (
     <div className="space-y-4">
-      {themestats.map((theme, i) => (
+      {displayStats.map((theme, i) => (
         <ThemeCard key={i} theme={theme} onDelete={handleThemeDeleted} />
       ))}
     </div>
