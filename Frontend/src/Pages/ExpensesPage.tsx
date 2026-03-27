@@ -83,11 +83,22 @@ const Expenses = () => {
   }
 
   const { isDark } = useDarkMode();
-  const { hasInitiallyLoaded, setInitialLoadComplete, isanimationready } =
-    useLoading();
-
-  const { themes, refreshThemes, updateTheme } = useThemes();
   const {
+    hasInitiallyLoaded,
+    setInitialLoadComplete,
+    isanimationready,
+    showLoading,
+  } = useLoading();
+
+  const {
+    themes,
+    refreshThemes,
+    updateTheme,
+    isloading: themesLoading,
+  } = useThemes();
+
+  const {
+    isloading: notesLoading,
     notes,
     totalPages,
     page,
@@ -146,6 +157,11 @@ const Expenses = () => {
   }, [rows]);
 
   //First loading for the animation
+  useEffect(() => {
+    if ((notesLoading || themesLoading) && !hasInitiallyLoaded) {
+      showLoading();
+    }
+  }, [notesLoading, themesLoading, hasInitiallyLoaded]);
 
   useEffect(() => {
     if (missingtoast) {

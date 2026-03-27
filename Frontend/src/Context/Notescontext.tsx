@@ -231,6 +231,10 @@ export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [page, sortBy]);
 
+  useEffect(() => {
+    console.log(notes);
+  }, [notes]);
+
   const value: NotesContextState = {
     notes,
     totalPages,

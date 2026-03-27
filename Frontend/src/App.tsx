@@ -8,24 +8,14 @@ import "./index.css";
 import NavBar from "./Components/NavBar";
 import Theme from "./Components/Theme";
 import useDarkMode from "./Components/Mode";
-import { LoadingProvider, useLoading } from "./Context/LoadingContext";
+import { LoadingProvider } from "./Context/LoadingContext";
 import LoadingLogo from "./Components/LoadingLogo";
 import { ThemeProvider } from "./Context/ThemeContext";
 import { NotesProvider } from "./Context/Notescontext";
-import { useEffect } from "react";
-import { useAuth } from "./Context/AuthContext";
 
 const NavBarLayout = () => {
   const { isDark } = useDarkMode();
-  const { showLoading } = useLoading();
-  const { user } = useAuth();
-  
-  useEffect(() => {
-    if (user) {
-      showLoading();
-    }
-  }, [user]);
-  
+
   return (
     <main
       className={`${isDark ? "bg-main-bg" : "bg-main-foreground"} min-h-screen`}
