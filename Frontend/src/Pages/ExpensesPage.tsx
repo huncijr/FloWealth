@@ -288,10 +288,6 @@ const Expenses = () => {
     return { valid: errors.length === 0, errors };
   };
 
-  useEffect(() => {
-    console.log(selectedcolor);
-  }, [selectedcolor]);
-
   const handleUpdateNote = async () => {
     if (!draftnote) return;
     console.log(draftnote);
