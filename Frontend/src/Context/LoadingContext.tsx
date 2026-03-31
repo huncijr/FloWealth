@@ -4,10 +4,12 @@ interface LoadingContextType {
   isLoading: boolean;
   isanimationready: boolean;
   hasInitiallyLoaded: boolean;
+  hasshownlogo: boolean;
   setAnimationReady: () => void;
   showLoading: (immediate?: boolean) => void;
   setInitialLoadComplete: () => void;
   hideLoading: () => void;
+  setHasShownLogo: (value: boolean) => void;
 }
 
 const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
@@ -16,6 +18,7 @@ export const LoadingProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isanimationready, setIsAnimationReady] = useState<boolean>(false);
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+  const [hasshownlogo, setHasShownLogo] = useState<boolean>(false);
 
   const setAnimationReady = () => setIsAnimationReady(true);
   const setInitialLoadComplete = () => {
@@ -24,7 +27,7 @@ export const LoadingProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const showLoading = () => {
-    if (!hasInitiallyLoaded) {
+    if (!hasshownlogo) {
       setIsLoading(true);
     }
   };
@@ -41,8 +44,10 @@ export const LoadingProvider = ({ children }: { children: ReactNode }) => {
         hasInitiallyLoaded,
         setAnimationReady,
         setInitialLoadComplete,
+        hasshownlogo,
         showLoading,
         hideLoading,
+        setHasShownLogo,
       }}
     >
       {children}

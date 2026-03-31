@@ -58,7 +58,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [user]);
 
   useEffect(() => {
-    if (user && isanimationready && hasInitiallyLoaded && !hasFetched) {
+    if (user && !hasFetched) {
       fetchThemes();
       setHasFetched(true);
     }

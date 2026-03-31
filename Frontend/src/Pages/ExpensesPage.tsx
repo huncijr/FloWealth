@@ -54,6 +54,7 @@ import CustomPagination from "../Components/Pagination";
 import { useLoading } from "../Context/LoadingContext.tsx";
 import { useThemes } from "../Context/ThemeContext.tsx";
 import { useNotes } from "../Context/Notescontext.tsx";
+import LoadingLogo from "../Components/LoadingLogo.tsx";
 
 const Expenses = () => {
   // Interface for product rows in the table
@@ -88,6 +89,8 @@ const Expenses = () => {
     setInitialLoadComplete,
     isanimationready,
     showLoading,
+    hasshownlogo,
+    setHasShownLogo,
   } = useLoading();
 
   const {
@@ -158,10 +161,10 @@ const Expenses = () => {
 
   //First loading for the animation
   useEffect(() => {
-    if ((notesLoading || themesLoading) && !hasInitiallyLoaded) {
+    if (!hasshownlogo) {
       showLoading();
     }
-  }, [notesLoading, themesLoading, hasInitiallyLoaded]);
+  }, [notesLoading, themesLoading, hasshownlogo]);
 
   useEffect(() => {
     if (missingtoast) {
@@ -175,6 +178,7 @@ const Expenses = () => {
     if (isanimationready && !hasInitiallyLoaded) {
       const timer = setTimeout(() => {
         setInitialLoadComplete();
+        setHasShownLogo(true);
       }, 4000);
       return () => clearInterval(timer);
     }
@@ -426,9 +430,13 @@ const Expenses = () => {
     setSortBy(sortType);
     setPage(1);
   };
-  // Amíg tart az animáció, ne jelenjen meg semmi
+
   if (!hasInitiallyLoaded) {
-    return null;
+    return (
+      <div>
+        <LoadingLogo />
+      </div>
+    );
   }
 
   return (

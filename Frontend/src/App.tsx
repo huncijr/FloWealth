@@ -9,7 +9,6 @@ import NavBar from "./Components/NavBar";
 import Theme from "./Components/Theme";
 import useDarkMode from "./Components/Mode";
 import { LoadingProvider } from "./Context/LoadingContext";
-import LoadingLogo from "./Components/LoadingLogo";
 import { ThemeProvider } from "./Context/ThemeContext";
 import { NotesProvider } from "./Context/Notescontext";
 
@@ -27,7 +26,6 @@ const NavBarLayout = () => {
         </div>
       </div>
       <div>
-        <LoadingLogo />
         <Outlet />
       </div>
     </main>

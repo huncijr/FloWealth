@@ -6,7 +6,7 @@ import { Menu, X } from "lucide-react";
 import { useNotes } from "../Context/Notescontext";
 import { useThemes, type Theme } from "../Context/ThemeContext";
 import AnalyticChart from "../Components/AnalyticChart";
-import { Skeleton } from "@heroui/react";
+import SkeletonLoading from "../Components/SkeletonLoading";
 
 type ThemeWithVirtual = Theme & { isVirtual?: boolean };
 
@@ -17,29 +17,37 @@ const AnalyticsPage = () => {
   const [issidebaropen, setIsSidebarOpen] = useState(false);
   const [isloading, setisLoading] = useState(false);
 
-  const { themes, refreshThemes } = useThemes();
-  const { notes, refreshNotes } = useNotes();
+  const { themes, refreshThemes, isloading: themesLoading } = useThemes();
+  const { notes, refreshNotes, isloading: notesLoading } = useNotes();
+  const [hasFetchedLocally, setHasFetchedLocally] = useState<boolean>(false);
 
   useEffect(() => {
-    refreshThemes();
-    refreshNotes();
+    if (!hasFetchedLocally) {
+      setHasFetchedLocally(true);
+      refreshThemes();
+      refreshNotes();
+    }
   }, []);
+
+  useEffect(() => {
+    setisLoading(notesLoading || themesLoading);
+  }, [notesLoading, themesLoading]);
 
   const completedCount = notes.filter((n) => n.completed);
 
   return (
     <div>
-      {!isloading ? (
+      {isloading ? (
         user ? (
           themes.length > 0 || completedCount.length == 0 ? (
             completedCount.length > 0 ? (
               <div className="flex py-20 sm:p-5 w-full ">
                 <div className=" flex flex-col w-full justify-around">
                   <h1
-                    className="Abril-Fatface text-3xl sm:text-4xl md:text-5xl text-primary border-y-2
-                 border-primary w-fit mx-auto sm:mx-0 transition-all duration-300 ease-in-out"
+                    className="Abril-Fatface text-3xl sm:text-4xl md:text-5xl text-primary 
+                 w-fit mx-auto sm:mx-0 transition-all duration-300 ease-in-out"
                   >
-                    THIS MONTH
+                    Welcome, {user.name} !
                   </h1>
                   <div className="flex mt-3 items-center gap-4">
                     <div className="relative  ">
@@ -257,18 +265,8 @@ const AnalyticsPage = () => {
           <div>Make an account</div>
         )
       ) : (
-        <div className="bg-white pt-10 w-[30%]">
-          <div className="space-y-3 max-w-md w-full">
-            <div className="flex-col items-center justify-center">
-              <Skeleton className="justify-center w-[20%] h-4"></Skeleton>
-            </div>
-            <Skeleton className="w-full h-10 "></Skeleton>
-            <Skeleton className="w-full h-4"></Skeleton>
-            <Skeleton className="w-full h-4"></Skeleton>
-            <Skeleton className="w-full h-4"></Skeleton>
-            <Skeleton className="w-full h-4"></Skeleton>
-            aaa
-          </div>
+        <div className="pt-10 w-full">
+          <SkeletonLoading />
         </div>
       )}
     </div>

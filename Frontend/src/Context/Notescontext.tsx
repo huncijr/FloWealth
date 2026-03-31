@@ -138,7 +138,7 @@ export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   useEffect(() => {
-    if (user && isanimationready && !hasInitiallyLoaded && !hasFetched) {
+    if (user && !hasFetched) {
       fetchNotes();
     }
   }, [user, isanimationready, hasInitiallyLoaded, hasFetched, fetchNotes]);
