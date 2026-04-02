@@ -8,6 +8,7 @@ import { useThemes, type Theme } from "../Context/ThemeContext";
 import AnalyticChart from "../Components/AnalyticChart";
 import SkeletonLoading from "../Components/SkeletonLoading";
 
+// Extends Theme type to include virtual themes (e.g., "No theme" pseudo-theme)
 type ThemeWithVirtual = Theme & { isVirtual?: boolean };
 
 const AnalyticsPage = () => {
@@ -37,7 +38,7 @@ const AnalyticsPage = () => {
 
   return (
     <div>
-      {isloading ? (
+      {!isloading ? (
         user ? (
           themes.length > 0 || completedCount.length == 0 ? (
             completedCount.length > 0 ? (
@@ -115,6 +116,8 @@ const AnalyticsPage = () => {
 
                               <div className="p-6 flex-1 overflow-y-auto">
                                 <div className="space-y-8">
+                                  {/* IIFE that renders sidebar statistics grouped by theme
+                                      Creates a virtual "No theme" entry if there are notes without themes */}
                                   {(() => {
                                     const noThemeNotes = notes.filter(
                                       (n) =>
@@ -148,6 +151,7 @@ const AnalyticsPage = () => {
                                               n.completed,
                                           );
 
+                                      // Sort notes by cost (actual or estimated) and take top 3 most expensive
                                       const mostlycosted = themeNotes
                                         .map((note) => ({
                                           ...note,

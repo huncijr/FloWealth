@@ -31,9 +31,12 @@ interface ThemeCardProps {
   onDelete: (id: number) => void;
 }
 
+// Renders a bar chart visualization of daily note activity for a theme
+// Uses square root scaling to better visualize smaller counts when max is large
 const ThemeWaveChart = ({ dailyStats, color }: ThemeWaveChartProps) => {
   const [hoveredday, setHoveredDay] = useState<string | null>();
   const dates = Object.keys(dailyStats).sort();
+  // Calculate maximum count for scaling bars (min 1 to prevent division by zero)
   const maxCount = Math.max(...dates.map((d) => dailyStats[d].count), 1);
 
   return (
@@ -190,11 +193,14 @@ const ThemeCard = ({ theme, onDelete }: ThemeCardProps) => {
 };
 
 // MAIN COMPONENT
+// Main component that fetches theme statistics and renders theme cards
+// Falls back to empty stats if backend returns no data
 const ThemeList = ({ onThemeDeleted }: ThemeListProps) => {
   const { themes, refreshThemes } = useThemes();
   const [themestats, setThemeStats] = useState<ThemeStat[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  // Refreshes theme list and removes deleted theme from local state
   const handleThemeDeleted = async (deletedId: number) => {
     await refreshThemes();
     setThemeStats((prev) => prev.filter((theme) => theme.id !== deletedId));
@@ -202,6 +208,8 @@ const ThemeList = ({ onThemeDeleted }: ThemeListProps) => {
       onThemeDeleted();
     }
   };
+
+  // Fetches theme statistics from backend with daily note breakdown
   const fetchStats = useCallback(async () => {
     try {
       const response = await api.get("/themestats");
@@ -220,7 +228,8 @@ const ThemeList = ({ onThemeDeleted }: ThemeListProps) => {
 
   if (loading) return <Spinner />;
 
-  // Ha nincs statisztika, de vannak theme-ek, alapértelmezett adatokkal jelenítjük meg
+  // Fallback: if no stats available but themes exist, create empty stats structure
+  // This ensures themes always display even without historical data
   const displayStats =
     themestats.length > 0
       ? themestats

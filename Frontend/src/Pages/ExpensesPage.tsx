@@ -84,6 +84,7 @@ const Expenses = () => {
   }
 
   const { isDark } = useDarkMode();
+  const { user } = useAuth();
   const {
     hasInitiallyLoaded,
     setInitialLoadComplete,
@@ -147,7 +148,8 @@ const Expenses = () => {
 
   const [close, setClose] = useState<boolean>(false);
   const [showtable, setShowTable] = useState<boolean>(false);
-  const { user } = useAuth();
+  const [hoveredNoteId, setHoveredNoteId] = useState<number | null>(null);
+  const [aiLoading, setAiLoading] = useState<number | null>(null);
 
   // Calculate total cost whenever rows change
   useEffect(() => {
@@ -159,7 +161,8 @@ const Expenses = () => {
     setCost(total);
   }, [rows]);
 
-  //First loading for the animation
+  // Triggers loading animation on first app load
+  // Prevents re-triggering if logo was already shown in this session
   useEffect(() => {
     if (!hasshownlogo) {
       showLoading();
@@ -258,6 +261,8 @@ const Expenses = () => {
     });
   };
 
+  // Comprehensive validation for note updates before submitting to backend
+  // Checks: title presence, future date constraint, product completeness, and non-negative values
   const validateDraftNote = (
     draft: Note | null,
   ): { valid: boolean; errors: string[] } => {
@@ -268,6 +273,7 @@ const Expenses = () => {
     if (!draft.productTitle.trim()) {
       errors.push("Title cannot be empty");
     }
+    // Validate that estimated time is not in the past (notes are for future purchases)
     if (draft.estimatedTime && new Date(draft.estimatedTime) < new Date()) {
       console.log(new Date(draft.estimatedTime));
       console.log(new Date());
@@ -292,6 +298,8 @@ const Expenses = () => {
     return { valid: errors.length === 0, errors };
   };
 
+  // Updates an existing note with edited data from draft state
+  // Recalculates total cost from products before sending to backend
   const handleUpdateNote = async () => {
     if (!draftnote) return;
     console.log(draftnote);
@@ -300,6 +308,7 @@ const Expenses = () => {
       setIsValidNote(errors);
       return;
     }
+    // Recalculate estimated cost from all products (quantity × price)
     const newCost = draftnote.products.reduce((acc, p) => {
       return acc + (Number(p.estprice) || 0) * Number(p.quantity || 0);
     }, 0);
@@ -397,6 +406,8 @@ const Expenses = () => {
     refreshNotes();
   };
 
+  // Marks a note as completed with optional picture, message, and actual final cost
+  // First updates the note details, then calls completeNote to mark it done
   const handleaddCompleted = async (id: number) => {
     if (!draftnote) return;
 
@@ -425,10 +436,36 @@ const Expenses = () => {
       setFinalCost(null);
     }
   };
+  // Changes note sorting criteria and resets to first page
+  // Updates both local UI state and global notes context
   const handleSort = (sortType: string) => {
     setSortNotes(sortType);
     setSortBy(sortType);
     setPage(1);
+  };
+
+  // AI Receipt Analysis function
+  const handleAIAnalyze = async (note: Note) => {
+    if (!note.picture) return;
+
+    setAiLoading(note.id);
+    try {
+      const response = await api.post(
+        "/analyze-receipt",
+        {
+          imageBase64: note.picture,
+          noteId: note.id,
+        },
+        {
+          timeout: 30000,
+        },
+      );
+      console.log("AI Analysis Result:", response.data.analyssis);
+    } catch (error) {
+      console.error("AI Analysis Error:", error);
+    } finally {
+      setAiLoading(null);
+    }
   };
 
   if (!hasInitiallyLoaded) {
@@ -918,7 +955,28 @@ const Expenses = () => {
                   /* ==========================================
                     COMPLETED NOTE (simplified view)
                     ========================================== */
-                  <div className="h-full flex flex-col opacity-70">
+                  <div
+                    className="h-full flex flex-col opacity-70 relative"
+                    onMouseEnter={() => setHoveredNoteId(note.id)}
+                    onMouseLeave={() => setHoveredNoteId(null)}
+                  >
+                    {/* AI Analyze Button - Only show on hover when there's a picture */}
+                    {note.picture && hoveredNoteId === note.id && (
+                      <button
+                        onClick={() => handleAIAnalyze(note)}
+                        disabled={aiLoading === note.id}
+                        className="absolute top-2 right-2 z-30 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-2 rounded-full text-sm font-bold shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 border-2 border-white/20"
+                      >
+                        {aiLoading === note.id ? (
+                          <>
+                            <span className="animate-spin">⏳</span>
+                            Analyzing...
+                          </>
+                        ) : (
+                          <>🤖 AI Analyze</>
+                        )}
+                      </button>
+                    )}
                     <div
                       className={`flex items-center gap-3 transform -skew-x-9 shadow-lg overflow-hidden ${isDark ? "bg-gray-700" : "bg-gray-300"}`}
                     >

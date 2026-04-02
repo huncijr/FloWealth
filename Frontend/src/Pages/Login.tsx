@@ -66,6 +66,8 @@ const Login = () => {
     on: UserRoundSearch,
     selectedControlClass: "bg-primary",
   };
+  // Handles user registration with support for both email and Google OAuth
+  // Validates form data and sends to backend, then stores temp user for OTP verification
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!googletoken) {
@@ -88,7 +90,7 @@ const Login = () => {
       const userData = response.data as Record<string, any>;
       console.log(userData);
       if (userData.success) {
-        //if user registered with Google
+        // Stores user temporarily - they must complete OTP verification before full auth
         setTempUser(userData.message);
         setVerification(false);
       }
@@ -153,7 +155,8 @@ const Login = () => {
     }
   };
 
-  //Resending OTP
+  // Resends OTP to user's email when they click the resend link
+  // Uses the stored registration credentials from state
   const LinkResend = async (e: React.FormEvent) => {
     try {
       e.preventDefault();

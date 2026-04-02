@@ -23,6 +23,9 @@ const UserContext = createContext<userContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Attempts to restore user session from backend on app initialization
+  // This enables persistent login across page refreshes
   useEffect(() => {
     const initAuth = async () => {
       try {

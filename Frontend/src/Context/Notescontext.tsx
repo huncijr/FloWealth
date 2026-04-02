@@ -96,6 +96,8 @@ export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({
   const [error, setError] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState<boolean>(false);
 
+  // Fetches paginated notes from the backend with flexible data parsing
+  // Handles multiple response formats (nested result arrays, flat arrays, single objects)
   const fetchNotes = useCallback(
     async (fetchPage?: number, fetchSort?: string) => {
       if (!user) return;
@@ -115,6 +117,7 @@ export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({
           let allnotes: Note[] = [];
           const notedata = response.data.note;
 
+          // Normalize various backend response structures into a flat array
           if (notedata?.result && Array.isArray(notedata)) {
             allnotes = notedata.flat();
           } else if (Array.isArray(notedata)) {

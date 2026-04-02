@@ -21,6 +21,7 @@ import {
 import { VerifyGoogleAuth } from "../middlewares/GoogleAuth";
 import { VerifyCloudflare } from "../middlewares/CloudflareAuth";
 import { userAuth } from "../middlewares/Usermiddleware";
+import { analyzeReceipt } from "../controllers/AIReceiptController";
 
 const router = Router();
 
@@ -41,4 +42,7 @@ router.post("/completenote/:id", userAuth, CompleteNote);
 router.patch("/updatenotes", userAuth, UpdateNote);
 router.get("/themestats", userAuth, GetThemeStats);
 router.delete("/deletetheme/:themeId", userAuth, DeleteTheme);
+
+router.post("/analyze-receipt", userAuth, analyzeReceipt);
+
 export default router;

@@ -7,6 +7,8 @@ const LoadingLogo: React.FC = () => {
   const stripeGradientId = useId();
   const oArrowGradientId = useId();
 
+  // Signals that animation assets are ready shortly after component mounts
+  // This allows the parent context to coordinate with other loading states
   useEffect(() => {
     const timer = setTimeout(() => {
       setAnimationReady();

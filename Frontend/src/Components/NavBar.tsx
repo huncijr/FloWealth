@@ -10,6 +10,8 @@ const NavBar = () => {
   const { isDark } = useDarkMode();
   const { user } = useAuth();
   return (
+    // Responsive navigation with mobile-first approach
+    // Switches from stacked layout (mobile) to horizontal row (md+)
     <header className="relative">
       <div
         className={`flex flex-col md:flex-row md:items-center md:justify-between
@@ -21,6 +23,7 @@ const NavBar = () => {
             className="h-20 md:h-24 lg:h-28 xl:h-33 w-auto "
             alt="FloWealth Logo"
           />
+          {/* Mobile-only account link - shows avatar for Google users, icon for others */}
           <NavLink
             to="/Account"
             className={({ isActive }) =>
@@ -76,6 +79,7 @@ const NavBar = () => {
               MY EXPENSES{" "}
             </NavLink>
           </div>
+          {/* Desktop account link - visible on md+, handles both Google and regular users */}
           <NavLink
             to="/Account"
             className={({ isActive }) =>

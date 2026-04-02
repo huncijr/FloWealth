@@ -31,6 +31,7 @@ const ThemeCostChart = ({ range }: ThemeCostChartProps) => {
 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
+  // Filters notes based on the selected time range using millisecond comparisons
   const isInRange = (dateValue: string | Date) => {
     const now = new Date();
     const noteDate = new Date(dateValue);
@@ -68,6 +69,8 @@ const ThemeCostChart = ({ range }: ThemeCostChartProps) => {
     return notesInRange.filter((n) => n.theme === hoveredId);
   }, [hoveredId, notesInRange]);
 
+  // Aggregates completed notes by theme to create pie chart data
+  // Includes a special "No theme added" slice for unthemed notes
   const data = useMemo<ChartData[]>(() => {
     const completedNotes = notes.filter((note) => {
       if (!note.completed) return false;

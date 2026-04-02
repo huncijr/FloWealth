@@ -7,6 +7,9 @@ const CustomCarousel = () => {
   const images: string[] = [image1, image2, image3];
   const [activeindex, setActiveIndex] = useState<number>(0);
   const timerRef = useRef<number | null>(null);
+
+  // Starts or restarts the auto-advance timer
+  // Clears any existing timer to prevent multiple intervals running simultaneously
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -15,12 +18,16 @@ const CustomCarousel = () => {
       );
     }, 5000);
   }, []);
+
+  // Initialize timer on mount and cleanup on unmount
   useEffect(() => {
     startTimer();
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [startTimer]);
+
+  // Manual navigation that also resets the auto-advance timer
   const handleClick = (index: number) => {
     setActiveIndex(index);
     startTimer();

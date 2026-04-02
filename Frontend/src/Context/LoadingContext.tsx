@@ -26,6 +26,8 @@ export const LoadingProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false);
   };
 
+  // Shows loading spinner only if logo animation hasn't been displayed yet
+  // Prevents duplicate loading screens during the same session
   const showLoading = () => {
     if (!hasshownlogo) {
       setIsLoading(true);

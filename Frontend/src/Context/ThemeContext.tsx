@@ -37,6 +37,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   const [error, setError] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
 
+  // Fetches user's themes from backend, called on initial load and refresh
+  // Only executes when user is authenticated
   const fetchThemes = useCallback(async () => {
     if (!user) return;
 
