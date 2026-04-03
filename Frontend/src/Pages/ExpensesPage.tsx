@@ -33,6 +33,7 @@ import {
   NotebookPen,
   PencilLine,
   Plus,
+  Sparkles,
   Trash,
   TriangleAlert,
   X,
@@ -55,6 +56,8 @@ import { useLoading } from "../Context/LoadingContext.tsx";
 import { useThemes } from "../Context/ThemeContext.tsx";
 import { useNotes } from "../Context/Notescontext.tsx";
 import LoadingLogo from "../Components/LoadingLogo.tsx";
+import AiChatSidebar from "../Components/AiChatSidebar.tsx";
+import { motion } from "framer-motion";
 
 const Expenses = () => {
   // Interface for product rows in the table
@@ -132,6 +135,7 @@ const Expenses = () => {
   const [draftnote, setDraftNote] = useState<Note | null>(null);
   const [editingnoteid, setEditingNoteId] = useState<number | null>(null);
   const [isvalidnote, setIsValidNote] = useState<string[]>([]);
+  const [isimagemodalopen, setIsImageModalOpen] = useState<null | string>(null);
   const [isupdating, setIsUpdating] = useState<boolean>(false);
   const [finalcost, setFinalCost] = useState<string | null>(null);
 
@@ -149,7 +153,11 @@ const Expenses = () => {
   const [close, setClose] = useState<boolean>(false);
   const [showtable, setShowTable] = useState<boolean>(false);
   const [hoveredNoteId, setHoveredNoteId] = useState<number | null>(null);
+
   const [aiLoading, setAiLoading] = useState<number | null>(null);
+  const [isaisidebaropen, setISAiSidebarOpen] = useState<boolean>(false);
+  const [activenoteforai, setActiveNoteForAi] = useState<Note | null>(null);
+  const [aianalysis, setAiAnalysis] = useState<string>("");
 
   // Calculate total cost whenever rows change
   useEffect(() => {
@@ -448,6 +456,8 @@ const Expenses = () => {
   const handleAIAnalyze = async (note: Note) => {
     if (!note.picture) return;
 
+    setActiveNoteForAi(note);
+    setISAiSidebarOpen(true);
     setAiLoading(note.id);
     try {
       const response = await api.post(
@@ -460,7 +470,9 @@ const Expenses = () => {
           timeout: 30000,
         },
       );
-      console.log("AI Analysis Result:", response.data.analyssis);
+      if (response.data.success) {
+        setAiAnalysis(response.data.analysis);
+      }
     } catch (error) {
       console.error("AI Analysis Error:", error);
     } finally {
@@ -961,11 +973,11 @@ const Expenses = () => {
                     onMouseLeave={() => setHoveredNoteId(null)}
                   >
                     {/* AI Analyze Button - Only show on hover when there's a picture */}
-                    {note.picture && hoveredNoteId === note.id && (
+                    {hoveredNoteId === note.id && (
                       <button
                         onClick={() => handleAIAnalyze(note)}
-                        disabled={aiLoading === note.id}
-                        className="absolute top-2 right-2 z-30 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-2 rounded-full text-sm font-bold shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 border-2 border-white/20"
+                        disabled={aiLoading === note.id || isaisidebaropen}
+                        className="absolute top-2 right-2 z-30 bg-gradient-to-r from-primary/80 to-secondary/80 hover:from-primary hover:to-secondary text-white px-4 py-2 rounded-full text-sm font-bold shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 border-2 border-white/20"
                       >
                         {aiLoading === note.id ? (
                           <>
@@ -973,7 +985,7 @@ const Expenses = () => {
                             Analyzing...
                           </>
                         ) : (
-                          <>🤖 AI Analyze</>
+                          <Sparkles />
                         )}
                       </button>
                     )}
@@ -1125,6 +1137,9 @@ const Expenses = () => {
                         {note.picture && (
                           <div className="w-full overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
                             <img
+                              onClick={() =>
+                                setIsImageModalOpen(note?.picture || null)
+                              }
                               src={note?.picture}
                               alt="Product Image"
                               className="w-full h-full max-h-64 object-cover"
@@ -1584,6 +1599,44 @@ const Expenses = () => {
           </Alert>
         </div>
       )}
+      {isimagemodalopen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setIsImageModalOpen(null)}
+        >
+          <button
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 
+                 hover:bg-white/20 flex items-center justify-center 
+                 transition-colors z-10"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsImageModalOpen(null);
+            }}
+          >
+            <X className="w-6 h-6 text-white" />
+          </button>
+
+          <motion.img
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            src={isimagemodalopen}
+            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </motion.div>
+      )}
+      <AiChatSidebar
+        isopen={isaisidebaropen}
+        onClose={() => setISAiSidebarOpen(false)}
+        note={activenoteforai}
+        initialAnalysis={aianalysis}
+        isAnalyzing={aiLoading !== null}
+      />
     </div>
   );
 };

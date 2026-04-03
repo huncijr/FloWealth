@@ -23,7 +23,9 @@ export const analyzeReceipt = async (
   }
 
   try {
-    const { imageBase64, noteId } = req.body;
+    const { imageBase64, noteId, message, previousMessages } = req.body;
+    const isInitialAnalysis =
+      !previousMessages || previousMessages.length === 0;
 
     let plannedNote = undefined;
     if (noteId) {
@@ -69,12 +71,14 @@ export const analyzeReceipt = async (
       const analysis = await aiReceiptAnalyzer.analyzeReceipt({
         base64Image: imageBase64,
         plannedNote: plannedNote,
+        message: message,
+        previousMessages: previousMessages,
+        isInitialAnalysis: isInitialAnalysis,
       });
 
-      console.log(analysis);
       return res.status(200).json({
         success: true,
-        analyssis: analysis,
+        analysis: analysis,
         message: "Receipt analyzed succesfully",
       });
     }

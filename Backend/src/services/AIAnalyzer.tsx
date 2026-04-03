@@ -14,6 +14,9 @@ export interface AnalyzeReceiptParams {
       estprice: number | null;
     }>;
   };
+  message?: string;
+  previousMessages?: Array<{ role: string; content: string }>;
+  isInitialAnalysis: boolean;
 }
 
 export class AIReceiptAnalyzer {
@@ -38,13 +41,20 @@ export class AIReceiptAnalyzer {
    */
   async analyzeReceipt(params: AnalyzeReceiptParams): Promise<string> {
     try {
-      const { base64Image, plannedNote } = params;
+      const {
+        base64Image,
+        plannedNote,
+        message,
+        previousMessages,
+        isInitialAnalysis,
+      } = params;
+
+      const apiMessage: any[] = [{ role: "system", content: SYSTEM_PROMPT }];
 
       // Build the user message with receipt image and planned note data
-      let userMessage =
-        "Please analyze this receipt image and provide a detailed spending analysis.";
+      let userMessage = "";
 
-      if (plannedNote) {
+      if (isInitialAnalysis && plannedNote) {
         userMessage += `\n\nHere is what the user planned to buy before shopping:\n`;
         userMessage += `- Planned Title: ${plannedNote.productTitle}\n`;
         userMessage += `- Estimated Total Cost: ${plannedNote.estcost}\n`;
@@ -52,17 +62,57 @@ export class AIReceiptAnalyzer {
         plannedNote.products.forEach((product, index) => {
           userMessage += `  ${index + 1}. ${product.name} - Qty: ${product.quantity}, Est. Price: ${product.estprice}\n`;
         });
-        userMessage += `\nPlease compare the actual receipt with this plan and highlight any differences. Use my picture as to represent my language.`;
+        userMessage += `\nPlease compare the actual receipt with this plan and highlight any differences. Use my picture as to represent my language. 
+        If there is no picture provided or the picture is not about finance dont speak about it or dont get to your attention`;
+        if (base64Image && base64Image.trim() !== "") {
+          userMessage +=
+            "\nPlease also analyze the attached receipt image and compare with the planned data. Use the languange on the picture as your final response language, unless the user ask to translate";
+        } else {
+          userMessage +=
+            "\nPlease provide analysis and insights about this spending plan.";
+        }
+        const messageContent: any[] = [{ type: "text", text: userMessage }];
+
+        const content: any[] = [{ type: "text", text: userMessage }];
+
+        if (base64Image && base64Image.trim() !== "") {
+          const cleanBase64 = base64Image.replace(/\s/g, "");
+          const hasPrefix = cleanBase64.startsWith("data:image");
+          const imageURL = hasPrefix
+            ? cleanBase64
+            : `data:image/jpeg;base64,${cleanBase64}`;
+
+          content.push({
+            type: "image_url",
+            image_url: {
+              url: imageURL,
+            },
+          });
+          messageContent.push({
+            type: "image_url",
+            image_url: { url: imageURL },
+          });
+        }
+        apiMessage.push({
+          role: "user",
+          content: messageContent,
+        });
+      } else if (previousMessages && previousMessages.length > 0) {
+        previousMessages.forEach((msg) => {
+          apiMessage.push({
+            role: msg.role === "ai" ? "assistant" : "user",
+            content: msg.content,
+          });
+        });
+        apiMessage.push({
+          role: "user",
+          content: message || "Please provide more details",
+        });
+      } else if (message) {
+        apiMessage.push({ role: "user", content: message });
       }
 
-      console.log(userMessage);
-
-      const cleanBase64 = base64Image.replace(/\s/g, "");
-      const hasPrefix = cleanBase64.startsWith("data:image");
-      const imageURL = hasPrefix
-        ? cleanBase64
-        : `data:image/jpeg;base64,${cleanBase64}`;
-
+      console.log(apiMessage);
       const response = await fetch(String(this.apiURL), {
         method: "POST",
         headers: {
@@ -71,32 +121,12 @@ export class AIReceiptAnalyzer {
         },
         body: JSON.stringify({
           model: this.model,
-          messages: [
-            {
-              role: "system",
-              content: SYSTEM_PROMPT,
-            },
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: userMessage,
-                },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: imageURL,
-                  },
-                },
-              ],
-            },
-          ],
+          messages: apiMessage,
           max_tokens: 2000,
           temperature: 0.7, // Slightly higher for more natural, friendly responses
         }),
       });
-      console.log(response);
+
       if (!response.ok) {
         throw new Error(
           `AI API error: ${response.status} ${response.statusText}`,
@@ -104,14 +134,13 @@ export class AIReceiptAnalyzer {
       }
 
       const data = await response.json();
-      console.log("data, ", data);
-      const content = data.choices?.[0]?.message?.content;
+      const result = data.choices?.[0]?.message?.content;
 
-      if (!content) {
+      if (!result) {
         throw new Error("No content received from AI API");
       }
 
-      return content;
+      return result;
     } catch (error) {
       console.error("Error analyzing receipt:", error);
       throw error;
