@@ -1,9 +1,10 @@
 import { Button, Card, CardHeader, Input, ScrollShadow } from "@heroui/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, Forward, Loader2, Sparkles, User, X } from "lucide-react";
+import { Bot, Clock, Forward, Loader2, Sparkles, User, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../Context/AuthContext";
 import { api } from "../api/axiosInstance";
+import { useNotes } from "../Context/Notescontext";
 
 interface Message {
   role: "user" | "ai";
@@ -57,8 +58,14 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   isAnalyzing = false,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isfirstmessage, setIsFirstMessage] = useState(true);
   const [inputvalue, setInputValue] = useState("");
   const [isloading, setIsLoading] = useState(false);
+  const [quotaexceeded, setQuotaExceeded] = useState(false);
+
+  const [selectednotes, setSelectedNotes] = useState<Note | null>(null);
+  const { notes } = useNotes();
+  const completedNotes = notes.filter((n) => n.completed && n.picture);
 
   const [showimagepreview, setShowImagePreview] = useState<boolean>(true);
   const [isimagemodalopen, setIsImageModalOpen] = useState(false);
@@ -83,8 +90,9 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         });
       } else if (!initialAnalysis) {
         console.log("i am here");
-        loadConversation();
       }
+    } else {
+      setQuotaExceeded(false);
     }
   }, [initialAnalysis, isopen]);
 
@@ -94,19 +102,14 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     }
   }, [messages]);
 
-  const loadConversation = async () => {
-    try {
-      const endpoint = note?.id
-        ? `/getaiconversations/${note.id}`
-        : "/getaiconversations";
-      const response = await api.get(endpoint);
-      console.log(response);
-      setMessages(response.data.data?.messages || []);
-    } catch (error) {}
-  };
+  useEffect(() => {
+    if (!selectednotes && note) {
+      setSelectedNotes(note);
+    }
+  }, [note, selectednotes]);
 
   const handleSendMessage = async () => {
-    if (!inputvalue.trim() || !note) return;
+    if (!inputvalue.trim() || !selectednotes) return;
     const userMessage: Message = {
       role: "user",
       content: inputvalue,
@@ -117,8 +120,9 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     setInputValue("");
     setIsLoading(true);
     try {
-      const response = await api.post("analyze-receipt", {
-        noteId: note.id,
+      const response = await api.post("/analyze-receipt", {
+        noteId: selectednotes?.id,
+        imageBase64: isfirstmessage ? selectednotes?.picture : undefined,
         message: inputvalue,
         previousMessages: messages.map((m) => ({
           role: m.role,
@@ -132,9 +136,13 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           timestamp: new Date(),
         };
         setMessages((prev) => [...prev, aiMessage]);
+        setIsFirstMessage(false);
       }
-    } catch (error) {
-      console.error("Chat error:", error);
+    } catch (error: any) {
+      if (error.response?.status === 429) {
+        setQuotaExceeded(true);
+        return;
+      }
       const errorMessage: Message = {
         role: "ai",
         content: "Sorry, I couldn't process your message. Please try again.",
@@ -280,6 +288,59 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     </div>
                   </motion.div>
                 ))}
+                {!selectednotes && completedNotes.length > 0 && (
+                  <div className="bg-white/10 rounded-xl p-4 mb-4">
+                    <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      Select a completed note to analyze
+                    </h4>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {completedNotes.map((n) => (
+                        <button
+                          key={n.id}
+                          onClick={() => {
+                            setSelectedNotes(n);
+                            setShowImagePreview(true);
+                            setIsFirstMessage(true);
+                            setMessages([]);
+                          }}
+                          className="w-full text-left p-3 rounded-lg bg-white/5 hover:bg-white/10 
+                     border border-white/10 hover:border-white/30 transition-all
+                     flex items-center gap-3"
+                        >
+                          {n.picture && (
+                            <img
+                              src={n.picture}
+                              className="w-10 h-10 rounded object-cover"
+                              alt=""
+                            />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white font-medium truncate">
+                              {n.productTitle}
+                            </p>
+                            <p className="text-white/50 text-sm">
+                              {new Intl.NumberFormat("en-US", {
+                                style: "currency",
+                                currency: "USD",
+                              }).format(Number(n.cost) || 0)}{" "}
+                              • {n.products.length} items
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {!note && completedNotes.length === 0 && (
+                  <div className="text-center py-8 text-white/50">
+                    <p>No completed notes with pictures found.</p>
+                    <p className="text-sm mt-2">
+                      Complete a note with a receipt image first!
+                    </p>
+                  </div>
+                )}
                 {isloading && (
                   <motion.div
                     initial={{ opacity: 0 }}
@@ -321,9 +382,36 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     </div>
                   </motion.div>
                 )}
+                {quotaexceeded && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="bg-linear-to-r from-primary/20 to-secondary/20 
+                 border border-orange-500/30 rounded-xl p-4 mb-4"
+                  >
+                    <div
+                      className="flex items-start gap-3
+            "
+                    >
+                      <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                        <Clock className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h2 className="text-3xl font-bold text-white Alfa-slab-one">
+                          Daily Limit Reached
+                        </h2>
+                        <p className="text-white/80 text-sm leading-relaxed">
+                          You've reached your daily AI quota. New tokens will be
+                          available tomorrow at midnight.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
               </ScrollShadow>
               <div className="p-4 bg-black/20 rounded-xl">
-                {showimagepreview && note?.picture && (
+                {showimagepreview && selectednotes?.picture && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -338,18 +426,21 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     "
                     >
                       <img
-                        src={note.picture}
+                        src={selectednotes.picture}
                         className="w-full h-full object-cover "
                       />
                     </div>
                     <div className="text-white flex-1 min-w-0">
-                      <p className="font-bold">Image.png</p>
+                      <p className="font-bold">{selectednotes.productTitle}</p>
                       <p className="text-xs text-white/60">
                         Attached to this note
                       </p>
                     </div>
                     <button
-                      onClick={() => setShowImagePreview(false)}
+                      onClick={() => {
+                        setShowImagePreview(false);
+                        setSelectedNotes(null);
+                      }}
                       className="w-8 h-8 rounded-full flex items-center justify-center
                     bg-white/5 hover:bg-white/20 border border-white/10 
                     hover:border-white/30 transition-all duration-200
@@ -370,7 +461,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                         : "Ask about your spending..."
                     }
                     className="flex-1"
-                    disabled={isLoadingState}
+                    disabled={isLoadingState || quotaexceeded || !selectednotes}
                   />
                   <Button
                     isIconOnly
@@ -389,7 +480,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             </div>
           </Card>
         </motion.div>
-        {isimagemodalopen && note?.picture && (
+        {isimagemodalopen && selectednotes?.picture && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -414,7 +505,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              src={note.picture}
+              src={selectednotes.picture}
               className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             />
