@@ -4,6 +4,8 @@ import { db } from "../DB/db";
 import { notesTable } from "../DB/schemas";
 import { eq } from "drizzle-orm";
 import { aiReceiptAnalyzer } from "../services/AIAnalyzer";
+import { conversationservice } from "../services/ConversationService";
+import { timestamp } from "drizzle-orm/gel-core";
 
 interface Product {
   name: string;
@@ -68,6 +70,27 @@ export const analyzeReceipt = async (
         }>,
       };
 
+      const hasTokens = await conversationservice.checkTokenLimit(userId);
+      if (!hasTokens) {
+        return res.status(429).json({
+          success: false,
+          message: "Daily AI token limit reached",
+        });
+      }
+
+      console.log(hasTokens);
+
+      const existingConversation =
+        await conversationservice.getRecentConversation(userId, noteId);
+
+      const previousMessages =
+        existingConversation?.message.map((m) => ({
+          role: m.role,
+          content: m.content,
+        })) || req.body.previousMessages;
+
+      console.log(previousMessages);
+
       const analysis = await aiReceiptAnalyzer.analyzeReceipt({
         base64Image: imageBase64,
         plannedNote: plannedNote,
@@ -76,9 +99,39 @@ export const analyzeReceipt = async (
         isInitialAnalysis: isInitialAnalysis,
       });
 
+      const messagesToSave =
+        previousMessages && previousMessages.length > 0 && message
+          ? [
+              ...previousMessages,
+              {
+                role: "user",
+                content: message,
+                timestamp: new Date().toISOString(),
+              },
+            ]
+          : [
+              {
+                role: "user",
+                content: "Initial analysis",
+                timestamp: new Date().toISOString(),
+              },
+            ];
+      messagesToSave.push({
+        role: "ai",
+        content: analysis.content,
+        timestamp: new Date().toISOString(),
+      });
+      await conversationservice.saveConversation(
+        userId,
+        noteId,
+        messagesToSave,
+        analysis.token,
+      );
+
       return res.status(200).json({
         success: true,
-        analysis: analysis,
+        analysis: analysis.content,
+        tokens: analysis.token,
         message: "Receipt analyzed succesfully",
       });
     }
@@ -94,5 +147,30 @@ export const analyzeReceipt = async (
       }
     }
     next(error);
+  }
+};
+
+export const getConversation = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unathorized" });
+  }
+  const { noteId } = req.query;
+  console.log(noteId);
+  if (noteId) {
+    const conversation = await conversationservice.getRecentConversation(
+      userId,
+      parseInt(noteId as string),
+    );
+    return res.status(200).json({ success: true, data: conversation });
+  } else {
+    const allConversations =
+      await conversationservice.getAllConversations(userId);
+    console.log(allConversations);
+    return res.json({ success: true, data: allConversations });
   }
 };

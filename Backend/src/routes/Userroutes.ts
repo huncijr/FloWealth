@@ -21,7 +21,11 @@ import {
 import { VerifyGoogleAuth } from "../middlewares/GoogleAuth";
 import { VerifyCloudflare } from "../middlewares/CloudflareAuth";
 import { userAuth } from "../middlewares/Usermiddleware";
-import { analyzeReceipt } from "../controllers/AIReceiptController";
+import {
+  analyzeReceipt,
+  getConversation,
+} from "../controllers/AIReceiptController";
+import { checkTokenLimit } from "../middlewares/TokenLimit";
 
 const router = Router();
 
@@ -43,6 +47,7 @@ router.patch("/updatenotes", userAuth, UpdateNote);
 router.get("/themestats", userAuth, GetThemeStats);
 router.delete("/deletetheme/:themeId", userAuth, DeleteTheme);
 
-router.post("/analyze-receipt", userAuth, analyzeReceipt);
+router.post("/analyze-receipt", userAuth, checkTokenLimit, analyzeReceipt);
+router.get("/getaiconversations", userAuth, getConversation);
 
 export default router;

@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import SYSTEM_PROMPT from "./SystemPrompt";
+import { conversationservice } from "./ConversationService";
 
 dotenv.config();
 
@@ -17,6 +18,10 @@ export interface AnalyzeReceiptParams {
   message?: string;
   previousMessages?: Array<{ role: string; content: string }>;
   isInitialAnalysis: boolean;
+}
+interface AiAnalysisResult {
+  content: string;
+  token: number;
 }
 
 export class AIReceiptAnalyzer {
@@ -39,7 +44,9 @@ export class AIReceiptAnalyzer {
    * @param params - Object containing base64Image and optional plannedNote
    * @returns Friendly text analysis in the receipt's language
    */
-  async analyzeReceipt(params: AnalyzeReceiptParams): Promise<string> {
+  async analyzeReceipt(
+    params: AnalyzeReceiptParams,
+  ): Promise<AiAnalysisResult> {
     try {
       const {
         base64Image,
@@ -112,7 +119,6 @@ export class AIReceiptAnalyzer {
         apiMessage.push({ role: "user", content: message });
       }
 
-      console.log(apiMessage);
       const response = await fetch(String(this.apiURL), {
         method: "POST",
         headers: {
@@ -135,12 +141,16 @@ export class AIReceiptAnalyzer {
 
       const data = await response.json();
       const result = data.choices?.[0]?.message?.content;
+      const tokens =
+        data.usage?.total_tokens || conversationservice.estimateTokens(result);
+
+      console.log(tokens);
 
       if (!result) {
         throw new Error("No content received from AI API");
       }
 
-      return result;
+      return { content: result, token: tokens };
     } catch (error) {
       console.error("Error analyzing receipt:", error);
       throw error;

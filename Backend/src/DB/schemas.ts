@@ -67,3 +67,36 @@ export const notesTable = pgTable("Notes", {
   completed: boolean("completed").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const aiConversation = pgTable("ai_conversation", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => Users.id, { onDelete: "cascade" }),
+  noteId: integer("note_id").references(() => notesTable.id, {
+    onDelete: "cascade",
+  }),
+  messages: jsonb("messages")
+    .$type<
+      Array<{
+        role: "user" | "ai";
+        content: string;
+        timestamp: string;
+      }>
+    >()
+    .notNull(),
+  totalTokens: integer("total_tokens").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const userTokenUsage = pgTable("user_token_usage", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => Users.id, { onDelete: "cascade" }),
+  date: timestamp("date").defaultNow().notNull(),
+  tokensUsed: integer("tokens_used").default(0),
+  maxTokens: integer("max_tokens").default(15000),
+  lastResetAt: timestamp("last_reset_at").defaultNow(),
+});

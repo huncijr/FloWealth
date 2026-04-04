@@ -68,26 +68,42 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   const { user } = useAuth();
 
   useEffect(() => {
-    if (initialAnalysis) {
-      setMessages((prev) => {
-        const alreadyExists = prev.some(
-          (m) => m.role === "ai" && m.content === initialAnalysis,
-        );
-        if (alreadyExists) return prev;
+    if (isopen) {
+      if (initialAnalysis) {
+        setMessages((prev) => {
+          const alreadyExists = prev.some(
+            (m) => m.role === "ai" && m.content === initialAnalysis,
+          );
+          if (alreadyExists) return prev;
 
-        return [
-          ...prev,
-          { role: "ai", content: initialAnalysis, timestamp: new Date() },
-        ];
-      });
+          return [
+            ...prev,
+            { role: "ai", content: initialAnalysis, timestamp: new Date() },
+          ];
+        });
+      } else if (!initialAnalysis) {
+        console.log("i am here");
+        loadConversation();
+      }
     }
-  }, [initialAnalysis]);
+  }, [initialAnalysis, isopen]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const loadConversation = async () => {
+    try {
+      const endpoint = note?.id
+        ? `/getaiconversations/${note.id}`
+        : "/getaiconversations";
+      const response = await api.get(endpoint);
+      console.log(response);
+      setMessages(response.data.data?.messages || []);
+    } catch (error) {}
+  };
 
   const handleSendMessage = async () => {
     if (!inputvalue.trim() || !note) return;
