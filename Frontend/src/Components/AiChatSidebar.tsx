@@ -120,15 +120,21 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     setInputValue("");
     setIsLoading(true);
     try {
-      const response = await api.post("/analyze-receipt", {
-        noteId: selectednotes?.id,
-        imageBase64: isfirstmessage ? selectednotes?.picture : undefined,
-        message: inputvalue,
-        previousMessages: messages.map((m) => ({
-          role: m.role,
-          content: m.content,
-        })),
-      });
+      const response = await api.post(
+        "/analyze-receipt",
+        {
+          noteId: selectednotes?.id,
+          imageBase64: isfirstmessage ? selectednotes?.picture : undefined,
+          message: inputvalue,
+          previousMessages: messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        },
+        {
+          timeout: 30000,
+        },
+      );
       if (response.data.success) {
         const aiMessage: Message = {
           role: "ai",
