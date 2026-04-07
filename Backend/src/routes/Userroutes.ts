@@ -23,6 +23,7 @@ import { VerifyCloudflare } from "../middlewares/CloudflareAuth";
 import { userAuth } from "../middlewares/Usermiddleware";
 import {
   analyzeReceipt,
+  compareTwoNotes,
   getConversation,
 } from "../controllers/AIReceiptController";
 import { checkTokenLimit } from "../middlewares/TokenLimit";
@@ -49,5 +50,6 @@ router.delete("/deletetheme/:themeId", userAuth, DeleteTheme);
 
 router.post("/analyze-receipt", userAuth, checkTokenLimit, analyzeReceipt);
 router.get("/getaiconversations", userAuth, getConversation);
+router.post("/compare-notes", userAuth, checkTokenLimit, compareTwoNotes);
 
 export default router;

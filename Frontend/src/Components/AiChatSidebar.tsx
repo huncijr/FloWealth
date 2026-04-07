@@ -224,7 +224,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     animate={{ opacity: 1 }}
                     className="flex gap-3"
                   >
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center">
                       <Bot className="w-4 h-4 text-white" />
                     </div>
                     <div className="bg-white/10 text-white p-4 rounded-2xl rounded-tl-sm border border-white/10">

@@ -8,16 +8,27 @@ import {
   ScrollShadow,
   Select,
 } from "@heroui/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useThemes } from "../Context/ThemeContext";
 import { ArrowRightLeft, NotebookPen, Sparkles } from "lucide-react";
 import useDarkMode from "./Mode";
+import { api } from "../api/axiosInstance";
+
+interface ParsedComparison {
+  table: { headers: string[]; rows: string[][] } | null;
+  insights: { title: string; bullets: string[] }[];
+  winner: { name: string; reasons: string[] } | null;
+  tips: string[];
+}
 
 export const NoteComparison = () => {
   const { notes } = useNotes();
   const { themes } = useThemes();
   const { isDark } = useDarkMode();
+
   const [selectedtheme, setSelectedTheme] = useState<string>("all");
+  const [comparisonresult, setComparisonResult] =
+    useState<ParsedComparison | null>(null);
 
   const completedNotes = notes.filter((note) => note.completed);
   const filteredNotes =
@@ -28,6 +39,144 @@ export const NoteComparison = () => {
   const [noteA, setNoteA] = useState<Note | null>(null);
   const [noteB, setNoteB] = useState<Note | null>(null);
   const [iscomparing, setIsComparing] = useState<boolean>(false);
+
+  const handleCompare = async () => {
+    if (!noteA || !noteB) return;
+    setIsComparing(true);
+    try {
+      const response = await api.post(
+        "/compare-notes",
+        {
+          noteIdA: noteA.id,
+          noteIdB: noteB.id,
+          noteA: {
+            productTitle: noteA.productTitle,
+            estcost: noteA.estcost,
+            cost: noteA.cost,
+            products: noteA.products,
+            picture: noteA.picture,
+          },
+          noteB: {
+            productTitle: noteB.productTitle,
+            estcost: noteB.estcost,
+            cost: noteB.cost,
+            products: noteB.products,
+            picture: noteB.picture,
+          },
+        },
+        { timeout: 30000 },
+      );
+      if (response.data.success) {
+        console.log(response.data);
+        const parsed = parseAIResponse(response.data.result);
+        console.log(parsed);
+        setComparisonResult(parsed);
+      }
+    } catch (error: any) {
+      if (error.response?.status === 429) {
+        return;
+      }
+    } finally {
+      setIsComparing(false);
+    }
+  };
+
+  const parseAIResponse = (response: string): ParsedComparison => {
+    const result: ParsedComparison = {
+      table: null,
+      insights: [],
+      winner: null,
+      tips: [],
+    };
+    const lines = response.split("\n");
+    let currentSection = "";
+    let currentInsight: { title: string; bullets: string[] } | null = null;
+    const tableRegex = /^\|[\s\S]*?\|$/;
+    const tableLines: string[] = [];
+
+    const insightRegex = /^\*\*(.+?)\*\*/;
+    const bulletRegex = /^-\s\*\*(.+?)\*\*:\s*(.+)$/;
+    const subBulletRegex = /^\s+-\s+(.+)$/;
+
+    const winnerRegex = /\*\*(Note [AB])\*\* represents better value because:/i;
+
+    const tipRegex = /^-\s+(.+)$/;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (tableRegex.test(line)) {
+        tableLines.push(line);
+        continue;
+      }
+      const winnerMatch = line.match(winnerRegex);
+      if (winnerMatch) {
+        const reasons: string[] = [];
+        let j = i + 1;
+        while (j < lines.length && lines[j].trim().startsWith("- ")) {
+          reasons.push(lines[j].trim().replace(/^-\s*/, ""));
+          j++;
+        }
+        result.winner = {
+          name: winnerMatch[1],
+          reasons,
+        };
+        continue;
+      }
+      const insightMatch = line.match(insightRegex);
+      if (insightMatch && !line.startsWith("-")) {
+        if (currentInsight) {
+          result.insights.push(currentInsight);
+        }
+        currentInsight = { title: insightMatch[1], bullets: [] };
+        continue;
+      }
+      if (currentInsight) {
+        const bulletMatch = line.match(bulletRegex);
+        if (bulletMatch) {
+          currentInsight.bullets.push(`${bulletMatch[1]}:${bulletMatch[2]}`);
+          continue;
+        }
+        const subMatch = line.match(subBulletRegex);
+        if (subMatch) {
+          const last =
+            currentInsight.bullets[currentInsight.bullets.length - 1];
+          if (last) {
+            currentInsight.bullets[currentInsight.bullets.length - 1] +=
+              ` ${subMatch[1]}`;
+          }
+          continue;
+        }
+      }
+      if (
+        line.includes("Final Recommendation") ||
+        line.includes("Improve Item Tracking")
+      ) {
+        currentSection = "tips";
+      }
+      if (currentSection === "tips" && tipRegex.test(line)) {
+        result.tips.push(line.replace(/^-\s*/, ""));
+        continue;
+      }
+    }
+    if (currentInsight) {
+      result.insights.push(currentInsight);
+    }
+    if (tableLines.length > 0) {
+      const rows = tableLines.map((line) => {
+        return line
+          .split("|")
+          .filter((cell) => cell.trim() !== "")
+          .map((cell) => cell.trim());
+      });
+      if (rows.length > 0) {
+        result.table = {
+          headers: rows[0],
+          rows: rows.slice(1),
+        };
+      }
+    }
+    return result;
+  };
 
   return (
     <div className="flex p-6 flex-col items-start py-20">
@@ -102,7 +251,7 @@ export const NoteComparison = () => {
               >
                 <div className="flex flex-col gap-1.5 mb-2">
                   <Label
-                    className="text-xs font-semibold text-gray-400 uppercase tracking-wider 
+                    className="text-xs font-semibold text-gray-900 dark:text-gray-400 uppercase tracking-wider 
                   flex items-center gap-2"
                   >
                     <div className="w-1 h-3 bg-linear-to-b from-primary to-secondary rounded-full" />
@@ -282,6 +431,7 @@ export const NoteComparison = () => {
           <Button
             size="lg"
             variant="tertiary"
+            onClick={handleCompare}
             isDisabled={!noteA || !noteB || iscomparing}
             className="w-full max-w-xs relative overflow-hidden group 
     bg-linear-to-r from-primary via-secondary to-primary 
@@ -356,7 +506,7 @@ export const NoteComparison = () => {
               >
                 <div className="flex flex-col gap-1.5 mb-2">
                   <Label
-                    className="text-xs font-semibold text-gray-400 uppercase tracking-wider 
+                    className="text-xs font-semibold text-gray-900 dark:text-gray-400  uppercase tracking-wider 
       flex items-center gap-2"
                   >
                     <div className="w-1 h-3 bg-linear-to-b from-primary to-secondary rounded-full" />
@@ -478,6 +628,35 @@ export const NoteComparison = () => {
           </Card>
         </motion.div>
       </div>
+      {comparisonresult?.table && (
+        <div className="overflow-hidden rounded-xl border border-white/10 mb-6">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-gradient-to-r from-primary/20 to-secondary/20">
+              <tr>
+                {comparisonresult.table.headers.map((header, i) => (
+                  <th key={i} className="px-4 py-3 font-semibold">
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/10">
+              {comparisonresult.table.rows.map((row, i) => (
+                <tr key={i} className="hover:bg-white/5">
+                  {row.map((cell, j) => (
+                    <td key={j} className="px-4 py-3">
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {comparisonresult?.insights && comparisonresult.insights.length > 0 && (
+        <div className="mb-6"></div>
+      )}
     </div>
   );
 };

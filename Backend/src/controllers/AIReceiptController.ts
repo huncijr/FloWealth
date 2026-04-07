@@ -6,6 +6,10 @@ import { eq } from "drizzle-orm";
 import { aiReceiptAnalyzer } from "../services/AIAnalyzer";
 import { conversationservice } from "../services/ConversationService";
 import { timestamp } from "drizzle-orm/gel-core";
+import {
+  noteComparisionAnalyzer,
+  NoteComparisonAnalyzer,
+} from "../services/NoteComparisonAnalyzer";
 
 interface Product {
   name: string;
@@ -89,7 +93,7 @@ export const analyzeReceipt = async (
           content: m.content,
         })) || req.body.previousMessages;
 
-      console.log(previousMessages);
+      // console.log(previousMessages);
 
       const analysis = await aiReceiptAnalyzer.analyzeReceipt({
         base64Image: imageBase64,
@@ -160,7 +164,7 @@ export const getConversation = async (
     return res.status(401).json({ success: false, message: "Unathorized" });
   }
   const { noteId } = req.query;
-  console.log(noteId);
+  // console.log(noteId);
   if (noteId) {
     const conversation = await conversationservice.getRecentConversation(
       userId,
@@ -170,7 +174,75 @@ export const getConversation = async (
   } else {
     const allConversations =
       await conversationservice.getAllConversations(userId);
-    console.log(allConversations);
+    // console.log(allConversations);
     return res.json({ success: true, data: allConversations });
+  }
+};
+
+export const compareTwoNotes = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ message: "Unathorized", success: false });
+  }
+  try {
+    const { noteA, noteB } = req.body;
+    console.log("note A", noteA.productTitle, "note B", noteB.productTitle);
+
+    if (!noteA || !noteB) {
+      return res
+        .status(404)
+        .json({ success: false, message: "One or both notes not found" });
+    }
+
+    if (!noteA.productTitle || !noteB.productTitle) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid note Data" });
+    }
+
+    const hasTokens = await conversationservice.checkTokenLimit(userId);
+    if (!hasTokens) {
+      return res.status(429).json({
+        success: false,
+        message: "Daily AI token limit reached",
+      });
+    }
+
+    console.log(hasTokens);
+
+    const result = await noteComparisionAnalyzer.compareNotes({
+      noteA: {
+        productTitle: noteA.productTitle,
+        estcost: noteA.estcost,
+        cost: noteA.cost,
+        products: noteA.products,
+        picture: noteA.picture || undefined,
+      },
+
+      noteB: {
+        productTitle: noteB.productTitle,
+        estcost: noteB.estcost,
+        cost: noteB.cost,
+        products: noteB.products,
+        picture: noteB.picture || undefined,
+      },
+    });
+
+    console.log("token", result.token);
+    console.log("result", result.result);
+
+    await conversationservice.updateTokenUsage(userId, result.token);
+
+    return res.status(200).json({
+      success: true,
+      result: result.result,
+      tokens: result.token,
+    });
+  } catch (error) {
+    next(error);
   }
 };

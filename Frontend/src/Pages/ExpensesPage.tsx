@@ -595,16 +595,6 @@ const Expenses = () => {
                           </Dropdown.Item>
                         ))}
                     </Dropdown.Section>
-                    <Separator />
-                    <Dropdown.Section>
-                      <Header>Subscription</Header>
-                      <Dropdown.Item>
-                        <Label>Netflix</Label>
-                        <Kbd>
-                          <Kbd.Content>Subscriptions</Kbd.Content>
-                        </Kbd>
-                      </Dropdown.Item>
-                    </Dropdown.Section>
                   </Dropdown.Menu>
                 </Dropdown.Popover>
               </Dropdown>
@@ -1091,9 +1081,13 @@ const Expenses = () => {
                           {note.products.length !== 1 ? "s" : ""}
                         </p>
                         <div
-                          className={`rounded-lg p-2 ${isDark ? "bg-gray-700/50" : "bg-gray-100"}`}
+                          className={`rounded-lg p-2 max-h-[200px] overflow-y-auto scrollbar-thin ${
+                            isDark
+                              ? "bg-gray-700/50 scrollbar-thumb-gray-600 scrollbar-track-gray-800"
+                              : "bg-gray-100 scrollbar-thumb-gray-300 scrollbar-track-gray-200"
+                          }`}
                         >
-                          {note.products.slice(0, 3).map((product, i) => (
+                          {note.products.map((product, i) => (
                             <div
                               key={i}
                               className="flex justify-between text-xs py-1"
@@ -1112,13 +1106,6 @@ const Expenses = () => {
                               </span>
                             </div>
                           ))}
-                          {note.products.length > 3 && (
-                            <p
-                              className={`text-xs text-center mt-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}
-                            >
-                              +{note.products.length - 3} more
-                            </p>
-                          )}
                         </div>
                         {note.message && (
                           <div className="py-3 flex flex-col gap-2">
@@ -1213,16 +1200,6 @@ const Expenses = () => {
                           </div>
                         </Dropdown.Item>
                       ))}
-                  </Dropdown.Section>
-                  <Separator />
-                  <Dropdown.Section>
-                    <Header>Subscription</Header>
-                    <Dropdown.Item>
-                      <Label>Netflix</Label>
-                      <Kbd>
-                        <Kbd.Content>Subscriptions</Kbd.Content>
-                      </Kbd>
-                    </Dropdown.Item>
                   </Dropdown.Section>
                 </Dropdown.Menu>
               </Dropdown.Popover>

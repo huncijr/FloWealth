@@ -62,7 +62,7 @@ export const AddNewThemes = async (
 ) => {
   try {
     const { themes: ThemeName, color } = req.body;
-    console.log(ThemeName, color);
+    // console.log(ThemeName, color);
     const userId = req.userId;
 
     if (!ThemeName || !userId) {
@@ -99,7 +99,7 @@ export const AddNewThemes = async (
       name: ThemeName,
       color: color || "#b7b7b7",
     };
-    console.log(newThemeItem);
+    // console.log(newThemeItem);
 
     // Try to update existing row (append new theme to JSONB array)
     let updatedTheme;
@@ -120,12 +120,12 @@ export const AddNewThemes = async (
       updatedTheme = inserted;
     }
 
-    console.log(updatedTheme);
+    // console.log(updatedTheme);
 
     // Get the actual updated themes from the DB result
     const result = updatedTheme[0]?.themes || [];
 
-    console.log(result);
+    // console.log(result);
     return res.status(201).json({ success: true, allthemes: result });
   } catch (error) {
     next(error);
@@ -381,7 +381,7 @@ export const UpdateNote = async (
       message,
       picture,
     } = req.body;
-    console.log(color);
+
     if (!userId || !id) {
       return res
         .status(400)
@@ -393,7 +393,7 @@ export const UpdateNote = async (
       .from(notesTable)
       .where(and(eq(notesTable.id, id), eq(notesTable.userId, userId)))
       .limit(1);
-    console.log(existingNote);
+    // console.log(existingNote);
     if (!existingNote) {
       return res
         .status(404)

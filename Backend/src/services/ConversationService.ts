@@ -85,6 +85,7 @@ export class ConversationService {
   }
 
   async updateTokenUsage(userId: number, tokens: number): Promise<void> {
+    console.log("used tokens", tokens);
     const existing = await db
       .select()
       .from(userTokenUsage)
