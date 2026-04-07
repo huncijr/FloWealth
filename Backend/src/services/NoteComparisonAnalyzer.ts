@@ -49,26 +49,38 @@ actual_cost: ${params.noteB.cost}
 price_diff: ${priceDiffB >= 0 ? "+" : ""}${priceDiffB}
 items: ${params.noteB.products.map((p, i) => `${i + 1}. ${p.name} | qty: ${p.quantity} | price: ${p.estprice}`).join(", ")}
 
-Respond ONLY in this markdown format:
+TABLE_RULES:
+- Only 3 columns: category, note_a, note_b
+- Only numeric or short text values per cell
+- NO lists or multi-value items in cells
+- Put detailed items in INSIGHTS section instead
+
+ITEM_DETAILS:
+- If items differ significantly, mention in Key Insights
+- Do NOT put item lists in table cells
+
+OUTPUT_FORMAT:
 
 |category|note_a|note_b|
 |---|---|---|
 |estimated_cost|$35.00|$23.00|
 |actual_cost|$49.00|$41.72|
-...
+|price_diff|+$14.00|+$18.72|
+|item_count|1|1|
 
-**Key Insights**
-- **Insight Title**: Description here
-- **Another Insight**: More description
+
+**Key Insights** (max 2-3 bullet, max 4 words each)
+- **Overestimation**: Both notes underestimated
+- **Item Tracking**: Only 1 item listed vs 3+ on receipt
 
 **Note A** represents better value because:
 - reason one
 - reason two
 
 **Final Recommendation**
-- tip one
-- tip two
-- tip three`.trim();
+- 1.:
+- 2.:
+- 3.:`.trim();
 
     const messageContent: any[] = [{ type: "text", text: userMessage }];
     if (params.noteA.picture) {
