@@ -321,12 +321,18 @@ const Login = () => {
                   <form onSubmit={handleLogin}>
                     <div className="flex flex-col justify-center gap-2">
                       <Label>Email</Label>
-                      <Input
-                        name="email"
-                        placeholder="Enter Your Email"
-                        value={loginemail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                      />
+                      <div className="flex items-center w-full gap-2">
+                        <Mail />
+                        <div className="flex-1">
+                          <Input
+                            name="email"
+                            placeholder="Enter Your Email"
+                            value={loginemail}
+                            onChange={(e) => setLoginEmail(e.target.value)}
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
                       <Label>Password</Label>
                       <div className="flex items-center  w-full gap-2">
                         <div
