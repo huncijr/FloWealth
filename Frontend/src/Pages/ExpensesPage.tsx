@@ -372,6 +372,9 @@ const Expenses = () => {
       setSelectedTheme(null);
       setSelectedDate(null);
       setProductTitle(null);
+      setRows([
+        { id: Date.now(), productName: "", quantity: 1, estPrice: null },
+      ]);
     }
   };
 

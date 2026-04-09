@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { TokenPayload } from "google-auth-library";
-import { AuthRequest, OTPTempData } from "../types/interfaces";
+import { AuthRequest, OTPTempData, UserIdRequest } from "../types/interfaces";
 import { generateOTP, sendOTP } from "../middlewares/Emailverification";
 import { db } from "../DB/db";
 import { Otps, Users } from "../DB/schemas";
@@ -329,6 +329,48 @@ export const GetUser = async (
         isGoogleUser: user.isGoogleUser,
         ...(user.picture && { picture: user.picture }),
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const DeleteUser = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.userId;
+    console.log(userId);
+    if (!userId) {
+      return res.status(401).json({ message: "Unathorized", success: false });
+    }
+    res.clearCookie("authToken", { path: "/" });
+    return res
+      .status(200)
+      .json({ message: "User deleted succesfully", success: true });
+    await db.delete(Users).where(eq(Users.id, userId as number));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const SignOutUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    res.clearCookie("authToken", {
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+    });
+    return res.status(200).json({
+      message: "Signed out successfully",
+      success: true,
     });
   } catch (error) {
     next(error);

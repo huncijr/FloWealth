@@ -31,6 +31,7 @@ import {
 import { useAuth, type UserData } from "../Context/AuthContext";
 import CustomCarousel from "../Components/CustomCarousel";
 import useDarkMode from "../Components/Mode";
+import RegisteredUser from "../Components/RegisteredUserUI";
 
 const Login = () => {
   const [googletoken] = useState<String>("");
@@ -178,12 +179,8 @@ const Login = () => {
     <div className="min-h-screen">
       {/* CASE 1: Full authentication complete (e.g., Google login or OTP verified) */}
       {user && verification ? (
-        <div className="flex flex-col justify-center items-center min-h-screen">
-          <div className="flex flex-col py-5">
-            <span>Welcome, {user.name} !</span>
-            <span>Your email: {user.email}</span>
-            <span>Your ID: {user.id}</span>
-          </div>
+        <div className="flex flex-col  min-h-screen">
+          <RegisteredUser />
         </div>
       ) : /* CASE 2: Account created but needs email verification (OTP) */
       tempUser && !verification ? (

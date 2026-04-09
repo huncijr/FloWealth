@@ -1,7 +1,7 @@
 import { Response, NextFunction } from "express";
 import { UserIdRequest } from "../types/interfaces";
 import { db } from "../DB/db";
-import { notesTable } from "../DB/schemas";
+import { notesTable, userTokenUsage } from "../DB/schemas";
 import { eq } from "drizzle-orm";
 import { aiReceiptAnalyzer } from "../services/AIAnalyzer";
 import { conversationservice } from "../services/ConversationService";
@@ -176,6 +176,46 @@ export const getConversation = async (
       await conversationservice.getAllConversations(userId);
     // console.log(allConversations);
     return res.json({ success: true, data: allConversations });
+  }
+};
+
+export const getAiTokens = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unathorized" });
+  }
+  try {
+    const userToken = await db
+      .select({
+        tokensUsed: userTokenUsage.tokensUsed,
+        maxTokens: userTokenUsage.maxTokens,
+      })
+      .from(userTokenUsage)
+      .where(eq(userTokenUsage.userId, userId))
+      .limit(1);
+
+    if (!userToken || userToken.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          tokensUsed: 0,
+          maxTokens: 90000,
+        },
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: {
+        tokensUsed: userToken[0]?.tokensUsed,
+        maxTokens: userToken[0]?.maxTokens,
+      },
+    });
+  } catch (error) {
+    next(error);
   }
 };
 

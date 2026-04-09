@@ -14,7 +14,7 @@ const Theme = () => {
   }, []);
   if (!mounted) return null;
   return (
-    <div className="p-10 gap-4 flex">
+    <div className="p-10 gap-4 flex z-1 relative">
       <button onClick={toggleTheme}>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

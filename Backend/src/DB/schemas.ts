@@ -42,7 +42,7 @@ export const Themes = pgTable("Themes", {
   id: serial("id").primaryKey().notNull(),
   userId: integer("user_id")
     .notNull()
-    .references(() => Users.id),
+    .references(() => Users.id, { onDelete: "cascade" }),
   themes: jsonb("themes")
     .$type<{ id: number; name: string; color: string }[]>()
     .default([])

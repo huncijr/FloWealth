@@ -9,6 +9,14 @@ import { Avatar } from "@heroui/react";
 const NavBar = () => {
   const { isDark } = useDarkMode();
   const { user } = useAuth();
+
+  const getInitial = (name: string) => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toLocaleUpperCase();
+    }
+    return name.slice(0, 2).toLocaleUpperCase();
+  };
   return (
     // Responsive navigation with mobile-first approach
     // Switches from stacked layout (mobile) to horizontal row (md+)
@@ -26,19 +34,21 @@ const NavBar = () => {
           {/* Mobile-only account link - shows avatar for Google users, icon for others */}
           <NavLink
             to="/Account"
-            className={({ isActive }) =>
+            className={
               !user?.isGoogleUser
-                ? `border-2 md:hidden  rounded-lg p-2  ${isActive ? "border-secondary" : "border-gray-600"} mt-3`
+                ? `md:hidden  rounded-lg p-2   mt-3`
                 : " md:hidden"
             }
           >
-            {user?.isGoogleUser && user?.picture ? (
-              <Avatar className="mt-5 md-hidden">
+            <Avatar className="mt-5 md-hidden">
+              {user?.isGoogleUser && user?.picture ? (
                 <Avatar.Image src={user.picture} alt="Profile" />
-              </Avatar>
-            ) : (
-              <User size={30} />
-            )}
+              ) : (
+                <Avatar.Fallback className="bg-secondary text-white font-bold">
+                  {getInitial(user?.name || "U")}
+                </Avatar.Fallback>
+              )}
+            </Avatar>
           </NavLink>
         </div>
         <div className="flex justify-center md:justify-end sm:items-center gap-6">
@@ -54,7 +64,7 @@ const NavBar = () => {
             <NavLink
               to="/Home"
               className={({ isActive }) =>
-                `${isActive && "border-b-2 border-secondary "} cursor-pointer hover:opacity-80 transition-opacity`
+                `${isActive && "border-b-2 border-secondary "} shrink-0 cursor-pointer hover:opacity-80 transition-opacity`
               }
             >
               {" "}
@@ -63,7 +73,7 @@ const NavBar = () => {
             <NavLink
               to="/Analytics"
               className={({ isActive }) =>
-                `${isActive && "border-b-2 border-secondary "} cursor-pointer hover:opacity-80 transition-opacity`
+                `${isActive && "border-b-2 border-secondary "} shrink-0  cursor-pointer hover:opacity-80 transition-opacity`
               }
             >
               {" "}
@@ -72,7 +82,7 @@ const NavBar = () => {
             <NavLink
               to="/Expenses"
               className={({ isActive }) =>
-                `${isActive && "border-b-2 border-secondary "} cursor-pointer hover:opacity-80 transition-opacity`
+                `${isActive && "border-b-2 border-secondary "}shrink-0  cursor-pointer hover:opacity-80 transition-opacity`
               }
             >
               {" "}
@@ -84,23 +94,21 @@ const NavBar = () => {
             to="/Account"
             className={({ isActive }) =>
               !user?.isGoogleUser
-                ? `border-2   rounded-lg p-1 md:h-10 ${
+                ? `   rounded-lg p-1 md:h-10 ${
                     isActive
-                      ? "border-secondary hover:border-secondary/70"
-                      : "border-gray-600 hover:border-gray-600/70 "
                   } invisible md:flex md:visible`
                 : "invisible md:flex md:visible"
             }
           >
-            {user?.isGoogleUser && user?.picture ? (
-              <Avatar>
+            <Avatar>
+              {user?.isGoogleUser && user?.picture ? (
                 <Avatar.Image src={user.picture} alt="Profile" />
-              </Avatar>
-            ) : (
-              <User
-                className={`${isDark ? "hover:text-gray-400" : "hover:text-black/70"}`}
-              />
-            )}
+              ) : (
+                <Avatar.Fallback className="bg-secondary text-white font-bold">
+                  {getInitial(user?.name || "U")}
+                </Avatar.Fallback>
+              )}
+            </Avatar>
           </NavLink>
         </div>
       </div>

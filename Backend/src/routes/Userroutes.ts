@@ -3,9 +3,11 @@ import {
   AuthenticateUser,
   createGoogleUser,
   createUser,
+  DeleteUser,
   GetUser,
   resendOTP,
   SignInUser,
+  SignOutUser,
 } from "../controllers/Appcontroller";
 import {
   AddNewThemes,
@@ -24,6 +26,7 @@ import { userAuth } from "../middlewares/Usermiddleware";
 import {
   analyzeReceipt,
   compareTwoNotes,
+  getAiTokens,
   getConversation,
 } from "../controllers/AIReceiptController";
 import { checkTokenLimit } from "../middlewares/TokenLimit";
@@ -36,6 +39,8 @@ router.post("/login", VerifyCloudflare, SignInUser);
 router.post("/authenticate", AuthenticateUser);
 router.post("/resendOTP", resendOTP);
 router.get("/getUser", GetUser);
+router.delete("/deleteUser", userAuth, DeleteUser);
+router.post("/signout", SignOutUser);
 
 router.get("/gettheme", userAuth, GetThemes);
 router.post("/newtheme", userAuth, AddNewThemes);
@@ -50,6 +55,7 @@ router.delete("/deletetheme/:themeId", userAuth, DeleteTheme);
 
 router.post("/analyze-receipt", userAuth, checkTokenLimit, analyzeReceipt);
 router.get("/getaiconversations", userAuth, getConversation);
+router.get("/getaitokens", userAuth, getAiTokens);
 router.post("/compare-notes", userAuth, checkTokenLimit, compareTwoNotes);
 
 export default router;
