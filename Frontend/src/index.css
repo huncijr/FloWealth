@@ -90,7 +90,41 @@ body {
     transform: scale(1.2);
   }
 }
-
+@keyframes gold-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes gold-sheen {
+  0% {
+    background-position: 0% 50%;
+    opacity: 0.25;
+  }
+  50% {
+    background-position: 100% 50%;
+    opacity: 0.45;
+  }
+  100% {
+    background-position: 0% 50%;
+    opacity: 0.25;
+  }
+}
+@keyframes gold-shimmer {
+  0% {
+    transform: translateX(-160%) skewX(-18deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateX(260%) skewX(-18deg);
+    opacity: 0;
+  }
+}
 @keyframes glow-soft {
   0%,
   100% {
@@ -373,6 +407,157 @@ body {
   border: 2px solid var(--color-primary);
   border-radius: 50%;
   animation: pulse-ring 2s ease-in-out infinite;
+}
+
+.badge-gold {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  border-radius: 9999px;
+  overflow: clip;
+
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.badge-gold::before {
+  content: "";
+  position: absolute;
+  inset: -100px;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(175, 108, 13, 0.95) 0deg,
+    rgba(178, 132, 15, 0.95) 60deg,
+    rgba(185, 151, 15, 0.95) 140deg,
+    rgba(249, 180, 20, 0.95) 220deg,
+    rgba(247, 178, 18, 0.95) 360deg
+  );
+  animation: gold-spin 2.8s linear infinite;
+  filter: blur(0.2px);
+  opacity: 0.9;
+}
+
+.badge-gold > * {
+  position: relative;
+  z-index: 1;
+}
+
+.badge-gold .badge-sheen {
+  position: absolute;
+  inset: 2px;
+  border-radius: 9999px;
+
+  background-size: 200% 200%;
+  animation: gold-sheen 4.5s ease-in-out infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.badge-gold:hover::before {
+  opacity: 1;
+  filter: drop-shadow(0 0 14px rgba(186, 132, 7, 0.45));
+}
+
+.btn-gold {
+  position: relative;
+  border-radius: 14px;
+  padding: 0.75rem 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+
+  color: rgba(20, 20, 20, 0.92);
+  background: linear-gradient(
+    135deg,
+    rgba(206, 150, 19, 0.2),
+    rgba(191, 106, 2, 0.14)
+  );
+  border: 1px solid rgba(206, 150, 19, 0.45);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  transition:
+    transform 180ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+  overflow: hidden;
+}
+
+.btn-gold::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgba(206, 150, 19, 0.35),
+    rgba(206, 150, 19, 0) 55%
+  );
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.btn-gold::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  bottom: -60%;
+  left: -80%;
+  width: 140%;
+
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0)
+  );
+
+  animation: gold-shimmer 2.8s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.btn-gold:hover {
+  transform: translateY(-1px);
+  border-color: rgba(206, 150, 19, 0.7);
+  box-shadow:
+    0 10px 26px rgba(206, 150, 19, 0.18),
+    0 0 18px rgba(191, 106, 2, 0.18);
+}
+.dark .btn-gold {
+  color: rgba(255, 255, 255, 0.92);
+  border-color: rgba(206, 150, 19, 0.55);
+  background: linear-gradient(
+    135deg,
+    rgba(206, 150, 19, 0.22),
+    rgba(191, 106, 2, 0.16)
+  );
+}
+
+.btn-gold:hover::after {
+  opacity: 1;
+}
+
+.btn-gold:active {
+  transform: translateY(0px) scale(0.99);
+}
+
+.btn-gold-outline {
+  background: rgba(0, 0, 0, 0.12);
+  color: #000;
+  border: 1px solid rgba(206, 150, 19, 0.55);
+}
+
+.btn-gold-outline::after {
+  opacity: 0; /* alapból ne fusson, csak hover */
+  animation-duration: 2.2s;
+}
+
+.btn-gold-outline:hover::after {
+  opacity: 1;
 }
 
 /* === COMPONENTS === */
