@@ -1334,7 +1334,7 @@ const Expenses = () => {
             )}
 
             {hasInitiallyLoaded && themes?.length > 0 && (
-              <div className="my-5 theme-list-animate">
+              <div className="my-5 ">
                 <ThemeList onThemeDeleted={handleThemeDeletedWithNotes} />
               </div>
             )}

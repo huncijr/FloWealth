@@ -1,4 +1,11 @@
-import { Button, Card, CardHeader, Input, ScrollShadow } from "@heroui/react";
+import {
+  Avatar,
+  Button,
+  Card,
+  CardHeader,
+  Input,
+  ScrollShadow,
+} from "@heroui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
@@ -176,6 +183,14 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       handleSendMessage();
     }
   };
+
+  const getInitial = (name: string) => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toLocaleUpperCase();
+    }
+    return name.slice(0, 2).toLocaleUpperCase();
+  };
   return (
     isopen && (
       <AnimatePresence>
@@ -274,7 +289,11 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                             className="h-7 w-7 object-cover rounded-full"
                           />
                         ) : (
-                          <User className="w-4 h-4 text-white" />
+                          <Avatar className="mt-5 md-hidden">
+                            <Avatar.Fallback className="bg-secondary text-white font-bold">
+                              {getInitial(user?.name || "U")}
+                            </Avatar.Fallback>
+                          </Avatar>
                         )
                       ) : (
                         <Bot className="w-4 h-4 text-white" />
@@ -385,7 +404,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     animate={{ opacity: 1 }}
                     className="flex gap-3"
                   >
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
                       <Bot className="w-4 h-4 text-white" />
                     </div>
                     <div className="bg-white/10 text-white p-4 rounded-2xl rounded-tl-sm border border-white/10">

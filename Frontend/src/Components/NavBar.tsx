@@ -1,10 +1,10 @@
-import { User } from "lucide-react";
 import Flowealth from "../assets/FloWealth.png";
 import DarkFlowealth from "../assets/DarkFloWealth.png";
 import useDarkMode from "./Mode";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import { Avatar } from "@heroui/react";
+import { User } from "lucide-react";
 
 const NavBar = () => {
   const { isDark } = useDarkMode();
@@ -41,12 +41,16 @@ const NavBar = () => {
             }
           >
             <Avatar className="mt-5 md-hidden">
-              {user?.isGoogleUser && user?.picture ? (
-                <Avatar.Image src={user.picture} alt="Profile" />
+              {user ? (
+                user?.isGoogleUser && user?.picture ? (
+                  <Avatar.Image src={user.picture} alt="Profile" />
+                ) : (
+                  <Avatar.Fallback className="bg-secondary text-white font-bold">
+                    {getInitial(user?.name || "U")}
+                  </Avatar.Fallback>
+                )
               ) : (
-                <Avatar.Fallback className="bg-secondary text-white font-bold">
-                  {getInitial(user?.name || "U")}
-                </Avatar.Fallback>
+                <User />
               )}
             </Avatar>
           </NavLink>
@@ -101,12 +105,16 @@ const NavBar = () => {
             }
           >
             <Avatar>
-              {user?.isGoogleUser && user?.picture ? (
-                <Avatar.Image src={user.picture} alt="Profile" />
+              {user ? (
+                user?.isGoogleUser && user?.picture ? (
+                  <Avatar.Image src={user.picture} alt="Profile" />
+                ) : (
+                  <Avatar.Fallback className="bg-secondary text-white font-bold">
+                    {getInitial(user?.name || "U")}
+                  </Avatar.Fallback>
+                )
               ) : (
-                <Avatar.Fallback className="bg-secondary text-white font-bold">
-                  {getInitial(user?.name || "U")}
-                </Avatar.Fallback>
+                <User />
               )}
             </Avatar>
           </NavLink>

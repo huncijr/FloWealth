@@ -12,6 +12,7 @@ import {
   FieldError,
   TextField,
   Alert,
+  Checkbox,
 } from "@heroui/react";
 import { api } from "../api/axiosInstance";
 import {
@@ -32,6 +33,7 @@ import { useAuth, type UserData } from "../Context/AuthContext";
 import CustomCarousel from "../Components/CustomCarousel";
 import useDarkMode from "../Components/Mode";
 import RegisteredUser from "../Components/RegisteredUserUI";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const [googletoken] = useState<String>("");
@@ -53,6 +55,7 @@ const Login = () => {
   const [showpassword, setShowPassword] = useState<boolean>(false);
   const [confirmshowpassword, setConfirmShowPassword] =
     useState<boolean>(false);
+  const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
   const [isswitch, setIsSwitch] = useState<boolean>(false);
   useEffect(() => {
     if (user) {
@@ -300,7 +303,7 @@ const Login = () => {
             </h2>
             <div className="w-full max-w-[300px] md:max-w-[400px] lg:max-w-[500px]">
               <div className="flex justify-center">
-                <GoogleLoginButton />
+                <GoogleLoginButton isDisabled={!termsAccepted && !isswitch} />
               </div>
               <div className="flex items-center w-full my-2">
                 <div className="flex items-center w-full my-2">
@@ -491,7 +494,31 @@ const Login = () => {
                         <VerifySecurity onTokenReceived={SetRegisterToken} />
                       </div>
                       <div className="flex justify-end">
-                        <Button type="submit" isDisabled={!registertoken}>
+                        <Checkbox
+                          className="bg-gray-200 dark:bg-gray-700 rounded-lg p-3"
+                          isSelected={termsAccepted}
+                          onChange={() => setTermsAccepted(!termsAccepted)}
+                        >
+                          <Checkbox.Control>
+                            <Checkbox.Indicator />
+                          </Checkbox.Control>
+                          <Checkbox.Content>
+                            <Label>
+                              Accept{" "}
+                              <Link to="/Terms&Conditions">
+                                <span className="underline cursor-pointer text-blue-400">
+                                  terms&condition
+                                </span>
+                              </Link>
+                            </Label>
+                          </Checkbox.Content>
+                        </Checkbox>
+                      </div>
+                      <div className="flex justify-end">
+                        <Button
+                          type="submit"
+                          isDisabled={!registertoken || !termsAccepted}
+                        >
                           Submit
                         </Button>
                       </div>

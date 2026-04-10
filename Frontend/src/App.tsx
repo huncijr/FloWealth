@@ -11,13 +11,15 @@ import useDarkMode from "./Components/Mode";
 import { LoadingProvider } from "./Context/LoadingContext";
 import { ThemeProvider } from "./Context/ThemeContext";
 import { NotesProvider } from "./Context/Notescontext";
+import Footer from "./Components/Footer";
+import TermsConditions from "./Pages/Terms&Conditions";
 
 const NavBarLayout = () => {
   const { isDark } = useDarkMode();
 
   return (
     <main
-      className={`${isDark ? "bg-main-bg" : "bg-main-foreground"} min-h-screen`}
+      className={`${isDark ? "bg-main-bg" : "bg-main-foreground"} min-h-screen `}
     >
       <div className="flex flex-col relative">
         <NavBar />
@@ -28,6 +30,7 @@ const NavBarLayout = () => {
       <div>
         <Outlet />
       </div>
+      <Footer />
     </main>
   );
 };
@@ -42,6 +45,7 @@ function App() {
               <Route path="/Expenses" element={<Expenses />} />
               <Route path="/Analytics" element={<AnalyticsPage />} />
               <Route path="/Account" element={<Login />} />
+              <Route path="/Terms&Conditions" element={<TermsConditions />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
