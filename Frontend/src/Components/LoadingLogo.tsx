@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId } from "react";
 import "../../LogoLoading.css";
 import { useLoading } from "../Context/LoadingContext";
 

@@ -34,53 +34,106 @@ export class NoteComparisonAnalyzer {
     const priceDiffA = Number(params.noteA.cost) - Number(params.noteA.estcost);
     const priceDiffB = Number(params.noteB.cost) - Number(params.noteB.estcost);
 
-    const userMessage = `Compare these two shopping notes:
+    const userMessage = `Compare these two shopping notes.
+
 NOTE_A:
-title: ${params.noteA.productTitle}
-estimated_cost: ${params.noteA.estcost}
-actual_cost: ${params.noteA.cost}
-price_diff: ${priceDiffA >= 0 ? "+" : ""}${priceDiffA}
-items: ${params.noteA.products.map((p, i) => `${i + 1}. ${p.name} | qty: ${p.quantity} | price: ${p.estprice}`).join(", ")}
+title: ${params.noteA.productTitle ?? "N/A"}
+estimated_cost: ${params.noteA.estcost ?? "N/A"}
+actual_cost: ${params.noteA.cost ?? "N/A"}
+price_diff: ${Number.isFinite(priceDiffA) ? `${priceDiffA >= 0 ? "+" : ""}${priceDiffA}` : "N/A"}
+items: ${
+      Array.isArray(params.noteA.products) && params.noteA.products.length > 0
+        ? params.noteA.products
+            .map(
+              (p, i) =>
+                `${i + 1}. ${p?.name ?? "N/A"} | qty: ${p?.quantity ?? "N/A"} | price: ${p?.estprice ?? "N/A"}`,
+            )
+            .join(", ")
+        : "N/A"
+    }
 
 NOTE_B:
-title: ${params.noteB.productTitle}
-estimated_cost: ${params.noteB.estcost}
-actual_cost: ${params.noteB.cost}
-price_diff: ${priceDiffB >= 0 ? "+" : ""}${priceDiffB}
-items: ${params.noteB.products.map((p, i) => `${i + 1}. ${p.name} | qty: ${p.quantity} | price: ${p.estprice}`).join(", ")}
+title: ${params.noteB.productTitle ?? "N/A"}
+estimated_cost: ${params.noteB.estcost ?? "N/A"}
+actual_cost: ${params.noteB.cost ?? "N/A"}
+price_diff: ${Number.isFinite(priceDiffB) ? `${priceDiffB >= 0 ? "+" : ""}${priceDiffB}` : "N/A"}
+items: ${
+      Array.isArray(params.noteB.products) && params.noteB.products.length > 0
+        ? params.noteB.products
+            .map(
+              (p, i) =>
+                `${i + 1}. ${p?.name ?? "N/A"} | qty: ${p?.quantity ?? "N/A"} | price: ${p?.estprice ?? "N/A"}`,
+            )
+            .join(", ")
+        : "N/A"
+    }
 
-TABLE_RULES:
-- Only 3 columns: category, note_a, note_b
-- Only numeric or short text values per cell
-- NO lists or multi-value items in cells
-- Put detailed items in INSIGHTS section instead
+GOAL:
+- Produce a consistent, strict response format every time.
+- If any field is missing or cannot be determined, output "N/A" (exactly).
+- Always include ALL sections below in the exact order shown.
+- Do NOT add extra sections, extra tables, or extra commentary outside the template.
 
-ITEM_DETAILS:
-- If items differ significantly, mention in Key Insights
-- Do NOT put item lists in table cells
+TABLE_RULES (MANDATORY):
+- Output MUST begin with the markdown table (first line must start with "|category|note_a|note_b|").
+- Table MUST have exactly 3 columns: category, note_a, note_b
+- Table MUST have exactly these 4 rows in this order:
+  1) estimated_cost
+  2) actual_cost
+  3) price_diff
+  4) item_count
+- Each cell must be a single short value (number, currency, short text like "N/A").
+- Never put lists or multiple items in any table cell.
+- If you cannot compute a value, put "N/A".
 
-OUTPUT_FORMAT:
+INSIGHTS_RULES (MANDATORY):
+- The next section title MUST be exactly: **Key Insights**
+- Provide EXACTLY 3 bullet points.
+- Each bullet MUST match this exact pattern:
+  - **<short_title>**: <short_value_or_N/A>
+- Keep titles short (1-3 words). Keep values short (max ~6 words).
+- If you have no insight, still output 3 bullets with "N/A".
+
+RECOMMENDATION_RULES (MANDATORY):
+- The next section title MUST be exactly: **Final Recommendation**
+- Output EXACTLY 3 bullets:
+  - <short_text_or_N/A>
+  - <short_text_or_N/A>
+  - <short_text_or_N/A>
+- If you cannot recommend, use "N/A" for all 3 bullets.
+
+WINNER_RULES (MANDATORY):
+- The FINAL section title MUST be exactly: **Winner**
+- Output EXACTLY 3 bullets:
+  - winner: <Note A | Note B | Tie>
+  - reason: <short_text_or_N/A>
+  - reason: <short_text_or_N/A>
+- If winner cannot be determined, use "Tie" and "N/A" reasons.
+
+OUTPUT_TEMPLATE (COPY EXACTLY; replace only values):
 
 |category|note_a|note_b|
 |---|---|---|
-|estimated_cost|$35.00|$23.00|
-|actual_cost|$49.00|$41.72|
-|price_diff|+$14.00|+$18.72|
-|item_count|1|1|
+|estimated_cost|<value_or_N/A>|<value_or_N/A>|
+|actual_cost|<value_or_N/A>|<value_or_N/A>|
+|price_diff|<value_or_N/A>|<value_or_N/A>|
+|item_count|<value_or_N/A>|<value_or_N/A>|
 
-
-**Key Insights** (max 2-3 bullet, max 4 words each)
-- **Overestimation**: Both notes underestimated
-- **Item Tracking**: Only 1 item listed vs 3+ on receipt
-
-**Note A** represents better value because:
-- reason one
-- reason two
+**Key Insights**
+- **<short_title>**: <short_value_or_N/A>
+- **<short_title>**: <short_value_or_N/A>
+- **<short_title>**: <short_value_or_N/A>
 
 **Final Recommendation**
-- 1.:
-- 2.:
-- 3.:`.trim();
+- <short_text_or_N/A>
+- <short_text_or_N/A>
+- <short_text_or_N/A>
+
+**Winner**
+- winner: <Note A | Note B | Tie>
+- reason: <short_text_or_N/A>
+- reason: <short_text_or_N/A>
+`.trim();
 
     const messageContent: any[] = [{ type: "text", text: userMessage }];
     if (params.noteA.picture) {

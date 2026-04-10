@@ -108,7 +108,7 @@ const AnalyticsPage = () => {
             {/* Feature Chips */}
             <div className="badge-gold text-sm">
               <span className="badge-sheen" />
-              <Sparkles className="w-4 h-4 text-primary" />
+              <Sparkles className="w-4 h-4 text-orange-400" />
               <span>Free</span>
               <span>·</span>
               <span>AI-powered</span>

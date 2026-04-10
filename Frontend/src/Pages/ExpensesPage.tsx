@@ -612,7 +612,10 @@ const Expenses = () => {
                   ========================================== */}
 
             {notes.map((note) => (
-              <div key={note.id} className="relative w-full mx-auto h-[450px]">
+              <div
+                key={note.id}
+                className="relative w-full mx-auto h-[450px] note-animate-fade"
+              >
                 {!note.completed ? (
                   <div className="h-full flex flex-col">
                     <div className="flex items-center gap-3 bg-gray-300 transform -skew-x-9 shadow-lg overflow-hidden ">
@@ -1331,7 +1334,7 @@ const Expenses = () => {
             )}
 
             {hasInitiallyLoaded && themes?.length > 0 && (
-              <div className="my-5">
+              <div className="my-5 theme-list-animate">
                 <ThemeList onThemeDeleted={handleThemeDeletedWithNotes} />
               </div>
             )}

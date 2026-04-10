@@ -1,4 +1,4 @@
-import { Avatar, Button, Card, Tabs } from "@heroui/react";
+import { Avatar, Button, Card, Modal, Tabs } from "@heroui/react";
 import { useAuth } from "../Context/AuthContext";
 import { api } from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
@@ -14,9 +14,10 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 
 export function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(false);
+  const [matches, setMatches] = useState<boolean>(false);
 
   useEffect(() => {
     const mql = window.matchMedia(query);
@@ -38,6 +39,10 @@ const RegisteredUser = () => {
     tokensUsed: number;
     maxTokens: number;
   } | null>(null);
+
+  const [ismodal, setIsModal] = useState<boolean>(false);
+  const [spinning, setSpinnig] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(false);
 
   const email =
     "mailto:flowealthwebapp@gmail.com?subject=Bug Report - FloWealth";
@@ -68,16 +73,33 @@ const RegisteredUser = () => {
     } catch (error) {}
   };
 
+  const handleGetTokenUsage = async () => {
+    if (isDisabled) return;
+    setSpinnig(true);
+    setIsDisabled(true);
+    try {
+      const response = await api.get("/getaitokens", {
+        headers: { "Cache-control": "no-cache" },
+        params: { t: Date.now() },
+      });
+      if (response.data.success) {
+        console.log(response.data);
+        setTokens(response.data.data);
+      }
+    } catch (error) {
+    } finally {
+      setSpinnig(false);
+    }
+  };
+
   useEffect(() => {
-    const handleGetTokenUsage = async () => {
-      try {
-        const response = await api.get("/getaitokens");
-        if (response.data.success) {
-          console.log(response.data);
-          setTokens(response.data.data);
-        }
-      } catch (error) {}
-    };
+    if (isDisabled) {
+      setTimeout(() => {
+        setIsDisabled(false);
+      }, 5000);
+    }
+  }, [isDisabled]);
+  useEffect(() => {
     handleGetTokenUsage();
   }, []);
   const percentage = useMemo(() => {
@@ -85,7 +107,7 @@ const RegisteredUser = () => {
   }, [tokens]);
 
   return (
-    <div className="p-10 sm:p-20 flex flex-col">
+    <div className="p-10 sm:p-20 flex flex-col registeredui-slidefade registeredui-slidefade-stagger">
       <div className="flex items-center gap-4">
         <Avatar>
           {user?.picture ? (
@@ -204,7 +226,7 @@ const RegisteredUser = () => {
                 {/* Delete Account Button */}
                 <Button
                   variant="danger"
-                  onClick={handleDeleteAccount}
+                  onClick={() => setIsModal(true)}
                   className=" justify-start"
                 >
                   <div className="flex items-center gap-2">
@@ -249,7 +271,15 @@ const RegisteredUser = () => {
               {/* Info Sidebar */}
               <div className="mt-6 w-full max-w-md bg-content2 p-4 rounded-xl">
                 <div className="flex items-center gap-2 text-sm">
-                  <RefreshCcw className="w-4 h-4 text-secondary" />
+                  <motion.div
+                    animate={spinning ? { rotate: 360 } : { rotate: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className={`cursor-pointer  ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                    onClick={handleGetTokenUsage}
+                    style={{ pointerEvents: isDisabled ? "none" : "auto" }}
+                  >
+                    <RefreshCcw className="w-4 h-4 text-secondary" />
+                  </motion.div>
                   <span className="font-medium">Resets:</span>
                   <span className="opacity-70">Tomorrow at midnight</span>
                 </div>
@@ -361,6 +391,38 @@ const RegisteredUser = () => {
           </Tabs.Panel>
         </Tabs>
       </div>
+      {ismodal && (
+        <Modal isOpen={ismodal} onOpenChange={(open) => setIsModal(open)}>
+          <Modal.Backdrop className="" variant="blur">
+            <Modal.Container>
+              <Modal.Dialog className="">
+                <Modal.Header className="items-center text-center">
+                  <Modal.Icon className="rounded-full bg-red-700">
+                    <Trash2 />
+                  </Modal.Icon>
+                  <Modal.Heading>
+                    Are you sure you want to delete your account ?
+                  </Modal.Heading>
+                </Modal.Header>
+                <Modal.Body className="text-center">
+                  <p>
+                    This action will delete all of the themes&notes and the
+                    action is irreversible. Be aware of that!
+                  </p>
+                </Modal.Body>
+                <Modal.Footer className="flex flex-col">
+                  <Button variant="danger" onClick={handleDeleteAccount}>
+                    Delete My Account !
+                  </Button>
+                  <Button variant="ghost" onClick={() => setIsModal(false)}>
+                    Close
+                  </Button>
+                </Modal.Footer>
+              </Modal.Dialog>
+            </Modal.Container>
+          </Modal.Backdrop>
+        </Modal>
+      )}
     </div>
   );
 };

@@ -22,13 +22,6 @@ import {
 import useDarkMode from "./Mode";
 import { api } from "../api/axiosInstance";
 
-interface ParsedComparison {
-  table: { headers: string[]; rows: string[][] } | null;
-  insights: { title: string; bullets: string[] }[];
-  winner: { name: string; reasons: string[] } | null;
-  tips: string[];
-}
-
 export const NoteComparison = () => {
   const { notes } = useNotes();
   const { themes } = useThemes();
@@ -102,6 +95,51 @@ export const NoteComparison = () => {
     }
   };
 
+  type ParsedComparison = {
+    table: { headers: string[]; rows: string[][] } | null;
+    insights: { title: string; bullets: string[] }[];
+    winner: { name: string; reasons: string[] } | null;
+    tips: string[];
+  };
+
+  const DEFAULT_TABLE = {
+    headers: ["category", "note_a", "note_b"],
+    rows: [
+      ["estimated_cost", "N/A", "N/A"],
+      ["actual_cost", "N/A", "N/A"],
+      ["price_diff", "N/A", "N/A"],
+      ["item_count", "N/A", "N/A"],
+    ],
+  };
+
+  const DEFAULT_WINNER = { name: "Tie", reasons: ["N/A", "N/A"] };
+
+  const cleanLine = (s: string) => s.replace(/\r/g, "").trim();
+
+  const isTableLine = (line: string) => /^\|.*\|$/.test(line);
+
+  const parseMarkdownRow = (line: string) =>
+    line
+      .split("|")
+      .map((c) => c.trim())
+      .filter((c) => c.length > 0);
+
+  const isSeparatorRow = (cells: string[]) =>
+    cells.length >= 3 && cells.every((c) => /^-+$/.test(c) || c === "---");
+
+  const sectionHeader = (name: string) =>
+    new RegExp(`^\\*\\*${name}\\*\\*$`, "i");
+
+  const keyInsightsHeader = sectionHeader("Key Insights");
+  const winnerHeader = sectionHeader("Winner");
+  const finalRecHeader = sectionHeader("Final Recommendation");
+
+  const insightBulletRegex = /^(?:-\s+)\*\*(.+?)\*\*:\s*(.+)$/; // - **Title**: value
+  const bulletValueRegex = /^(?:-\s+|\d+[.)]\s+)(.+)$/; // - x | 1. x | 2) x
+
+  const winnerLineRegex = /^(?:-\s+)winner:\s*(Note A|Note B|Tie)\s*$/i;
+  const winnerReasonRegex = /^(?:-\s+)reason:\s*(.+)$/i;
+
   const parseAIResponse = (response: string): ParsedComparison => {
     const result: ParsedComparison = {
       table: null,
@@ -109,95 +147,149 @@ export const NoteComparison = () => {
       winner: null,
       tips: [],
     };
-    const lines = response.split("\n");
-    let currentSection = "";
-    let currentInsight: { title: string; bullets: string[] } | null = null;
-    const tableRegex = /^\|[\s\S]*?\|$/;
+
+    const lines = response.split("\n").map(cleanLine);
+
+    // ----------------------------
+    // 1) TABLE
+    // ----------------------------
     const tableLines: string[] = [];
+    for (const line of lines) {
+      if (isTableLine(line)) tableLines.push(line);
+    }
 
-    const insightRegex = /^\*\*(.+?)\*\*/;
-    const bulletRegex = /^-\s\*\*(.+?)\*\*:\s*(.+)$/;
-    const subBulletRegex = /^\s+-\s+(.+)$/;
+    if (tableLines.length >= 2) {
+      const rows = tableLines.map(parseMarkdownRow).filter((r) => r.length > 0);
+      const headers = rows[0] ?? [];
+      const maybeSep = rows[1] ?? [];
+      const dataRows = isSeparatorRow(maybeSep) ? rows.slice(2) : rows.slice(1);
 
-    const winnerRegex = /\*\*(Note [AB])\*\* represents better value because:/i;
+      if (headers.length === 3 && dataRows.length > 0) {
+        result.table = { headers, rows: dataRows };
+      }
+    }
 
-    const tipRegex = /^-\s+(.+)$/;
+    // normalize/fallback table -> exactly required rows
+    if (!result.table) {
+      result.table = DEFAULT_TABLE;
+    } else {
+      const map = new Map<string, string[]>();
+      for (const r of result.table.rows) {
+        const [cat, a, b] = r;
+        if (cat) map.set(cat, [cat, a ?? "N/A", b ?? "N/A"]);
+      }
+      result.table = {
+        headers: ["category", "note_a", "note_b"],
+        rows: [
+          map.get("estimated_cost") ?? ["estimated_cost", "N/A", "N/A"],
+          map.get("actual_cost") ?? ["actual_cost", "N/A", "N/A"],
+          map.get("price_diff") ?? ["price_diff", "N/A", "N/A"],
+          map.get("item_count") ?? ["item_count", "N/A", "N/A"],
+        ],
+      };
+    }
+
+    // ----------------------------
+    // 2) SECTIONS: Key Insights -> Winner -> Final Recommendation
+    // ----------------------------
+    let currentSection: "insights" | "winner" | "tips" | "" = "";
+
+    const parsedInsights: { title: string; bullets: string[] }[] = [];
+    const parsedTips: string[] = [];
+    let parsedWinner: { name: string; reasons: string[] } | null = null;
 
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (tableRegex.test(line)) {
-        tableLines.push(line);
+      const line = lines[i];
+
+      // section switches
+      if (keyInsightsHeader.test(line)) {
+        currentSection = "insights";
         continue;
-      }
-      const winnerMatch = line.match(winnerRegex);
-      if (winnerMatch) {
-        const reasons: string[] = [];
-        let j = i + 1;
-        while (j < lines.length && lines[j].trim().startsWith("- ")) {
-          reasons.push(lines[j].trim().replace(/^-\s*/, ""));
-          j++;
-        }
-        result.winner = {
-          name: winnerMatch[1],
-          reasons,
-        };
-        continue;
-      }
-      if (line.includes("Final Recommendation")) {
-        currentSection = "tips";
-      }
-      const insightMatch = line.match(insightRegex);
-      if (
-        insightMatch &&
-        !line.startsWith("-") &&
-        !line.includes("Final Recommendation")
-      ) {
-        if (currentInsight) {
-          result.insights.push(currentInsight);
-        }
-        currentInsight = { title: insightMatch[1], bullets: [] };
-        continue;
-      }
-      if (currentInsight) {
-        const bulletMatch = line.match(bulletRegex);
-        if (bulletMatch) {
-          currentInsight.bullets.push(`${bulletMatch[1]}:${bulletMatch[2]}`);
-          continue;
-        }
-        const subMatch = line.match(subBulletRegex);
-        if (subMatch) {
-          const last =
-            currentInsight.bullets[currentInsight.bullets.length - 1];
-          if (last) {
-            currentInsight.bullets[currentInsight.bullets.length - 1] +=
-              ` ${subMatch[1]}`;
-          }
-          continue;
-        }
       }
 
-      if (currentSection === "tips" && tipRegex.test(line)) {
-        result.tips.push(line.replace(/^-\s*/, ""));
+      if (winnerHeader.test(line)) {
+        currentSection = "winner";
+
+        // parse Winner block immediately (so it is "külön", fixen felismerve)
+        const w = { ...DEFAULT_WINNER };
+        let reasonIdx = 0;
+
+        let j = i + 1;
+        while (j < lines.length && lines[j].startsWith("-")) {
+          const wl = lines[j];
+
+          const wm = wl.match(winnerLineRegex);
+          if (wm) {
+            const v = wm[1].toLowerCase();
+            w.name =
+              v === "note a" ? "Note A" : v === "note b" ? "Note B" : "Tie";
+            j++;
+            continue;
+          }
+
+          const rm = wl.match(winnerReasonRegex);
+          if (rm) {
+            if (reasonIdx < 2) {
+              const txt = rm[1].trim();
+              w.reasons[reasonIdx] = txt.length ? txt : "N/A";
+              reasonIdx++;
+            }
+            j++;
+            continue;
+          }
+
+          j++;
+        }
+
+        parsedWinner = w;
+        i = j - 1; // skip consumed bullet lines
+        continue;
+      }
+
+      if (finalRecHeader.test(line)) {
+        currentSection = "tips";
+        continue;
+      }
+
+      // content parsing
+      if (currentSection === "insights") {
+        const m = line.match(insightBulletRegex);
+        if (m) {
+          const title = (m[1] || "N/A").trim() || "N/A";
+          const value = (m[2] || "N/A").trim() || "N/A";
+          parsedInsights.push({ title, bullets: [`${title}:${value}`] });
+        }
+        continue;
+      }
+
+      if (currentSection === "tips") {
+        const m = line.match(bulletValueRegex);
+        if (m) {
+          parsedTips.push((m[1] || "N/A").trim() || "N/A");
+        }
         continue;
       }
     }
-    if (currentInsight) {
-      result.insights.push(currentInsight);
+
+    // ----------------------------
+    // 3) FORCE CONSISTENCY
+    // ----------------------------
+
+    // exactly 3 insights
+    result.insights = parsedInsights.slice(0, 3);
+    while (result.insights.length < 3) {
+      result.insights.push({ title: "N/A", bullets: ["N/A:N/A"] });
     }
-    if (tableLines.length > 0) {
-      const rows = tableLines.map((line) => {
-        return line
-          .split("|")
-          .filter((cell) => cell.trim() !== "")
-          .map((cell) => cell.trim());
-      });
-      if (rows.length > 0) {
-        result.table = {
-          headers: rows[0],
-          rows: rows.slice(1),
-        };
-      }
+
+    // winner always present
+    result.winner = parsedWinner ?? DEFAULT_WINNER;
+
+    // exactly 3 tips
+    result.tips = parsedTips.slice(0, 3);
+    while (result.tips.length < 3) {
+      result.tips.push("N/A");
     }
+
     return result;
   };
 
