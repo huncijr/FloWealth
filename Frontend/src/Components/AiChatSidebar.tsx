@@ -14,7 +14,6 @@ import {
   Forward,
   Loader2,
   Sparkles,
-  User,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -105,8 +104,6 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             { role: "ai", content: initialAnalysis, timestamp: new Date() },
           ];
         });
-      } else if (!initialAnalysis) {
-        console.log("i am here");
       }
     } else {
       setQuotaExceeded(false);

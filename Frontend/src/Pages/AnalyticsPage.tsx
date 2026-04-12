@@ -96,7 +96,7 @@ const AnalyticsPage = () => {
     if (themes.length > 0) {
       return (
         <div className="relative flex items-center justify-center min-h-[60vh] p-8">
-          <Card className="relative z-10 max-w-md w-full bg-content1/80 backdrop-blur-sm border-1 border-divider shadow-xl">
+          <Card className="card-reveal relative z-10 max-w-md w-full bg-content1/80 backdrop-blur-sm border-1 border-divider shadow-xl">
             <Card.Header className="flex flex-col items-center gap-6 p-8">
               <div className="relative">
                 <div className="absolute inset-0 bg-success/30 rounded-full blur-xl" />
@@ -141,7 +141,7 @@ const AnalyticsPage = () => {
     // No themes yet
     return (
       <div className="relative flex mt-10 items-center justify-center min-h-[60vh] p-8">
-        <Card className="relative z-10 max-w-lg w-full bg-content1/80 backdrop-blur-sm border-1 border-divider shadow-xl">
+        <Card className="card-reveal relative z-10 max-w-lg w-full bg-content1/80 backdrop-blur-sm border-1 border-divider shadow-xl">
           <Card.Header className="flex flex-col items-center gap-6 p-8">
             <div className="relative">
               <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl" />

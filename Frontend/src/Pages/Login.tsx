@@ -89,7 +89,6 @@ const Login = () => {
       const formData = new FormData(form);
       const data = Object.fromEntries(formData.entries());
       if (!data.email || !data.password || !data.name) {
-        console.log("Not all user input form registered!");
         return;
       }
     }
@@ -137,10 +136,6 @@ const Login = () => {
       }, 2000);
     }
   };
-  useEffect(() => {
-    console.log(verification);
-    console.log(tempUser);
-  }, [verification, tempUser]);
 
   useEffect(() => {
     if (submittoast) {
@@ -271,10 +266,10 @@ const Login = () => {
         /* CASE 3: Initial state - Registration form */
         <div
           className="mt-25 w-full sm:w-[80%] md:w-[75%] lg:w-[80%] mx-auto overflow-hidden min-h-[700px] border-2 
-                        rounded-lg relative flex flex-col md:flex-row"
+                        rounded-lg relative flex flex-col md:flex-row md:items-stretch"
         >
           <div
-            className="h-[200px] md:h-auto md:flex-[0.4] flex items-center 
+            className="h-[320px] sm:h-[420px] md:h-auto md:flex-[0.4] flex items-center 
             justify-center bg-gray-700 border-b-2 md:border-b-0 md:border-r-2 border-secondary overflow-hidden"
           >
             <CustomCarousel />

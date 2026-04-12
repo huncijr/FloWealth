@@ -19,7 +19,6 @@ const requestOTP = async (email: string, name: string, password: string) => {
    We store sensitive data in 'tempData' (JSONB) so we can create 
    the actual User record only AFTER they provide the correct code.
   */
-  console.log("created:", createdAt);
 
   await db.insert(Otps).values({
     email: email,
@@ -28,12 +27,10 @@ const requestOTP = async (email: string, name: string, password: string) => {
     tempData: { name, password, createdAt },
   });
   // Delivery: Send the code to the user's inbox
-  console.log("kod sent");
   await sendOTP(email, code);
 };
 
 const CreateCookies = (id: number, email: string, res: Response) => {
-  console.log(process.env.NODE_ENV);
   let token: string = jwtToken(id, email);
   const cookieOptions = {
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -59,7 +56,6 @@ export const resendOTP = async (
         message: "All input is required",
       });
     }
-    console.log(email, "resent!");
     await requestOTP(email, name, password);
   } catch (error) {
     next(error);
@@ -86,7 +82,6 @@ export const createGoogleUser = async (
         given_name: req.user.given_name,
         isGoogleUser: req.user.isGoogleUser,
       };
-      console.log(userData);
       if (userData && userData.email) {
         const existingUser = await db
           .select()
@@ -95,7 +90,6 @@ export const createGoogleUser = async (
           .limit(1);
         if (existingUser.length > 0) {
           const user = existingUser[0];
-          console.log("sign in google user", user);
           if (user) {
             CreateCookies(user.id, user.email, res);
           }
@@ -147,7 +141,6 @@ export const createUser = async (
 ) => {
   try {
     const { email, name, password } = req.body;
-    console.log("name", name, "email", email, "password", password);
     if (!email || !name || !password) {
       return res.status(400).json({
         message: "All input is required",
@@ -183,9 +176,8 @@ export const SignInUser = async (
     let [existingUser] = await db
       .select()
       .from(Users)
-      .where(eq(email, Users.email))
+      .where(eq(Users.email, email))
       .limit(1);
-    console.log("Login user got", existingUser);
     if (!existingUser) {
       return res
         .status(401)
@@ -195,7 +187,6 @@ export const SignInUser = async (
       password,
       existingUser.password!,
     );
-    console.log("password is ", isPasswordValid);
     if (!isPasswordValid) {
       return res
         .status(401)
@@ -238,8 +229,6 @@ export const AuthenticateUser = async (
         .where(eq(Otps.email, email))
         .orderBy(desc(Otps.expiresAt))
         .limit(1);
-      console.log(dbotp);
-      console.log(otpvalue);
       // Handle case where no OTP record is found for this email
       if (!dbotp) {
         return res.status(404).json({
@@ -249,14 +238,12 @@ export const AuthenticateUser = async (
       }
       // Expiration Logic: Compare current time with the 'expiresAt' timestamp
       const isexpired = new Date() > dbotp.expiresAt;
-      console.log(new Date(), "code time:", dbotp.expiresAt);
       if (isexpired) {
         return res
           .status(410)
           .json({ success: false, message: "Code is expired" });
       }
       // Validation: Compare user-provided code with the stored code
-      console.log("my code", otpvalue, "dbcode", dbotp.code);
       const isCodeValid = dbotp.code === otpvalue;
       if (!isCodeValid) {
         return res.status(401).json({
@@ -266,7 +253,6 @@ export const AuthenticateUser = async (
       const userData: OTPTempData = dbotp.tempData;
       //HASHING PASSWORD
       const hashedPassword = await hashPassword(userData.password!);
-      console.log("hashedpassword", hashedPassword);
       // Move the user from "temporary" (Otps) to "permanent" (Users)
       const [newUser] = await db
         .insert(Users)
@@ -342,15 +328,14 @@ export const DeleteUser = async (
 ) => {
   try {
     const userId = req.userId;
-    console.log(userId);
     if (!userId) {
       return res.status(401).json({ message: "Unathorized", success: false });
     }
     res.clearCookie("authToken", { path: "/" });
+    await db.delete(Users).where(eq(Users.id, userId as number));
     return res
       .status(200)
       .json({ message: "User deleted succesfully", success: true });
-    await db.delete(Users).where(eq(Users.id, userId as number));
   } catch (error) {
     next(error);
   }

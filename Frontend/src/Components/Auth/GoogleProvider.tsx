@@ -12,7 +12,6 @@ export const GoogleLoginButton = ({ isDisabled }: { isDisabled: boolean }) => {
       const response = await api.post("/Googleregister", {
         googletoken: tokenid,
       });
-      console.log(response.data);
       if (response.data.success) {
         setUser(response.data.user);
       }

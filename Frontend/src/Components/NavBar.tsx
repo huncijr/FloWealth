@@ -11,7 +11,7 @@ const NavBar = () => {
   const { user } = useAuth();
 
   const getInitial = (name: string) => {
-    const parts = name.trim().split(/\s+/);
+    const parts = name?.trim().split(/\s+/);
     if (parts.length >= 2) {
       return (parts[0][0] + parts[1][0]).toLocaleUpperCase();
     }

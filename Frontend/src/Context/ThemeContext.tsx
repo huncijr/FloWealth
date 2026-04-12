@@ -49,7 +49,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await api.get("/gettheme");
       if (response.data.success) {
         let themes = response.data.allthemes;
-        console.log(response.data.allthemes);
         setThemes(themes);
       }
     } catch (error) {

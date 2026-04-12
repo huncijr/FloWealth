@@ -80,9 +80,7 @@ export const NoteComparison = () => {
       );
       if (response.data.success) {
         setLastComparedNotes({ noteA, noteB });
-        console.log(response.data);
         const parsed = parseAIResponse(response.data.result);
-        console.log(parsed);
         setComparisonResult(parsed);
       }
     } catch (error: any) {

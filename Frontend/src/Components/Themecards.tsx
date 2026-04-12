@@ -131,7 +131,6 @@ const ThemeCard = ({ theme, onDelete }: ThemeCardProps) => {
   );
   const handleDeleteThemes = async (e: React.FormEvent, themeid: number) => {
     e.preventDefault();
-    console.log(themeid);
     try {
       const response = await api.delete(`/deletetheme/${themeid}`);
       if (response.data.success) {
@@ -217,7 +216,6 @@ const ThemeList = ({ onThemeDeleted }: ThemeListProps) => {
         setThemeStats(response.data.stats);
       }
     } catch (error) {
-      console.log(error);
     } finally {
       setLoading(false);
     }

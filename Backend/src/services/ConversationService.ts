@@ -59,7 +59,6 @@ export class ConversationService {
       .orderBy(desc(aiConversation.updatedAt))
       .limit(1);
 
-    console.log(conversation);
     if (conversation.length === 0) return null;
     return {
       message: conversation[0]?.messages as Message[],
@@ -85,7 +84,6 @@ export class ConversationService {
   }
 
   async updateTokenUsage(userId: number, tokens: number): Promise<void> {
-    console.log("used tokens", tokens);
     const existing = await db
       .select()
       .from(userTokenUsage)

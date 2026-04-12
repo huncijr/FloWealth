@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import image1 from "../assets/ImageTest1.png";
-import image2 from "../assets/ImageTest2.png";
-import image3 from "../assets/ImageTest3.png";
+import image1 from "../assets/themeshistorytransparent.png";
+import image2 from "../assets/Analyzespending.png";
+import image3 from "../assets/FloWealthUI.png";
 
 const CustomCarousel = () => {
   const images: string[] = [image1, image2, image3];
@@ -34,12 +34,13 @@ const CustomCarousel = () => {
   };
   return (
     <div className="w-full h-full relative group">
-      <div className="relative w-full h-full overflow-hidden aspect-video">
+      <div className="relative w-full h-full overflow-hidden aspect-video md:aspect-auto md:h-full">
         {images.map((image, index) => (
           <img
             key={index}
             src={image}
-            className={`absolute inset-0 w-full h-full object-cover ${index === activeindex ? "opacity-100 z-10" : "opacity-0 z-0"}`}
+            className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity 
+              duration-700 ease-in-out ${index === activeindex ? "opacity-100 z-10" : "opacity-0 z-0"}`}
           />
         ))}
       </div>

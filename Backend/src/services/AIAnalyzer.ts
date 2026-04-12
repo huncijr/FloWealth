@@ -144,8 +144,6 @@ export class AIReceiptAnalyzer {
       const tokens =
         data.usage?.total_tokens || conversationservice.estimateTokens(result);
 
-      console.log(tokens);
-
       if (!result) {
         throw new Error("No content received from AI API");
       }

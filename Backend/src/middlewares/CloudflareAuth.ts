@@ -18,7 +18,6 @@ export const VerifyCloudflare = async (
       { method: "POST", body: formData },
     );
     const verified = await result.json();
-    console.log("verifiedtoken", verified);
     if (verified.success) {
       next();
     } else {

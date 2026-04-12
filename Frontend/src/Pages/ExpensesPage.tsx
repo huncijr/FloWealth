@@ -228,7 +228,6 @@ const Expenses = () => {
     if (!payload.Quantities?.length) missing.push("quantities");
     if (!payload.EstPrices?.length) missing.push("prices");
 
-    console.log(missing);
     if (missing.length > 0) {
       return false;
     }
@@ -298,8 +297,6 @@ const Expenses = () => {
     }
     // Validate that estimated time is not in the past (notes are for future purchases)
     if (draft.estimatedTime && new Date(draft.estimatedTime) < new Date()) {
-      console.log(new Date(draft.estimatedTime));
-      console.log(new Date());
       errors.push("Date can't be less than todays time");
     }
     if (!draft.products || draft.products.length === 0) {
@@ -317,7 +314,6 @@ const Expenses = () => {
         }
       });
     }
-    console.log(errors);
     return { valid: errors.length === 0, errors };
   };
 
@@ -325,7 +321,6 @@ const Expenses = () => {
   // Recalculates total cost from products before sending to backend
   const handleUpdateNote = async () => {
     if (!draftnote) return;
-    console.log(draftnote);
     const { valid, errors } = validateDraftNote(draftnote);
     if (!valid) {
       setIsValidNote(errors);
@@ -402,14 +397,11 @@ const Expenses = () => {
           themes: themes,
           color: selectedcolor,
         });
-        console.log(response.data.allthemes);
         if (response.data.success) {
           let newthemes = response.data.allthemes;
-          console.log(newthemes);
           updateTheme(newthemes);
         }
       } catch (error: any) {
-        console.log(error.response);
         if (error.response?.data?.islimitReached) {
           setMaxLimit(error.response.data.message);
         }

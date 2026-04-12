@@ -82,8 +82,6 @@ export const analyzeReceipt = async (
         });
       }
 
-      console.log(hasTokens);
-
       const existingConversation =
         await conversationservice.getRecentConversation(userId, noteId);
 
@@ -230,7 +228,6 @@ export const compareTwoNotes = async (
   }
   try {
     const { noteA, noteB } = req.body;
-    console.log("note A", noteA.productTitle, "note B", noteB.productTitle);
 
     if (!noteA || !noteB) {
       return res
@@ -252,8 +249,6 @@ export const compareTwoNotes = async (
       });
     }
 
-    console.log(hasTokens);
-
     const result = await noteComparisionAnalyzer.compareNotes({
       noteA: {
         productTitle: noteA.productTitle,
@@ -271,9 +266,6 @@ export const compareTwoNotes = async (
         picture: noteB.picture || undefined,
       },
     });
-
-    console.log("token", result.token);
-    console.log("result", result.result);
 
     await conversationservice.updateTokenUsage(userId, result.token);
 

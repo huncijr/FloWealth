@@ -83,7 +83,6 @@ const RegisteredUser = () => {
         params: { t: Date.now() },
       });
       if (response.data.success) {
-        console.log(response.data);
         setTokens(response.data.data);
       }
     } catch (error) {
