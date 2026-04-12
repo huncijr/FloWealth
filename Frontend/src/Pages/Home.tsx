@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import useDarkMode from "../Components/Mode.tsx";
+import analyzeVideo from "../Videos/VIdeoAnalyzer.mp4";
+import compariseVideo from "../Videos/VideoCompariser.mp4"
 
 const Home = () => {
   const { user } = useAuth();
@@ -24,7 +26,7 @@ const Home = () => {
   }
 
   const text1 =
-    "Our AI instantly scans your receipts and extracts key information. No more manual entry - just snap a photo and let FloWealth do therest. Track prices, compare stores, and never miss a detail.";
+    "Our AI instantly scans your receipts and extracts key information. No more manual entry - just snap a photo and let FloWealth do the rest. Track prices, compare stores, and never miss a detail.";
   const text2 =
     "Side-by-side comparison of your spending notes. See which store offers better prices, track estimation accuracy, and make smarter shopping decisions based on real data.";
 
@@ -131,11 +133,17 @@ const Home = () => {
           className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto px-4 relative "
         >
           {/* Video */}
-          <div className="relative rounded-2xl  shadow-2xl">
-            <div className="absolute -inset-[2px] bg-gradient-to-br from-primary to-secondary rounded-2xl" />
-            <div className="relative bg-gray-900 aspect-video flex items-center justify-center">
-              <video autoPlay muted loop playsInline className="w-full">
-                <source src="/demo-scan.mp4" type="video/mp4" />
+          <div className="relative rounded-2xl shadow-2xl w-full max-w-2xl">
+            <div className="absolute -inset-[3px] bg-gradient-to-br from-primary to-secondary rounded-2xl" />
+            <div className="relative bg-gray-900 aspect-[16/10] flex items-center justify-center">
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-cover"
+              >
+                <source src={analyzeVideo} type="video/mp4" />
               </video>
             </div>
           </div>
@@ -238,11 +246,17 @@ const Home = () => {
           </div>
 
           {/* Video */}
-          <div className="relative rounded-2xl  shadow-2xl">
-            <div className="absolute -inset-[2px] bg-gradient-to-br from-primary to-secondary rounded-2xl" />
-            <div className="relative bg-gray-900 aspect-video flex items-center justify-center">
-              <video autoPlay muted loop playsInline className="w-full">
-                <source src="/demo-compare.mp4" type="video/mp4" />
+          <div className="relative rounded-2xl shadow-2xl w-full max-w-2xl">
+            <div className="absolute -inset-[3px] bg-gradient-to-br from-primary to-secondary rounded-2xl" />
+            <div className="relative bg-gray-900 aspect-[16/10] flex items-center justify-center">
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-cover"
+              >
+                <source src={compariseVideo} type="video/mp4" />
               </video>
             </div>
           </div>

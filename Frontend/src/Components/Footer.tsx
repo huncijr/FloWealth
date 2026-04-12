@@ -2,7 +2,7 @@ import { Github } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="w-full py-4 px-6 flex items-center justify-center gap-2 border-t border-divider">
+    <footer className="w-full flex items-center justify-center gap-2 text-gray-900/30 dark:text-gray-200/30 ">
       <div className="flex items-center gap-1 text-sm ">
         <span>©</span>
         <span>{new Date().getFullYear()}</span>

@@ -62,7 +62,7 @@ const TermsConditions = () => {
               <button
                 key={section.id}
                 onClick={() => scrollToSection(section.id)}
-                className="flex items-center gap-2 text-sm text-left hover:text-primary transition-colors py-1"
+                className="flex items-center gap-2 text-sm text-left hover:text-primary transition-colors py-1 cursor-pointer"
               >
                 <span className="font-bold text-primary">{section.num}.</span>
                 <span>{section.title}</span>

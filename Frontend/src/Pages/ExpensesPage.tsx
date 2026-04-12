@@ -30,6 +30,7 @@ import {
   ChevronDown,
   ClockCheck,
   DollarSign,
+  MessageCircleWarning,
   NotebookPen,
   PencilLine,
   Plus,
@@ -58,6 +59,7 @@ import { useNotes } from "../Context/Notescontext.tsx";
 import LoadingLogo from "../Components/LoadingLogo.tsx";
 import AiChatSidebar from "../Components/AiChatSidebar.tsx";
 import { motion } from "framer-motion";
+import CreateUserCard from "../Components/CreateUserCard.tsx";
 
 const Expenses = () => {
   // Interface for product rows in the table
@@ -144,6 +146,8 @@ const Expenses = () => {
   const [cost, setCost] = useState<number>(0);
   const [sortnotes, setSortNotes] = useState<string>("Sort by");
 
+  const [maxlimit, setMaxLimit] = useState<string | null>(null);
+
   const [missingtoast, setMissingToast] = useState<boolean>(false);
 
   const [rows, setRows] = useState<ProductRow[]>([
@@ -179,9 +183,10 @@ const Expenses = () => {
 
   useEffect(() => {
     if (missingtoast) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setMissingToast(false);
       }, 2500);
+      return () => clearInterval(timer);
     }
   }, [missingtoast]);
 
@@ -197,11 +202,21 @@ const Expenses = () => {
 
   useEffect(() => {
     if (isvalidnote.length > 0) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setIsValidNote([]);
       }, 2000);
+      return () => clearTimeout(timer);
     }
   }, [isvalidnote]);
+
+  useEffect(() => {
+    if (maxlimit) {
+      const timer = setTimeout(() => {
+        setMaxLimit(null);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [maxlimit]);
 
   // Validate payload before submitting to backend
   // Checks if required fields are present and not empty
@@ -393,7 +408,11 @@ const Expenses = () => {
           console.log(newthemes);
           updateTheme(newthemes);
         }
-      } catch (error) {
+      } catch (error: any) {
+        console.log(error.response);
+        if (error.response?.data?.islimitReached) {
+          setMaxLimit(error.response.data.message);
+        }
       } finally {
         setIsNewTheme(false);
         setAddTheme("");
@@ -1582,6 +1601,21 @@ const Expenses = () => {
           </Alert>
         </div>
       )}
+      {maxlimit && (
+        <div className="fixed top-2 inset-x-0 mx-auto w-fit  ">
+          <Alert status="warning">
+            <Alert.Indicator>
+              <MessageCircleWarning />
+              <Alert.Content>
+                <Alert.Title className="ml-2">
+                  {" "}
+                  Max Theme Limit reached !
+                </Alert.Title>
+              </Alert.Content>
+            </Alert.Indicator>
+          </Alert>
+        </div>
+      )}
       {isimagemodalopen && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -1620,6 +1654,11 @@ const Expenses = () => {
         initialAnalysis={aianalysis}
         isAnalyzing={aiLoading !== null}
       />
+      {!user && selectedtheme === "No theme " && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center">
+          <CreateUserCard />
+        </div>
+      )}
     </div>
   );
 };

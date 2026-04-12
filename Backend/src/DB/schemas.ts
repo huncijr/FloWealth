@@ -97,6 +97,6 @@ export const userTokenUsage = pgTable("user_token_usage", {
     .references(() => Users.id, { onDelete: "cascade" }),
   date: timestamp("date").defaultNow().notNull(),
   tokensUsed: integer("tokens_used").default(0),
-  maxTokens: integer("max_tokens").default(15000),
+  maxTokens: integer("max_tokens").default(90000),
   lastResetAt: timestamp("last_reset_at").defaultNow(),
 });

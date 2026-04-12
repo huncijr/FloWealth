@@ -86,6 +86,14 @@ export const AddNewThemes = async (
 
     const existingThemes = currentThemeResult[0]?.themes || [];
 
+    if (existingThemes.length > 10) {
+      return res.status(400).json({
+        success: false,
+        message: "Theme limit reached(max 10)",
+        islimitReached: true,
+      });
+    }
+
     // Calculate next ID:
     const maxId =
       existingThemes.length > 0
@@ -142,7 +150,6 @@ export const GetNotes = async (
   const sort = (req.query.sort as string) || "created";
   const limit = 5;
   const offset = (page - 1) * limit;
-  console.log("page", page, "limit", limit, "offset", offset);
   try {
     if (!userId) {
       return res.status(400).json({ success: false, message: "Missing Data" });
@@ -203,7 +210,6 @@ export const GetNotes = async (
       const themeObj = allThemes.find((t) => t.name === note.theme);
       return { ...note, color: themeObj?.color || "#b7b7b7" };
     });
-    console.log(result);
     return res.status(200).json({
       success: true,
       note: result,
@@ -248,6 +254,20 @@ export const AddNotes = async (
       const themesArray = themeResult[0]?.themes || [];
       const selectedTheme = themesArray.find((t: any) => t.name === Theme);
       themeid = selectedTheme?.id || null;
+    }
+
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(notesTable)
+      .where(eq(notesTable.userId, userId!));
+
+    const totalNotes = countResult[0]?.count ?? 0;
+    if (totalNotes >= 50) {
+      return res.status(400).json({
+        success: false,
+        message: "Note limit reached(max 50)",
+        islimitReached: true,
+      });
     }
 
     let themecolor = Color || "#b7b7b7";

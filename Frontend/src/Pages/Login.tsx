@@ -51,6 +51,7 @@ const Login = () => {
   const [verification, setVerification] = useState<boolean>(false);
   const [otpvalue, setOTPValue] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [registererror, setRegisterError] = useState<string | null>(null);
   const [issubmiting, setIsSubmiting] = useState<boolean>(false);
   const [showpassword, setShowPassword] = useState<boolean>(false);
   const [confirmshowpassword, setConfirmShowPassword] =
@@ -70,6 +71,15 @@ const Login = () => {
     on: UserRoundSearch,
     selectedControlClass: "bg-primary",
   };
+
+  useEffect(() => {
+    if (registererror) {
+      const timer = setTimeout(() => {
+        setRegisterError(null);
+      }, 4000);
+      return () => clearInterval(timer);
+    }
+  }, [registererror]);
   // Handles user registration with support for both email and Google OAuth
   // Validates form data and sends to backend, then stores temp user for OTP verification
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -98,8 +108,12 @@ const Login = () => {
         setTempUser(userData.message);
         setVerification(false);
       }
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      if (error.response?.status === 409) {
+        setRegisterError("Account already exists with this email");
+      } else {
+        setRegisterError("Registration failed. Please try again.");
+      }
     }
   };
 
@@ -546,6 +560,16 @@ const Login = () => {
             <Alert.Indicator />
             <Alert.Content>
               <Alert.Title>Submitted</Alert.Title>
+            </Alert.Content>
+          </Alert>
+        </div>
+      )}
+      {registererror && (
+        <div className="fixed top-2 inset-x-0 mx-auto w-fit  ">
+          <Alert status="danger">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>{registererror} </Alert.Title>
             </Alert.Content>
           </Alert>
         </div>
