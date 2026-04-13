@@ -21,7 +21,8 @@
     "google-auth-library": "^10.5.0",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^7.0.12",
-    "postgres": "^3.4.8"
+    "postgres": "^3.4.8",
+    "resend": "^6.11.0"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.8",

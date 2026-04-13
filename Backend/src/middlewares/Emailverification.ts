@@ -1,36 +1,31 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import dotenv from "dotenv";
 import crypto from "crypto";
 
 dotenv.config();
 
-export const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.APP_PASSWORD,
-  },
-  connectionTimeout: 10_000,
-  greetingTimeout: 10_000,
-  socketTimeout: 10_000,
-});
+const resend = new Resend(process.env.RESEND_API);
 
 export const generateOTP = (): string => {
   return crypto.randomInt(100000, 999999).toString();
 };
 
 export const sendOTP = async (targetEmail: string, code: string) => {
+  const from = process.env.EMAIL_FROM;
+  if (!from) throw new Error("EMAIL_FROM is missing");
+  if (!process.env.RESEND_API) throw new Error("RESEND_API_KEY is missing");
+
   const safe = (code ?? "").toString().replace(/\s+/g, "").slice(0, 6);
   const digits = safe.padEnd(6, "•").split("");
 
   const appName = "FloWealth";
   const logoUrl = "process.env";
   const githubUrl = "https://github.com/huncijr/FloWealth";
-  const termsUrl = "https://";
+  const termsUrl = "https://www.flowealth.eu/Terms&Conditions";
   const supportEmail = "flowealthwebapp@gmail.com";
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+    await resend.emails.send({
+      from,
       to: targetEmail,
       subject: "Registration code",
       text: `The code: ${code}`,

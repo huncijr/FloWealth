@@ -296,17 +296,8 @@ FloWealth/
 │   ├── public/
 │   ├── Dockerfile
 │   └── package.json
-│
-└── Readme gifs/
-    ├── landingpage.gif
-    ├── darkehitemode.gif
-    ├── addnote.gif
-    ├── viewnotes.gif
-    ├── addtheme.gif
-    ├── analyzenote.gif
-    ├── analyzenotewithai.gif
-    ├── comparewithai.gif
-    └── accountpage.gif
+
+
 ```
 
 ---
