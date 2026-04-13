@@ -10,6 +10,9 @@ export const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.APP_PASSWORD,
   },
+  connectionTimeout: 10_000,
+  greetingTimeout: 10_000,
+  socketTimeout: 10_000,
 });
 
 export const generateOTP = (): string => {
@@ -25,13 +28,13 @@ export const sendOTP = async (targetEmail: string, code: string) => {
   const githubUrl = "https://github.com/huncijr/FloWealth";
   const termsUrl = "https://";
   const supportEmail = "flowealthwebapp@gmail.com";
-
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to: targetEmail,
-    subject: "Registration code",
-    text: `The code: ${code}`,
-    html: `<!doctype html>
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: targetEmail,
+      subject: "Registration code",
+      text: `The code: ${code}`,
+      html: `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -160,5 +163,8 @@ export const sendOTP = async (targetEmail: string, code: string) => {
   </table>
 </body>
 </html>`,
-  });
+    });
+  } catch (err) {
+    console.error("sendotp failed", err);
+  }
 };
