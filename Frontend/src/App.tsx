@@ -3,7 +3,7 @@ import Expenses from "./Pages/ExpensesPage";
 import AnalyticsPage from "./Pages/AnalyticsPage";
 import Login from "./Pages/Login";
 import NotFoundPage from "./Pages/NotFoundPage";
-import { Route, Routes, Outlet } from "react-router-dom";
+import { Route, Routes, Outlet, Navigate } from "react-router-dom";
 import "./index.css";
 import NavBar from "./Components/NavBar";
 import Theme from "./Components/Theme";
@@ -42,6 +42,7 @@ function App() {
       <ThemeProvider>
         <NotesProvider>
           <Routes>
+            <Route path="/" element={<Navigate to="/home" replace />} />
             <Route element={<NavBarLayout />}>
               <Route path="/Home" element={<Home />} />
               <Route path="/Expenses" element={<Expenses />} />

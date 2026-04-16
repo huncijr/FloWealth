@@ -28,6 +28,7 @@ import {
   compareTwoNotes,
   getAiTokens,
   getConversation,
+  parseProducts,
 } from "../controllers/AIReceiptController";
 import { checkTokenLimit } from "../middlewares/TokenLimit";
 
@@ -55,6 +56,7 @@ router.delete("/deletetheme/:themeId", userAuth, DeleteTheme);
 
 router.post("/analyze-receipt", userAuth, checkTokenLimit, analyzeReceipt);
 router.get("/getaiconversations", userAuth, getConversation);
+router.post("/parse-products", userAuth, parseProducts);
 router.get("/getaitokens", userAuth, getAiTokens);
 router.post("/compare-notes", userAuth, checkTokenLimit, compareTwoNotes);
 

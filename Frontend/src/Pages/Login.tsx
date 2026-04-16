@@ -101,7 +101,7 @@ const Login = () => {
         password,
       });
       const userData = response.data as Record<string, any>;
-      console.log(userData);
+      // console.log(userData);
       if (userData.success) {
         // Stores user temporarily - they must complete OTP verification before full auth
         setTempUser(userData.message);
@@ -125,7 +125,7 @@ const Login = () => {
         cloudflaretoken: logintoken,
       });
       const userData = response.data;
-      console.log(userData);
+      // console.log(userData);
       if (userData.success) {
         setUser(userData.user);
       }

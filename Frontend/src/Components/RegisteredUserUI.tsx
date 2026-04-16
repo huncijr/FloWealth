@@ -253,7 +253,7 @@ const RegisteredUser = () => {
                   <span className="font-bold">Used</span>
                   <span className="text-primary font-bold">
                     {tokens?.tokensUsed?.toLocaleString() ?? 0} /{" "}
-                    {tokens?.maxTokens?.toLocaleString() ?? 90000}
+                    {tokens?.maxTokens?.toLocaleString() ?? 15000}
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden">

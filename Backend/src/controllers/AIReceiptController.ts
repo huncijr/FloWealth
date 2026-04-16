@@ -10,6 +10,7 @@ import {
   noteComparisionAnalyzer,
   NoteComparisonAnalyzer,
 } from "../services/NoteComparisonAnalyzer";
+import { productParser } from "../services/ProductParser";
 
 interface Product {
   name: string;
@@ -272,6 +273,46 @@ export const compareTwoNotes = async (
     return res.status(200).json({
       success: true,
       result: result.result,
+      tokens: result.token,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const parseProducts = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ message: "Unathorized", success: false });
+  }
+
+  try {
+    const { text } = req.body;
+    console.log("text", text);
+    if (!text || typeof text !== "string" || text.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Text input is required",
+      });
+    }
+    const hasTokens = await conversationservice.checkTokenLimit(userId);
+    if (!hasTokens) {
+      return res.status(429).json({
+        success: false,
+        message: "Daily AI token limit reached",
+      });
+    }
+    const result = await productParser.ParseProducts(text);
+    await conversationservice.updateTokenUsage(userId, result.token);
+    console.log("The Products", result.products);
+    console.log("Tokens used", result.token);
+    return res.status(200).json({
+      success: true,
+      products: result.products,
       tokens: result.token,
     });
   } catch (error) {

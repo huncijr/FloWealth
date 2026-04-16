@@ -509,6 +509,9 @@ body {
   height: 100px;
   animation-delay: 1s;
 }
+.text-gradient-primary {
+  background: linear-gradient(to right, #f59e0b, #8d6a10);
+}
 
 .separator-ring:nth-child(3) {
   width: 140px;

@@ -19,10 +19,12 @@ interface ThemeContextState {
   themes: Theme[];
   isloading: boolean;
   error: string | null;
+  themeStats: any[];
   refreshThemes: () => Promise<void>;
   addTheme: (theme: Theme) => void;
   removeTheme: (id: number) => void;
   updateTheme: (theme: Theme[]) => void;
+  refreshThemeStats: () => Promise<void>;
 }
 
 const ThemeContext = createContext<ThemeContextState | undefined>(undefined);
@@ -36,6 +38,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isloading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
+  const [themeStats, setThemeStats] = useState<any[]>([]);
 
   // Fetches user's themes from backend, called on initial load and refresh
   // Only executes when user is authenticated
@@ -88,6 +91,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
     setThemes(newThemes);
   }, []);
 
+  const refreshThemeStats = useCallback(async () => {
+    if (!user) return;
+    const response = await api.get("/themestats");
+    console.log(response.data);
+    if (response.data.success) {
+      setThemeStats(response.data.stats);
+    }
+  }, [user]);
+
   const value: ThemeContextState = {
     themes,
     isloading,
@@ -96,6 +108,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
     addTheme,
     removeTheme,
     updateTheme,
+    themeStats,
+    refreshThemeStats,
   };
 
   return (

@@ -17,6 +17,7 @@ import {
   TextArea,
   Description,
   Card,
+  Modal,
 } from "@heroui/react";
 
 import { useAuth } from "../Context/AuthContext";
@@ -103,6 +104,7 @@ const Expenses = () => {
     themes,
     refreshThemes,
     updateTheme,
+    refreshThemeStats,
     isloading: themesLoading,
   } = useThemes();
 
@@ -155,13 +157,20 @@ const Expenses = () => {
   ]);
 
   const [close, setClose] = useState<boolean>(false);
-  const [showtable, setShowTable] = useState<boolean>(false);
+  const [activeview, setActiveView] = useState<"table" | "ai" | null>(null);
   const [hoveredNoteId, setHoveredNoteId] = useState<number | null>(null);
 
   const [aiLoading, setAiLoading] = useState<number | null>(null);
   const [isaisidebaropen, setISAiSidebarOpen] = useState<boolean>(false);
   const [activenoteforai, setActiveNoteForAi] = useState<Note | null>(null);
   const [aianalysis, setAiAnalysis] = useState<string>("");
+
+  const [currentinput, setCurrentInput] = useState<string>("");
+  const [prompts, setPrompts] = useState<string>("");
+  const [isAiParsing, setIsAiParsing] = useState(false);
+
+  const [aiProducts, setAiProducts] = useState<ProductRow[]>([]);
+  const [showProductPreview, setShowProductPreview] = useState<boolean>(false);
 
   // Calculate total cost whenever rows change
   useEffect(() => {
@@ -378,6 +387,7 @@ const Expenses = () => {
     }
     const newNote = await addNote(payload);
     if (newNote) {
+      refreshThemeStats();
       setClose(true);
       setSelectedTheme(null);
       setSelectedDate(null);
@@ -492,6 +502,60 @@ const Expenses = () => {
     } finally {
       setAiLoading(null);
     }
+  };
+
+  const handleAiParse = async () => {
+    if (!currentinput.trim()) return;
+    setIsAiParsing(true);
+    try {
+      const response = await api.post(
+        "/parse-products",
+        {
+          text: currentinput,
+        },
+        { timeout: 30000 },
+      );
+      if (response.data.success) {
+        console.log(response.data);
+        const parsedProducts = response.data.products
+          .filter(
+            (p: any) =>
+              p.name &&
+              p.name.trim() !== "" &&
+              p.quantity !== null &&
+              p.quantity !== undefined &&
+              p.estprice !== null &&
+              p.estprice !== undefined,
+          )
+          .map((p: any, i: number) => ({
+            id: Date.now() + i,
+            productName: p.name,
+            quantity: p.quantity || 1,
+            estPrice: p.estprice || 0,
+          }));
+        setAiProducts(parsedProducts);
+        setShowProductPreview(true);
+      }
+    } catch (error: any) {
+      if (error.response?.status === 429) {
+        console.log("quota exceeded");
+      } else {
+        console.log(error);
+      }
+    } finally {
+      setIsAiParsing(false);
+    }
+  };
+
+  const handleRejectProducts = () => {
+    setAiProducts([]);
+    setShowProductPreview(false);
+  };
+  const handleAcceptProducts = () => {
+    setRows((prev) => [...prev, ...aiProducts]);
+    setAiProducts([]);
+    setShowProductPreview(false);
+    setCurrentInput("");
   };
 
   if (!hasInitiallyLoaded) {
@@ -1403,16 +1467,117 @@ const Expenses = () => {
                         </div>
                       </div>
                     </div>
-                    <Button
-                      className="my-5"
-                      variant={showtable ? "tertiary" : "outline"}
-                      onClick={() => setShowTable(!showtable)}
-                    >
-                      {showtable ? "Hide Table" : "View Table"}
-                    </Button>
-                    {showtable && (
+                    <div className="flex gap-4 my-5">
+                      <Button
+                        variant={activeview ? "tertiary" : "outline"}
+                        onClick={() =>
+                          setActiveView(activeview === "table" ? null : "table")
+                        }
+                      >
+                        {activeview === "table" ? "Hide Table" : "View Table"}
+                      </Button>
+                      <Button
+                        className="text-gradient-primary"
+                        onClick={() =>
+                          setActiveView(activeview === "ai" ? null : "ai")
+                        }
+                      >
+                        <Sparkles />
+                        Generate with FloWealth AI
+                      </Button>
+                    </div>
+                    {activeview === "table" && (
                       <ProductTable rows={rows} setRows={setRows} />
                     )}
+                    <div className="flex flex-col ">
+                      {activeview === "ai" && (
+                        <Modal>
+                          <TextArea
+                            placeholder="Write down what you want"
+                            className="w-full"
+                            value={currentinput}
+                            onChange={(e) => setCurrentInput(e.target.value)}
+                            rows={5}
+                            style={{ resize: "vertical" }}
+                          />
+                          <div className="flex justify-end p-4">
+                            <Button onClick={handleAiParse}>Generate</Button>
+                          </div>
+                          {showProductPreview && aiProducts.length > 0 && (
+                            <div className="w-full md:max-w-[80%] mx-auto mt-4">
+                              {/* Outer gradient border */}
+                              <div className="p-[3px] rounded-2xl bg-gradient-to-r from-primary via-secondary to-primary">
+                                {/* Inner card background */}
+                                <div
+                                  className={`rounded-2xl p-6 ${isDark ? "bg-gray-900" : "bg-white"}`}
+                                >
+                                  {/* Header with gradient text */}
+                                  <div className="flex items-center justify-center gap-2 mb-6">
+                                    <Sparkles className="w-5 h-5 text-primary" />
+                                    <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                                      Suggested by AI
+                                    </h2>
+                                    <Sparkles className="w-5 h-5 text-secondary" />
+                                  </div>
+
+                                  {/* Products list with glassmorphism effect */}
+                                  <div className="mb-4 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 p-4 space-y-2">
+                                    {aiProducts.map((product) => (
+                                      <div
+                                        key={product.id}
+                                        className="flex items-center gap-3 p-2 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm"
+                                      >
+                                        <div className="w-7 h-7 rounded-full bg-gradient-to-r from-primary/20 to-secondary/20 flex items-center justify-center">
+                                          <span className="text-sm">📦</span>
+                                        </div>
+                                        <span className="flex-1 font-medium text-sm">
+                                          {product.productName}
+                                        </span>
+                                        <span className="px-2 py-0.5 rounded-full bg-primary/20 text-xs font-bold">
+                                          x{product.quantity}
+                                        </span>
+                                        <span className="font-bold text-green-600 text-sm">
+                                          ${Number(product.estPrice).toFixed(2)}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+
+                                  {/* Summary */}
+                                  <div className="flex justify-between items-center mb-4 px-2">
+                                    <span className="text-gray-500 text-sm">
+                                      Total items:
+                                    </span>
+                                    <span className="font-bold text-sm">
+                                      {aiProducts.length}
+                                    </span>
+                                  </div>
+
+                                  {/* Action buttons */}
+                                  <div className="flex gap-3">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="flex-1 border border-red-500 text-red-500 hover:bg-red-50"
+                                      onClick={handleRejectProducts}
+                                    >
+                                      ❌ Reject
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      className="flex-1 bg-gradient-to-r from-primary to-secondary text-white"
+                                      onClick={handleAcceptProducts}
+                                    >
+                                      ✅ Accept All
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </Modal>
+                      )}
+                    </div>
                     <div className="flex justify-between py-5">
                       <DateField
                         isInvalid={!!dateerror}

@@ -101,7 +101,7 @@ export class ConversationService {
       await db.insert(userTokenUsage).values({
         userId,
         tokensUsed: tokens,
-        maxTokens: 15000,
+        maxTokens: 90000,
       });
     }
   }
@@ -116,18 +116,18 @@ export class ConversationService {
       await db.insert(userTokenUsage).values({
         userId,
         tokensUsed: 0,
-        maxTokens: 15000,
+        maxTokens: 90000,
       });
 
       return {
         used: 0,
-        limit: 15000,
+        limit: 90000,
         resetAt: new Date(),
       };
     }
     return {
       used: usage[0]?.tokensUsed ?? 0,
-      limit: usage[0]?.maxTokens ?? 15000,
+      limit: usage[0]?.maxTokens ?? 90000,
       resetAt: usage[0]?.lastResetAt || new Date(),
     };
   }
