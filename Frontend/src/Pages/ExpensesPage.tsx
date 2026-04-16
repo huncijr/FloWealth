@@ -35,6 +35,7 @@ import {
   NotebookPen,
   PencilLine,
   Plus,
+  SearchAlert,
   Sparkles,
   Trash,
   TriangleAlert,
@@ -121,6 +122,8 @@ const Expenses = () => {
     completeNote,
     refreshNotes,
   } = useNotes();
+
+  const MAX_PRICE = 1000000;
   const [isnewtheme, setIsNewTheme] = useState<boolean>(false);
   const [addtheme, setAddTheme] = useState<string>("");
   const [selectedcolor, setSelectedColor] = useState<string | null>(null);
@@ -166,7 +169,10 @@ const Expenses = () => {
   const [aianalysis, setAiAnalysis] = useState<string>("");
 
   const [currentinput, setCurrentInput] = useState<string>("");
-  const [prompts, setPrompts] = useState<string>("");
+  const [dots, setDots] = useState(".");
+  const [pricetoohigh, setPriceTooHigh] = useState<boolean>(false);
+
+  const [aierror, setAiError] = useState<string | null>(null);
   const [isAiParsing, setIsAiParsing] = useState(false);
 
   const [aiProducts, setAiProducts] = useState<ProductRow[]>([]);
@@ -226,6 +232,15 @@ const Expenses = () => {
       return () => clearTimeout(timer);
     }
   }, [maxlimit]);
+
+  useEffect(() => {
+    if (pricetoohigh) {
+      const timer = setTimeout(() => {
+        setPriceTooHigh(false);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [pricetoohigh]);
 
   // Validate payload before submitting to backend
   // Checks if required fields are present and not empty
@@ -363,6 +378,13 @@ const Expenses = () => {
   const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault();
     const validRows = rows.filter((row) => row.productName.trim() !== "");
+    const hasHighPrice = validRows.some(
+      (row) => Number(row.estPrice) > MAX_PRICE,
+    );
+    if (hasHighPrice) {
+      setPriceTooHigh(true);
+      return;
+    }
 
     const productnames = validRows.map((row) => row.productName);
     const quantities = validRows.map((row) => Number(row.quantity) || 0);
@@ -389,6 +411,7 @@ const Expenses = () => {
     if (newNote) {
       refreshThemeStats();
       setClose(true);
+      resetAiStates();
       setSelectedTheme(null);
       setSelectedDate(null);
       setProductTitle(null);
@@ -516,7 +539,7 @@ const Expenses = () => {
         { timeout: 30000 },
       );
       if (response.data.success) {
-        console.log(response.data);
+        // console.log(response.data);
         const parsedProducts = response.data.products
           .filter(
             (p: any) =>
@@ -538,9 +561,9 @@ const Expenses = () => {
       }
     } catch (error: any) {
       if (error.response?.status === 429) {
-        console.log("quota exceeded");
+        setAiError("Daily limit reached, Please try again later!");
       } else {
-        console.log(error);
+        setAiError("Error occurred, please try again with different prompts");
       }
     } finally {
       setIsAiParsing(false);
@@ -548,14 +571,38 @@ const Expenses = () => {
   };
 
   const handleRejectProducts = () => {
-    setAiProducts([]);
-    setShowProductPreview(false);
+    resetAiStates();
   };
   const handleAcceptProducts = () => {
-    setRows((prev) => [...prev, ...aiProducts]);
+    const currentRows = rows.filter((r) => r.productName.trim() !== "");
+    if (currentRows.length === 0) {
+      setRows(aiProducts.map((p, i) => ({ ...p, id: Date.now() + i })));
+    } else {
+      setRows([
+        ...aiProducts.map((p, i) => ({ ...p, id: Date.now() + i })),
+        ...currentRows,
+      ]);
+    }
+    resetAiStates();
+  };
+
+  useEffect(() => {
+    if (isAiParsing) {
+      const interval = setInterval(() => {
+        setDots((prev) => (prev.length >= 3 ? "." : prev + "."));
+      }, 500);
+      return () => clearInterval(interval);
+    } else {
+      setDots(".");
+    }
+  }, [isAiParsing]);
+
+  const resetAiStates = () => {
     setAiProducts([]);
     setShowProductPreview(false);
     setCurrentInput("");
+    setIsAiParsing(false);
+    setAiError(null);
   };
 
   if (!hasInitiallyLoaded) {
@@ -645,6 +692,7 @@ const Expenses = () => {
                           onClick={() => {
                             setSelectedTheme("No theme ");
                             setClose(true);
+                            resetAiStates();
                           }}
                         >
                           <Label className="text-gray-400">
@@ -663,6 +711,7 @@ const Expenses = () => {
                               onClick={() => {
                                 setSelectedTheme(theme.name);
                                 setClose(true);
+                                resetAiStates();
                               }}
                             >
                               <Label>{theme.name}</Label>
@@ -1458,7 +1507,8 @@ const Expenses = () => {
                         <div
                           onClick={() => (
                             setSelectedTheme(null),
-                            setClose(true)
+                            setClose(true),
+                            resetAiStates()
                           )}
                         >
                           <BookX
@@ -1501,17 +1551,56 @@ const Expenses = () => {
                             style={{ resize: "vertical" }}
                           />
                           <div className="flex justify-end p-4">
-                            <Button onClick={handleAiParse}>Generate</Button>
+                            <Button
+                              onClick={handleAiParse}
+                              isDisabled={!currentinput.trim()}
+                              className={`${
+                                isAiParsing
+                                  ? "bg-gradient-to-r from-secondary to-primary animate-pulse"
+                                  : "bg-primary hover:bg-primary/80"
+                              }text-white font-bold py-3 px-6 rounded-full shadow-lg 
+              transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed`}
+                            >
+                              {isAiParsing ? (
+                                `Generating${dots}`
+                              ) : (
+                                <>
+                                  Generate
+                                  <Sparkles></Sparkles>
+                                </>
+                              )}
+                            </Button>
                           </div>
+                          {aierror && !isAiParsing && (
+                            <Card className="w-full md:max-w-[80%] mx-auto border border-red-600">
+                              <Card.Content className="flex flex-col items-center text-center p-6">
+                                <XCircleIcon className="w-12 h-12 text-red-600 " />
+                                <p className="text-danger font-bold text-lg mb-2">
+                                  Oops! Something went wrong
+                                </p>
+                                <p className="text-danger-700 text-sm">
+                                  {aierror}
+                                </p>
+                                <Button
+                                  size="sm"
+                                  variant="danger"
+                                  className="mt-4"
+                                  onClick={() => setAiError(null)}
+                                >
+                                  Close
+                                </Button>
+                              </Card.Content>
+                            </Card>
+                          )}
                           {showProductPreview && aiProducts.length > 0 && (
                             <div className="w-full md:max-w-[80%] mx-auto mt-4">
                               {/* Outer gradient border */}
-                              <div className="p-[3px] rounded-2xl bg-gradient-to-r from-primary via-secondary to-primary">
+                              <div className="p-[3px] rounded-2xl bg-linear-to-r from-primary via-secondary to-primary">
                                 {/* Inner card background */}
                                 <div
                                   className={`rounded-2xl p-6 ${isDark ? "bg-gray-900" : "bg-white"}`}
                                 >
-                                  {/* Header with gradient text */}
+                                  {/* Header with linear text */}
                                   <div className="flex items-center justify-center gap-2 mb-6">
                                     <Sparkles className="w-5 h-5 text-primary" />
                                     <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
@@ -1521,13 +1610,13 @@ const Expenses = () => {
                                   </div>
 
                                   {/* Products list with glassmorphism effect */}
-                                  <div className="mb-4 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 p-4 space-y-2">
+                                  <div className="mb-4 rounded-xl bg-linear-to-br from-primary/10 to-secondary/10 p-4 space-y-2">
                                     {aiProducts.map((product) => (
                                       <div
                                         key={product.id}
                                         className="flex items-center gap-3 p-2 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm"
                                       >
-                                        <div className="w-7 h-7 rounded-full bg-gradient-to-r from-primary/20 to-secondary/20 flex items-center justify-center">
+                                        <div className="w-7 h-7 rounded-full bg-linear-to-r from-primary/20 to-secondary/20 flex items-center justify-center">
                                           <span className="text-sm">📦</span>
                                         </div>
                                         <span className="flex-1 font-medium text-sm">
@@ -1544,7 +1633,7 @@ const Expenses = () => {
                                   </div>
 
                                   {/* Summary */}
-                                  <div className="flex justify-between items-center mb-4 px-2">
+                                  <div className="flex gap-2 items-center mb-4 px-2">
                                     <span className="text-gray-500 text-sm">
                                       Total items:
                                     </span>
@@ -1558,14 +1647,18 @@ const Expenses = () => {
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      className="flex-1 border border-red-500 text-red-500 hover:bg-red-50"
+                                      className="flex-1 border border-red-500 text-red-500 "
                                       onClick={handleRejectProducts}
                                     >
                                       ❌ Reject
                                     </Button>
                                     <Button
                                       size="sm"
-                                      className="flex-1 bg-gradient-to-r from-primary to-secondary text-white"
+                                      style={{
+                                        background:
+                                          "linear-gradient(to right, #ff7b00, #a35e04)",
+                                      }}
+                                      className="flex-1 text-white transition-all duration-300 hover:brightness-110 hover:scale-[1.02]"
                                       onClick={handleAcceptProducts}
                                     >
                                       ✅ Accept All
@@ -1620,7 +1713,7 @@ const Expenses = () => {
                         variant="tertiary"
                         type="submit"
                       >
-                        Create new node
+                        Create new note
                       </Button>
                     </div>
                   </div>
@@ -1704,7 +1797,7 @@ const Expenses = () => {
       )}
 
       {missingtoast && (
-        <div className="fixed top-2 inset-x-0 mx-auto w-fit">
+        <div className="fixed top-2 inset-x-0 mx-auto w-fit z-60">
           <Alert status="danger">
             <Alert.Indicator />
             <Alert.Content>
@@ -1717,7 +1810,7 @@ const Expenses = () => {
         </div>
       )}
       {isdeletednotes && (
-        <div className="fixed top-2 inset-x-0 mx-auto w-fit  ">
+        <div className="fixed top-2 inset-x-0 mx-auto w-fit z-60  ">
           <Alert status="success">
             <Alert.Indicator>
               <CheckCheck />
@@ -1732,7 +1825,7 @@ const Expenses = () => {
         </div>
       )}
       {isvalidnote.length > 0 && (
-        <div className="fixed top-2 inset-x-0 mx-auto w-fit  ">
+        <div className="fixed top-2 inset-x-0 mx-auto w-fit z-60 ">
           <Alert status="warning">
             <Alert.Indicator>
               <TriangleAlert />
@@ -1744,7 +1837,7 @@ const Expenses = () => {
         </div>
       )}
       {isupdating && (
-        <div className="fixed top-2 inset-x-0 mx-auto w-fit  ">
+        <div className="fixed top-2 inset-x-0 mx-auto w-fit z-60  ">
           <Alert status="success">
             <Alert.Indicator>
               <CheckCheck />
@@ -1759,7 +1852,7 @@ const Expenses = () => {
         </div>
       )}
       {maxlimit && (
-        <div className="fixed top-2 inset-x-0 mx-auto w-fit  ">
+        <div className="fixed top-2 inset-x-0 mx-auto w-fit z-60  ">
           <Alert status="warning">
             <Alert.Indicator>
               <MessageCircleWarning />
@@ -1773,12 +1866,27 @@ const Expenses = () => {
           </Alert>
         </div>
       )}
+      {pricetoohigh && (
+        <div className="fixed top-2 inset-x-0 mx-auto w-fit z-60   ">
+          <Alert status="warning">
+            <Alert.Indicator>
+              <SearchAlert />
+              <Alert.Content>
+                <Alert.Title className="ml-2">
+                  {" "}
+                  The Price is too High
+                </Alert.Title>
+              </Alert.Content>
+            </Alert.Indicator>
+          </Alert>
+        </div>
+      )}
       {isimagemodalopen && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 z-60 bg-black/90 flex items-center justify-center p-4"
           onClick={() => setIsImageModalOpen(null)}
         >
           <button

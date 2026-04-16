@@ -42,7 +42,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     initAuth();
   }, []);
   useEffect(() => {
-    console.log(user);
+    // console.log(user);
   }, [user]);
   return (
     <UserContext.Provider value={{ user, setUser }}>

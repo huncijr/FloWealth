@@ -59,18 +59,23 @@ If input has no valid products, return empty array [].
       },
       body: JSON.stringify({
         model: this.model,
-        messages: [{ role: "user", content: prompt }],
+        messages: [
+          { role: "system", content: prompt },
+          { role: "user", content: userText },
+        ],
         max_tokens: 1000,
         temperature: 0.3,
       }),
     });
-    console.log(response);
+    // console.log(response);
     if (!response.ok) {
       throw new Error(`AI API error: ${response.status}`);
     }
     const data = await response.json();
-    console.log("data", data);
+    // console.log("data:", data, "\n");
     const result = data.choices?.[0]?.message?.content;
+    // console.log("result:", result);
+
     const tokens = data.usage?.total_tokens || 0;
     let products: ParsedProduct[] = [];
     try {

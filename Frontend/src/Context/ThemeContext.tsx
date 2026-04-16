@@ -94,7 +94,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   const refreshThemeStats = useCallback(async () => {
     if (!user) return;
     const response = await api.get("/themestats");
-    console.log(response.data);
+    // console.log(response.data);
     if (response.data.success) {
       setThemeStats(response.data.stats);
     }

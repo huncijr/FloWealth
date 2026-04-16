@@ -195,42 +195,40 @@ const ThemeCard = ({ theme, onDelete }: ThemeCardProps) => {
 // Main component that fetches theme statistics and renders theme cards
 // Falls back to empty stats if backend returns no data
 const ThemeList = ({ onThemeDeleted }: ThemeListProps) => {
-  const { themes, refreshThemes } = useThemes();
+  const { themes, refreshThemes, themeStats, refreshThemeStats } = useThemes();
   const [themestats, setThemeStats] = useState<ThemeStat[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  useEffect(() => {
+    if (themes.length > 0) {
+      setLoading(false);
+    } else if (themes.length > 0) {
+      setLoading(false);
+    }
+  }, [themes, themeStats]);
+  useEffect(() => {
+    if (themestats.length > 0 || themes.length > 0) {
+      refreshThemeStats();
+      setLoading(false);
+    }
+  }, [themes]);
   // Refreshes theme list and removes deleted theme from local state
   const handleThemeDeleted = async (deletedId: number) => {
     await refreshThemes();
+    await refreshThemeStats();
     setThemeStats((prev) => prev.filter((theme) => theme.id !== deletedId));
     if (onThemeDeleted) {
       onThemeDeleted();
     }
   };
 
-  // Fetches theme statistics from backend with daily note breakdown
-  const fetchStats = useCallback(async () => {
-    try {
-      const response = await api.get("/themestats");
-      if (response.data.success) {
-        setThemeStats(response.data.stats);
-      }
-    } catch (error) {
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-  useEffect(() => {
-    fetchStats();
-  }, [themes, fetchStats]);
-
   if (loading) return <Spinner />;
 
   // Fallback: if no stats available but themes exist, create empty stats structure
   // This ensures themes always display even without historical data
   const displayStats =
-    themestats.length > 0
-      ? themestats
+    themeStats.length > 0
+      ? themeStats
       : themes.map((t) => ({
           id: t.id,
           name: t.name,

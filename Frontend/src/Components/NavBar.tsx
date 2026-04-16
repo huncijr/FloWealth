@@ -55,10 +55,10 @@ const NavBar = () => {
             </Avatar>
           </NavLink>
         </div>
-        <div className="flex justify-center md:justify-end sm:items-center gap-6">
+        <div className="flex justify-center md:justify-end sm:items-center gap-1 sm:gap-6 ">
           <div
-            className="flex justify-center md:justify-end  gap-4 Alfa-slab-one
-          text-primary tracking-wider whitespace-nowrap text-xl sm:text-1xl  md:text-2xl lg:text-3xl xl:text-4xl transition-all"
+            className="flex justify-center md:justify-end  gap-4 Alfa-slab-one overflow-x-auto  scrollbar-hide
+          text-primary tracking-wider whitespace-nowrap text-lg sm:text-2xl  lg:text-3xl xl:text-4xl transition-all"
             style={{
               color: "transparent",
               WebkitTextStroke: "2px #ad711d",
@@ -90,7 +90,7 @@ const NavBar = () => {
               }
             >
               {" "}
-              MY EXPENSES{" "}
+              EXPENSES{" "}
             </NavLink>
           </div>
           {/* Desktop account link - visible on md+, handles both Google and regular users */}

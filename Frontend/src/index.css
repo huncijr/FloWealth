@@ -17,6 +17,10 @@ body {
   overflow-x: hidden;
 }
 
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 .dark html,
 .dark body {
   background-color: var(--color-main-bg);
@@ -511,6 +515,14 @@ body {
 }
 .text-gradient-primary {
   background: linear-gradient(to right, #f59e0b, #8d6a10);
+}
+gradient-btn {
+  background: linear-gradient(to right, #667eea, #764ba2);
+  transition: all 0.3s ease;
+}
+.gradient-btn:hover {
+  filter: brightness(1.15);
+  transform: scale(1.02);
 }
 
 .separator-ring:nth-child(3) {
