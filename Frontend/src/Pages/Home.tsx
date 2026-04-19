@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 import useDarkMode from "../Components/Mode.tsx";
 import analyzeVideo from "../Videos/VIdeoAnalyzer.mp4";
 import compariseVideo from "../Videos/VideoCompariser.mp4";
+import AINoteCreater from "../Videos/CreateNoteWithAi.mp4";
 
 const Home = () => {
   const { user } = useAuth();
@@ -208,7 +209,8 @@ const Home = () => {
                   className="text-sm font-mono text-gray-700 dark:text-gray-200 leading-relaxed"
                 >
                   {" "}
-                  I want to buy 2 milk for $3, a pizza for $2 and 2 bread for $2
+                  Get me 2 gallons of milk for $5, a large pizza for $12, and 3
+                  loaves of bread for $4.
                 </motion.p>
               </div>
 
@@ -251,7 +253,7 @@ const Home = () => {
                   playsInline
                   className="w-full h-full object-cover"
                 >
-                  <source src="/" type="video/mp4" />
+                  <source src={AINoteCreater} type="video/mp4" />
                 </video>
               </div>
             </motion.div>

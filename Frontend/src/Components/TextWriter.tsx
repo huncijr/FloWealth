@@ -32,7 +32,7 @@ type PromptInputProps = {
 const PromptInput = ({
   currentinput,
   setCurrentinput,
-  placeholderhint = "Create a grocerie list and let AI handle your list, write down what product how many and how much money you expect that will be and the AI will handle it and put to your list",
+  placeholderhint = "Create a list and let AI handle your list, write down what product how many and how much money you expect that will be and the AI will handle it and put to your list",
 }: PromptInputProps) => {
   const hasAnimated = useRef(false);
   const shouldAnimate = !hasAnimated.current && currentinput.length === 0;
