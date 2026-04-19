@@ -74,7 +74,7 @@ If input has no valid products, return empty array [].
     const data = await response.json();
     // console.log("data:", data, "\n");
     const result = data.choices?.[0]?.message?.content;
-    // console.log("result:", result);
+    console.log("result:", result);
 
     const tokens = data.usage?.total_tokens || 0;
     let products: ParsedProduct[] = [];

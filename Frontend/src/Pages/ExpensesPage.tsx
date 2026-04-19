@@ -62,6 +62,7 @@ import LoadingLogo from "../Components/LoadingLogo.tsx";
 import AiChatSidebar from "../Components/AiChatSidebar.tsx";
 import { motion } from "framer-motion";
 import CreateUserCard from "../Components/CreateUserCard.tsx";
+import PromptInput from "../Components/TextWriter.tsx";
 
 const Expenses = () => {
   // Interface for product rows in the table
@@ -1542,14 +1543,12 @@ const Expenses = () => {
                     <div className="flex flex-col ">
                       {activeview === "ai" && (
                         <Modal>
-                          <TextArea
-                            placeholder="Write down what you want"
-                            className="w-full"
-                            value={currentinput}
-                            onChange={(e) => setCurrentInput(e.target.value)}
-                            rows={5}
-                            style={{ resize: "vertical" }}
-                          />
+                          <div className="relative">
+                            <PromptInput
+                              currentinput={currentinput}
+                              setCurrentinput={setCurrentInput}
+                            />
+                          </div>
                           <div className="flex justify-end p-4">
                             <Button
                               onClick={handleAiParse}

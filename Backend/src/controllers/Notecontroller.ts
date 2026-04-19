@@ -370,7 +370,7 @@ export const CompleteNote = async (
       .where(and(eq(notesTable.userId, userId), eq(notesTable.id, id)))
       .returning();
 
-    console.log("completenote", completedNote);
+    // console.log("completenote", completedNote);
     if (!completedNote) {
       return res
         .status(404)

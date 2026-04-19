@@ -7,18 +7,23 @@ import {
   Sparkles,
   TrendingUp,
   Plus,
+  ShoppingCart,
+  Pizza,
+  Zap,
+  CircleDashed,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import useDarkMode from "../Components/Mode.tsx";
 import analyzeVideo from "../Videos/VIdeoAnalyzer.mp4";
-import compariseVideo from "../Videos/VideoCompariser.mp4"
+import compariseVideo from "../Videos/VideoCompariser.mp4";
 
 const Home = () => {
   const { user } = useAuth();
   const { isDark } = useDarkMode();
-  ("Our AI instantly scans your receipts and extracts key information.");
   const scrollToFeatures = () => {
-    document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+    document
+      .getElementById("create-with-ai")
+      ?.scrollIntoView({ behavior: "smooth" });
   };
 
   if (user) {
@@ -107,6 +112,183 @@ const Home = () => {
         </motion.div>
       </section>
 
+      {/* AI SCANNER SEPARATOR */}
+
+      <div className="relative pb-16 pt-5 overflow-hidden flex items-center justify-center">
+        <motion.div
+          className="pointer-events-none absolute left-0 top-1/2 h-[2px] w-[35%] -translate-y-1/2 bg-gradient-to-r from-primary/0 via-primary/70 to-primary/0"
+          animate={{ x: ["-20%", "20%", "-20%"], opacity: [0.2, 0.9, 0.2] }}
+          transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="pointer-events-none absolute right-0 top-1/2 h-[2px] w-[35%] -translate-y-1/2 bg-gradient-to-r from-primary/0 via-primary/70 to-primary/0"
+          animate={{ x: ["20%", "-20%", "20%"], opacity: [0.2, 0.9, 0.2] }}
+          transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        {/* core */}
+        <div className="relative w-24 h-24">
+          {/* glow */}
+          <div className="absolute inset-0 rounded-full bg-primary/25 blur-[22px]" />
+
+          {/* pulsing rings */}
+          <motion.div
+            className="absolute inset-0 rounded-full border border-primary/35"
+            animate={{ scale: [0.9, 1.15, 0.9], opacity: [0.35, 0.9, 0.35] }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute inset-3 rounded-full border border-secondary/30"
+            animate={{ scale: [1.05, 0.92, 1.05], opacity: [0.25, 0.7, 0.25] }}
+            transition={{ duration: 2.0, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          {/* orbiting sparkles */}
+          <motion.div
+            className="absolute inset-0"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+          >
+            <div className="absolute inset-0 flex items-center justify-center">
+              <CircleDashed className="w-12 h-12 text-primary/35" />
+            </div>
+          </motion.div>
+
+          {/* center zap (locked dead-center) */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <motion.div
+              animate={{ scale: [1, 1.08, 1], rotate: [0, -2, 0, 2, 0] }}
+              transition={{
+                duration: 1.8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            >
+              <Zap className="w-8 h-8 text-primary" />
+            </motion.div>
+          </div>
+        </div>
+      </div>
+      <section id="create-with-ai" className="py-20 relative">
+        <div className="absolute pointer-events-none top-4 left-0 w-[400px] h-[400px] rounded-full bg-primary/30 blur-[100px] animate-glow-enter" />
+        <div className="absolute pointer-events-none bottom-0 right-0 w-[350px] h-[350px] rounded-full bg-secondary/35 blur-[90px] animate-glow-enter-delayed" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] rounded-full bg-secondary/20 blur-[80px] animate-glow-enter" />
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="max-w-6xl mx-auto px-4"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.7fr_1fr] gap-10 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="relative col-span-1"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xl font-bold text-primary uppercase tracking-wild Archivo-Black tracking-wide">
+                  Prompt
+                </span>
+              </div>
+              <div
+                className="relative bg-gradient-to-br from-primary/20 to-secondary backdrop-blur-sm
+              rounded-3xl p-6 border"
+              >
+                <div className="invisible lg:visible absolute -right-4 top-1/2 transform -translate-y-1/2">
+                  <div className="w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-l-[16px] border-l-primary" />
+                </div>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                  className="text-sm font-mono text-gray-700 dark:text-gray-200 leading-relaxed"
+                >
+                  {" "}
+                  I want to buy 2 milk for $3, a pizza for $2 and 2 bread for $2
+                </motion.p>
+              </div>
+
+              <motion.div
+                animate={{ y: [-5, 5, -5] }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="absolute -top-0 -right-4 w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-lg"
+              >
+                <ShoppingCart className="w-5 h-5 " />
+              </motion.div>
+              <motion.div
+                animate={{ y: [5, -5, 5] }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="absolute -bottom-7 -left-3 w-10 h-10 bg-secondary rounded-full flex items-center justify-center shadow-lg"
+              >
+                <Pizza className="w-5 h-5 " />
+              </motion.div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="relative rounded-2xl shadow-2xl col-"
+            >
+              <div className="absolute -inset-[3px] bg-gradient-to-br from-primary to-secondary rounded-2xl" />
+              <div className="relative bg-gray-900 aspect-video  flex items-center justify-center overflow-hidden rounded-2xl">
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover"
+                >
+                  <source src="/" type="video/mp4" />
+                </video>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 40, filter: "blur(6px)", rotate: 1 }}
+              whileInView={{ opacity: 1, x: 0, filter: "blur(0px)", rotate: 0 }}
+              viewport={{ once: true, amount: 0.4 }}
+              transition={{
+                type: "spring",
+                stiffness: 120,
+                damping: 18,
+                delay: 0.15,
+              }}
+              className="flex flex-col items-start gap-4"
+            >
+              <div className="flex items-center gap-3">
+                <Sparkles className="w-8 h-8 text-primary" />
+                <h2 className="text-3xl font-black ">Real-time AI Analysis</h2>
+              </div>
+              <p className="">
+                Type what you want to buy, and our AI automatically creates
+                detailed expense notes
+              </p>
+              <div className="flex justify-end w-full">
+                <Link
+                  to="/Account"
+                  className=" gap-2 px-6 py-3 bg-gradient-to-r from-primary to-secondary
+                 font-bold rounded-xl hover:scale-105 transition-transform shadow-lg "
+                >
+                  Try it now
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      </section>
+
       {/* DECORATIVE SEPARATOR 1 */}
       <div className="divider-decoration">
         <div className="divider-line-left" />
@@ -116,11 +298,11 @@ const Home = () => {
         <div className="divider-line-right" />
       </div>
 
-      {/* FEATURE SECTION 1 - Video left, Text right */}
-      <section id="features" className="py-20 relative ">
+      {/* FEATURE SECTION 2 - Video left, Text right */}
+      <section id="features" className="py-40 relative ">
         {/* Floating shapes - glow entrance animation */}
         <div className="absolute pointer-events-none top-0 left-0 w-[400px] h-[400px] rounded-full bg-primary/30 blur-[100px] animate-glow-enter" />
-        <div className="absolute pointer-events-none top-[20%] right-[5%] w-[300px] h-[300px] rounded-full bg-secondary/30 blur-[80px] animate-glow-enter-delayed" />
+        <div className="absolute pointer-events-none top-[20%] right-[5%] w-[400px] h-[400px] rounded-full bg-secondary/30 blur-[80px] animate-glow-enter-delayed" />
         <div className="absolute pointer-events-none bottom-[20%] left-[10%] w-[150px] h-[150px] rounded-full bg-primary/25 blur-[70px] animate-glow-enter" />
         <div className="absolute pointer-events-none top-[50%] right-[25%] w-[180px] h-[180px] rounded-full bg-secondary/20 blur-[50px] animate-glow-enter-delayed" />
         <div className="absolute pointer-events-none bottom-0 right-[15%] w-[200px] h-[200px] rounded-full bg-primary/30 blur-[60px] animate-glow-enter" />
@@ -195,13 +377,13 @@ const Home = () => {
       </div>
 
       {/* FEATURE SECTION 2 - Text left, Video right */}
-      <section className="py-20 relative overflow-hidden">
+      <section className="py-40 relative overflow-hidden">
         {/* Floating shapes - glow entrance animation */}
         <div className="absolute pointer-events-none top-[10%] right-[10%] w-[350px] h-[350px] rounded-full bg-secondary/35 blur-[90px] animate-glow-enter" />
         <div className="absolute pointer-events-none bottom-[25%] left-[5%] w-[280px] h-[280px] rounded-full bg-primary/30 blur-[80px] animate-glow-enter-delayed" />
-        <div className="absolute pointer-events-none top-[40%] left-[30%] w-[200px] h-[200px] rounded-full bg-secondary/25 blur-[60px] animate-glow-enter" />
+        <div className="absolute pointer-events-none top-[50%] left-[13%] w-[300px] h-[250px] rounded-full bg-secondary/25 blur-[60px] animate-glow-enter" />
         <div className="absolute pointer-events-none bottom-0 right-[30%] w-[180px] h-[180px] rounded-full bg-primary/20 blur-[50px] animate-glow-enter-delayed" />
-        <div className="absolute pointer-events-none top-[60%] right-[40%] w-[160px] h-[160px] rounded-full bg-secondary/30 blur-[70px] animate-glow-enter" />
+        <div className="absolute pointer-events-none top-[60%] right-[40%] w-[260px] h-[200px] rounded-full bg-secondary/30 blur-[70px] animate-glow-enter" />
 
         <motion.div
           initial={{ opacity: 0, x: 50 }}

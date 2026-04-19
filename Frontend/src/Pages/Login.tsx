@@ -151,7 +151,7 @@ const Login = () => {
       setIsSubmiting(true);
       setError("");
       const response = await api.post("/authenticate", { email, otpvalue });
-      console.log(response.data.user);
+      // console.log(response.data.user);
       if (response.data.success) {
         setUser(response.data.user);
         setVerification(true);
@@ -180,7 +180,7 @@ const Login = () => {
         email,
         password,
       });
-      console.log(response.data);
+      // console.log(response.data);
       if (response.data.success) {
         setUser(response.data.user);
         setVerification(true);
@@ -526,7 +526,9 @@ const Login = () => {
                       <div className="flex justify-end">
                         <Button
                           type="submit"
-                          isDisabled={!registertoken || !termsAccepted}
+                          isDisabled={
+                            !registertoken || (!isswitch && !termsAccepted)
+                          }
                         >
                           Submit
                         </Button>

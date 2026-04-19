@@ -57,7 +57,6 @@
 | TypeScript  | Type Safety    |
 | Drizzle ORM | Database ORM   |
 | JWT         | Authentication |
-| OpenAI      | AI Integration |
 
 ### Database & Infrastructure
 

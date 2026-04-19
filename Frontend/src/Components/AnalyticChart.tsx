@@ -264,7 +264,7 @@ const AnalyticChart = () => {
             Analytics
           </h2>
 
-          <div className="absolute -bottom-2 right-5">
+          <div className="absolute -bottom-8 right-3 sm:-bottom-2 sm:right-5">
             <Dropdown>
               <Button className="rounded-lg" variant="ghost">
                 <ChevronDown /> {selectedLabel}
