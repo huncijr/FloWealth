@@ -12,7 +12,6 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white" alt="OpenAI">
   <img src="https://img.shields.io/badge/Google%20OAuth-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Google OAuth">
   <img src="https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloudflare">
 </p>
@@ -25,6 +24,7 @@
 
 ### ✨ Key Features
 
+- 📝 **AI Note Creation** - Add notes with just an AI prompt, no manual entry needed
 - 📸 **AI Receipt Scanning** - Upload receipts and let AI analyze your purchases
 - 📊 **Smart Analytics** - Visualize your spending habits with detailed charts
 - 🏷️ **Theme Organization** - Organize expenses by categories/themes
@@ -77,15 +77,13 @@
 │                 │     │                 │     │                 │
 │   React + Vite  │────▶│   Express API   │────▶│   PostgreSQL    │
 │   (Frontend)    │     │   (Backend)     │     │   (Supabase)    │
-│                 │     │                 │     │                 │
+│                 │     │                 │     │   Drizzle ORM   │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
-        │                       │                       │
-        │                       │                       │
-        ▼                       ▼                       │
-   Tailwind CSS           OpenAI API              ┌─────────────────┐
-   HeroUI Components      AI Receipt Analysis     │     Drizzle     │
-   Framer Motion         JWT Auth                │      ORM        │
-                                               └─────────────────┘
+        │                       │
+        ▼                       ▼
+   Tailwind CSS           OpenAI API
+   HeroUI Components      AI Receipt Analysis
+   Framer Motion         JWT Auth
 ```
 
 ### Authentication Flow
@@ -174,7 +172,7 @@ Switch seamlessly between dark and light themes with a beautifully animated togg
 
 ### 📝 Note Management
 
-Create and manage your shopping notes with ease. Add products, estimate prices, and track your planned expenses.
+Create notes with just an AI prompt - just type what you need to buy and our AI parses it automatically. Add products, estimate prices, and track your planned expenses.
 
 ![Add Note](./Readme%20gifs/addnote.gif)
 
@@ -226,48 +224,6 @@ Manage your account settings, view token usage, and delete your account securely
 
 ![Account Page](./Readme%20gifs/accountpage.gif)
 
----
-
-## 🎯 API Endpoints
-
-### Authentication
-
-| Method | Endpoint            | Description       |
-| ------ | ------------------- | ----------------- |
-| POST   | `/api/register`     | Register new user |
-| POST   | `/api/authenticate` | Verify OTP        |
-| POST   | `/api/login`        | User login        |
-| POST   | `/api/google`       | Google OAuth      |
-| POST   | `/api/signout`      | Sign out          |
-
-### Notes
-
-| Method | Endpoint                | Description         |
-| ------ | ----------------------- | ------------------- |
-| GET    | `/api/getnotes`         | Get paginated notes |
-| POST   | `/api/addnote`          | Create new note     |
-| PATCH  | `/api/updatenotes`      | Update note         |
-| DELETE | `/api/deletenote/:id`   | Delete note         |
-| POST   | `/api/completenote/:id` | Complete note       |
-
-### Themes
-
-| Method | Endpoint               | Description     |
-| ------ | ---------------------- | --------------- |
-| GET    | `/api/gettheme`        | Get user themes |
-| POST   | `/api/newtheme`        | Create theme    |
-| DELETE | `/api/deletetheme/:id` | Delete theme    |
-
-### AI Features
-
-| Method | Endpoint               | Description           |
-| ------ | ---------------------- | --------------------- |
-| POST   | `/api/analyze-receipt` | AI receipt analysis   |
-| POST   | `/api/compare-notes`   | Compare notes with AI |
-| GET    | `/api/ai-tokens`       | Get token usage       |
-
----
-
 ## 📦 Project Structure
 
 ```
@@ -310,30 +266,6 @@ FloWealth/
 - **Cloudflare Turnstile** - Bot protection
 - **CORS Protection** - Cross-origin request safety
 - **SQL Injection Prevention** - Drizzle ORM parameterization
-
----
-
-## 🚀 Deployment
-
-### Docker
-
-```bash
-# Build and run
-docker-compose up -d --build
-
-# Check status
-docker-compose ps
-
-# View logs
-docker-compose logs -f
-```
-
-### DigitalOcean Droplet
-
-1. Clone the repository on your Droplet
-2. Set up environment variables
-3. Run `docker-compose up -d`
-4. Configure Nginx with SSL (Certbot)
 
 ---
 
