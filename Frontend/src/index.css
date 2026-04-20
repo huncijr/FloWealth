@@ -346,6 +346,118 @@ body {
   }
 }
 
+@keyframes aiArrowStripe {
+  0% {
+    transform: translateX(-70%);
+  }
+  100% {
+    transform: translateX(70%);
+  }
+}
+@keyframes aiRevealStep {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+    filter: blur(2px);
+  }
+  8% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  26% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+    filter: blur(2px);
+  }
+}
+
+@keyframes aiRevealArrow {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes aiRevealSplit {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  70% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes aiRevealStep {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes aiRevealArrow {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes aiRevealSplit {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
 .registeredui-slidefade {
   animation: slide-fade-in 1.3s cubic-bezier(0.2, 0.9, 0.2, 1) both;
 }
@@ -817,6 +929,217 @@ gradient-btn {
   background: linear-gradient(to left, rgba(206, 150, 19, 0.6), transparent);
   transform: translateY(-50%);
 }
+.ai-flow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.ai-step {
+  position: relative;
+  border-radius: 18px;
+  padding: 14px 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+
+  /* hidden by default; reveal animation will show */
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+}
+.ai-step__iconWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.ai-step__iconBg {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  /* tailwind gradient helper: from-.. to-.. classes are added on element,
+     but here we ensure it looks right even without. */
+  background: linear-gradient(
+    135deg,
+    rgba(229, 134, 18, 0.9),
+    rgba(173, 113, 29, 0.9)
+  );
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.ai-step__icon {
+  width: 20px;
+  height: 20px;
+}
+
+.ai-step__title {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  font-size: 14px;
+}
+
+.ai-step__desc {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* top accent line inside cards */
+.ai-step::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(229, 134, 18, 0.55),
+    transparent
+  );
+  opacity: 0.65;
+}
+.ai-arrow {
+  display: flex;
+  grid-auto-flow: column;
+  align-items: center;
+  gap: 4px;
+  opacity: 0; /* reveal with timeline */
+  transform: translateY(6px);
+}
+
+.ai-arrow__shaft {
+  width: 72px;
+  height: 12px;
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+}
+
+.ai-arrow__head {
+  width: 0;
+  height: 0;
+
+  /* triangle */
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-left: 7px solid var(--color-primary);
+
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.35));
+  opacity: 0.95;
+}
+
+.ai-flow--once .ai-arrow {
+  animation-name: aiRevealArrow;
+  animation-duration: 0.3s;
+  animation-timing-function: ease;
+  animation-fill-mode: forwards;
+}
+
+.ai-flow--once .ai-arrow--1 {
+  animation: aiRevealArrow 0.3s ease forwards;
+  animation-delay: 0s;
+}
+.ai-flow--once .ai-arrow--2 {
+  animation: aiRevealArrow 0.3s ease forwards;
+  animation-delay: 0.4s;
+}
+.ai-flow--once .ai-arrow--3 {
+  animation: aiRevealArrow 0.3s ease forwards;
+  animation-delay: 0.8s;
+}
+
+.ai-split {
+  margin-top: 12px;
+  position: relative;
+  height: 120px;
+  opacity: 0; /* reveal later */
+  transform: translateY(8px);
+}
+
+.ai-branch {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.ai-branch--up {
+  top: 8px;
+  transform: rotate(-12deg);
+  transform-origin: left center;
+}
+
+.ai-branch--down {
+  bottom: 8px;
+  transform: rotate(12deg);
+  transform-origin: left center;
+}
+
+.ai-branch__line {
+  height: 10px;
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+/* node card */
+.ai-branch__node {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+  font-weight: 700;
+  backdrop-filter: blur(10px);
+}
+
+.ai-flow--once .ai-step--1 {
+  animation: aiRevealStep 0.3s ease forwards;
+  animation-delay: 0s;
+}
+.ai-flow--once .ai-step--2 {
+  animation: aiRevealStep 0.3s ease forwards;
+  animation-delay: 1s;
+}
+.ai-flow--once .ai-step--3 {
+  animation: aiRevealStep 0.3s ease forwards;
+  animation-delay: 2s;
+}
+.ai-flow--once .ai-step--4 {
+  animation: aiRevealStep 0.3s ease forwards;
+  animation-delay: 2.8s;
+}
+
+.ai-flow--once .ai-split {
+  animation: aiRevealSplit 0.6s ease forwards;
+  animation-delay: 3.5s;
+}
+.ai-flow--once .ai-arrow--1 {
+  animation-delay: 0.2s;
+}
+.ai-flow--once .ai-arrow--2 {
+  animation-delay: 1.2s;
+}
+.ai-flow--once .ai-arrow--3 {
+  animation-delay: 2.4s;
+}
 /* === COMPONENTS === */
 @layer components {
   .Alfa-slab-one {
@@ -846,6 +1169,9 @@ gradient-btn {
 
   .Abril-Fatface {
     font-family: "Abril Fatface", cursive;
+  }
+  .Artifika {
+    font-family: "Artifika", serif;
   }
 
   /* Animation classes */
@@ -910,5 +1236,37 @@ gradient-btn {
     animation: none !important;
     transform: none !important;
     filter: none !important;
+  }
+}
+@media (max-width: 860px) {
+  .ai-flow {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .ai-arrow {
+    display: none;
+  }
+  .ai-split {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    height: auto;
+    gap: 12px;
+  }
+
+  .ai-branch {
+    position: relative;
+    left: auto;
+    right: auto;
+  }
+
+  .ai-branch--up {
+    transform: rotate(-12deg) translateY(-5px);
+    transform-origin: center;
+  }
+
+  .ai-branch--down {
+    transform: rotate(8deg) translateY(12px);
   }
 }

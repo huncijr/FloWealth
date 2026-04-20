@@ -6,6 +6,7 @@ import {
   Bug,
   CircleUserRound,
   Github,
+  HelpCircle,
   Link,
   LogOut,
   Mail,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import ShowTutorial from "./ShowTutorial";
 
 export function useMediaQuery(query: string) {
   const [matches, setMatches] = useState<boolean>(false);
@@ -34,6 +36,7 @@ export function useMediaQuery(query: string) {
 const RegisteredUser = () => {
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
+  const [showtutorial, setShowTutorial] = useState(false);
 
   const [tokens, setTokens] = useState<{
     tokensUsed: number;
@@ -200,6 +203,13 @@ const RegisteredUser = () => {
                   {user?.isGoogleUser ? "Google Account" : "Email Account"}
                 </div>
               </div>
+              <Button
+                variant="tertiary"
+                onClick={() => setShowTutorial(true)}
+                className="flex w-full max-w-[200px] "
+              >
+                Get started guide <HelpCircle />
+              </Button>
 
               <div className="relative w-full py-5">
                 <div className="h-px w-full bg-gradient-to-r from-transparent via-secondary/70 to-transparent" />
@@ -422,6 +432,10 @@ const RegisteredUser = () => {
           </Modal.Backdrop>
         </Modal>
       )}
+      <ShowTutorial
+        isopen={showtutorial}
+        onClose={() => setShowTutorial(false)}
+      />
     </div>
   );
 };

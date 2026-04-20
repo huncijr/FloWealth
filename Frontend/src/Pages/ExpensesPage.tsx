@@ -63,6 +63,7 @@ import AiChatSidebar from "../Components/AiChatSidebar.tsx";
 import { motion } from "framer-motion";
 import CreateUserCard from "../Components/CreateUserCard.tsx";
 import PromptInput from "../Components/TextWriter.tsx";
+import ShowTutorial from "../Components/ShowTutorial.tsx";
 
 const Expenses = () => {
   // Interface for product rows in the table
@@ -168,6 +169,7 @@ const Expenses = () => {
   const [isaisidebaropen, setISAiSidebarOpen] = useState<boolean>(false);
   const [activenoteforai, setActiveNoteForAi] = useState<Note | null>(null);
   const [aianalysis, setAiAnalysis] = useState<string>("");
+  const [showtutorial, setShowTutorial] = useState(false);
 
   const [currentinput, setCurrentInput] = useState<string>("");
   const [dots, setDots] = useState(".");
@@ -224,6 +226,21 @@ const Expenses = () => {
       return () => clearTimeout(timer);
     }
   }, [isvalidnote]);
+
+  useEffect(() => {
+    if (!themesLoading && !notesLoading) {
+      const hasSeenTutorial =
+        localStorage.getItem("hasSeenTutorial") === "true";
+      if (themes.length === 0 && notes.length === 0 && !hasSeenTutorial) {
+        setShowTutorial(true);
+      }
+    }
+  }, [themesLoading, notesLoading, themes, notes]);
+
+  const handleCloseTutorial = () => {
+    localStorage.setItem("hasSeenTutorial", "true");
+    setShowTutorial(false);
+  };
 
   useEffect(() => {
     if (maxlimit) {
@@ -1289,6 +1306,8 @@ const Expenses = () => {
             />
           </div>
         </div>
+      ) : showtutorial && user ? (
+        <ShowTutorial isopen={showtutorial} onClose={handleCloseTutorial} />
       ) : (
         <>
           <div className="ml-5 mt-5">
