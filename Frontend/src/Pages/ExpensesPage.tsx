@@ -30,6 +30,7 @@ import {
   CheckCheck,
   CheckCircle,
   ChevronDown,
+  Clock,
   ClockCheck,
   MessageCircleWarning,
   NotebookPen,
@@ -46,7 +47,12 @@ import React, { useEffect, useState } from "react";
 import { api } from "../api/axiosInstance";
 import useDarkMode from "../Components/Mode";
 import ProductTable from "../Components/ProductTable";
-import { getLocalTimeZone, now, type DateValue } from "@internationalized/date";
+import {
+  getLocalTimeZone,
+  now,
+  parseAbsoluteToLocal,
+  type DateValue,
+} from "@internationalized/date";
 import ImageUpload from "../Components/ImageUpload";
 import ThemeList from "../Components/Themecards";
 import CustomPagination from "../Components/Pagination";
@@ -828,9 +834,6 @@ const Expenses = () => {
                                   title="Update"
                                 >
                                   <CheckCircle size={16} />
-                                  <span className="text-xs font-semibold tracking-wide">
-                                    UPDATE
-                                  </span>
                                 </button>
                                 <span
                                   className="cursor-pointer inline-flex items-center gap-1.5 h-8 rounded-lg px-2.5
@@ -839,9 +842,6 @@ const Expenses = () => {
                                   title="Editing mode"
                                 >
                                   <PencilLine size={16} />
-                                  <span className="text-xs font-medium">
-                                    Editing...
-                                  </span>
                                 </span>
                               </>
                             )
@@ -899,10 +899,74 @@ const Expenses = () => {
                               />
                             )}
                             <Card.Description className="flex items-center gap-1 mt-1 text-xs text-warm-brown/70 dark:text-warm-light/50">
-                              <Calendar size={12} />
-                              <span>
-                                {note.estimatedTime?.split("T")[0] || "No date"}
-                              </span>
+                              <div className="flex flex-col justify-center ">
+                                <div className="flex items-center gap-2">
+                                  <Calendar
+                                    size={12}
+                                    className="text-warm-brown/70 dark:text-warm-light/50 shrink-0"
+                                  />
+
+                                  {editingnoteid !== note.id ? (
+                                    <span className="text-xs text-warm-brown/70 dark:text-warm-light/50">
+                                      {note.estimatedTime
+                                        ? new Date(
+                                            note.estimatedTime,
+                                          ).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "short",
+                                            day: "numeric",
+                                          })
+                                        : "No date"}
+                                    </span>
+                                  ) : (
+                                    <DateField
+                                      aria-label="Estimated time"
+                                      className="w-52"
+                                      granularity="minute"
+                                      value={
+                                        draftnote?.estimatedTime
+                                          ? parseAbsoluteToLocal(
+                                              draftnote?.estimatedTime,
+                                            )
+                                          : null
+                                      }
+                                      onChange={(date) =>
+                                        handleChangeDate(date)
+                                      }
+                                      minValue={now(getLocalTimeZone())}
+                                    >
+                                      <DateInputGroup className="text-xs">
+                                        <DateInputGroup.Input>
+                                          {(segment) => (
+                                            <DateInputGroup.Segment
+                                              segment={segment}
+                                            />
+                                          )}
+                                        </DateInputGroup.Input>
+                                      </DateInputGroup>
+                                    </DateField>
+                                  )}
+                                </div>
+                                {editingnoteid !== note.id && (
+                                  <div className="flex items-center gap-2 ">
+                                    <Clock
+                                      size={12}
+                                      className="text-warm-brown/50 dark:text-warm-light/40 shrink-0"
+                                    />
+
+                                    <span className="text-xs text-warm-brown/50 dark:text-warm-light/40">
+                                      {note.estimatedTime
+                                        ? new Date(
+                                            note.estimatedTime,
+                                          ).toLocaleTimeString("en-US", {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })
+                                        : "No time"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
                             </Card.Description>
                           </div>
                           <div className="flex flex-col items-end gap-2">
@@ -971,7 +1035,7 @@ const Expenses = () => {
                               <span className="text-right Ubuntu">Price</span>
                             </div>
                           </div>
-                          <ScrollShadow className="max-h-[160px]">
+                          <ScrollShadow className="max-h-[160px] overflow-y-auto">
                             {(editingnoteid === note.id
                               ? draftnote?.products
                               : note.products
@@ -1049,7 +1113,7 @@ const Expenses = () => {
                             ))}
                           </ScrollShadow>
                           {editingnoteid === note.id && (
-                            <div className="p-2 border-t border-warm-tan/20 flex justify-center">
+                            <div className="sticky bottom-0 p-2 border-t border-warm-tan/20 flex justify-center">
                               <Button size="sm" onClick={handleAddNewProduct}>
                                 <Plus size={12} />
                                 Add
