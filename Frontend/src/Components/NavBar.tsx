@@ -26,11 +26,13 @@ const NavBar = () => {
        gap-4 p-3 border-b-2 ${isDark ? "shadow-[0_4px_15px_rgba(206,206,206,0.7)]" : "shadow-[0_4px_15px_rgba(44,44,44,0.7)]"}`}
       >
         <div className="flex justify-between shrink-0">
-          <img
-            src={isDark ? DarkFlowealth : Flowealth}
-            className="h-20 md:h-24 lg:h-28 xl:h-33 w-auto "
-            alt="FloWealth Logo"
-          />
+          <NavLink to="/Home">
+            <img
+              src={isDark ? DarkFlowealth : Flowealth}
+              className="cursor-pointer h-20 md:h-24 lg:h-28 xl:h-33 w-auto "
+              alt="FloWealth Logo"
+            />
+          </NavLink>
           {/* Mobile-only account link - shows avatar for Google users, icon for others */}
           <NavLink
             to="/Account"

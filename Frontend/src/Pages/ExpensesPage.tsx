@@ -25,12 +25,12 @@ import {
   BadgePlus,
   Ban,
   BookX,
+  Calendar,
   Check,
   CheckCheck,
   CheckCircle,
   ChevronDown,
   ClockCheck,
-  DollarSign,
   MessageCircleWarning,
   NotebookPen,
   PencilLine,
@@ -46,12 +46,7 @@ import React, { useEffect, useState } from "react";
 import { api } from "../api/axiosInstance";
 import useDarkMode from "../Components/Mode";
 import ProductTable from "../Components/ProductTable";
-import {
-  getLocalTimeZone,
-  now,
-  parseAbsoluteToLocal,
-  type DateValue,
-} from "@internationalized/date";
+import { getLocalTimeZone, now, type DateValue } from "@internationalized/date";
 import ImageUpload from "../Components/ImageUpload";
 import ThemeList from "../Components/Themecards";
 import CustomPagination from "../Components/Pagination";
@@ -760,345 +755,317 @@ const Expenses = () => {
               >
                 {!note.completed ? (
                   <div className="h-full flex flex-col">
-                    <div className="flex items-center gap-3 bg-gray-300 transform -skew-x-9 shadow-lg overflow-hidden ">
-                      <div className="flex gap-2 relative z-10 overflow-hidden w-full skew-x-9 m-1 ">
-                        {editingnoteid !== note.id ? (
-                          <>
-                            <div
-                              className="cursor-pointer bg-red-600 text-white px-1 hover:bg-red-500 py-1 rounded text-xs"
-                              onClick={() => handleDelete(note.id)}
-                            >
-                              <Trash size={16} />
-                            </div>
-                            <div
-                              className="cursor-pointer bg-green-600 hover:bg-green-500 text-white px-1 py-1 rounded text-xs"
-                              onClick={() => {
-                                if (editingnoteid === note.id) {
-                                  (setEditingNoteId(null), setDraftNote(null));
-                                } else {
+                    <div className="relative w-full h-[65px] overflow-hidden  rounded-2xl shadow-[0_12px_30px_-18px_rgba(0,0,0,0.55)]">
+                      <div className="absolute inset-0 bg-warm-white/50 dark:bg-warm-dark/35 bg-linear-to-r" />
+                      <div
+                        className={`absolute inset-y-0 left-0 w-[100%] lg:w-[72%] bg-gradient-to-r ${editingnoteid === note.id ? "from-slate-500/55 via-slate-400/20 to-transparent" : "from-blue-500/55 via-blue-400/20 to-transparent"}`}
+                        style={{
+                          clipPath: "polygon(0 0, 70% 0, 56% 100%, 0 100%)",
+                        }}
+                      >
+                        <div
+                          className="absolute inset-y-0 left-0 w-[72%] opacity-70"
+                          style={{
+                            clipPath:
+                              "polygon(69% 0, 71% 0, 57% 100%, 55% 100%)",
+                            background:
+                              "linear-gradient(to bottom, rgba(255,255,255,0.45), rgba(255,255,255,0.08))",
+                          }}
+                        />
+                        <div
+                          className="absolute inset-y-0 left-0 w-[82%] opacity-70"
+                          style={{
+                            clipPath:
+                              "polygon(69% 0, 71% 0, 57% 100%, 55% 100%)",
+                            background:
+                              "linear-gradient(to bottom, rgba(255,255,255,0.45), rgba(255,255,255,0.08))",
+                          }}
+                        />
+
+                        <div className="absolute inset-0 bg-linear-to-b from-white/10 to-black/5 dark:from-white/5 dark:to-black/20" />
+                        <div
+                          className="flex items-center gap-2  rounded-xl border-warm-tan/30 dark:border-warm-border/40
+                        bg-warm-white/60 dark:bg-warm-dark/40 backdrop-blur px-2 py-1"
+                        >
+                          {editingnoteid !== note.id ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleDelete(note.id)}
+                                className="cursor-pointer inline-flex items-center justify-center h-7 w-7 rounded-lg
+                                 bg-red-500/10 text-red-700 dark:text-red-300
+                                 hover:bg-red-500/20 active:bg-red-500/30
+                                 ring-1 ring-red-500/20 transition
+                                "
+                              >
+                                <Trash size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
                                   setEditingNoteId(note.id);
                                   setDraftNote({ ...note });
                                   setIsCompleted(true);
+                                }}
+                                className="cursor-pointer inline-flex items-center justify-center h-8 w-8 rounded-lg 
+                                bg-emerald-500/10 text-emerald-700 dark:text-emerald-300
+                             hover:bg-emerald-500/20 active:bg-emerald-500/30
+                              ring-1 ring-emerald-500/20 transition"
+                                title="Mark /Start editing"
+                              >
+                                <Check size={16} />
+                              </button>
+                            </>
+                          ) : (
+                            hasInitiallyLoaded && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={handleUpdateNote}
+                                  className="cursor-pointer inline-flex items-center gap-1.5 h-8 rounded-lg px-2.5
+                                   bg-emerald-600 text-white hover:bg-emerald-500 active:bg-emerald-700 transition
+                                  "
+                                  title="Update"
+                                >
+                                  <CheckCircle size={16} />
+                                  <span className="text-xs font-semibold tracking-wide">
+                                    UPDATE
+                                  </span>
+                                </button>
+                                <span
+                                  className="cursor-pointer inline-flex items-center gap-1.5 h-8 rounded-lg px-2.5
+                               bg-amber-500/15 text-amber-700 dark:text-amber-300
+                                ring-1 ring-amber-500/20 "
+                                  title="Editing mode"
+                                >
+                                  <PencilLine size={16} />
+                                  <span className="text-xs font-medium">
+                                    Editing...
+                                  </span>
+                                </span>
+                              </>
+                            )
+                          )}
+                          <div className="flex-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (editingnoteid === note.id) {
+                                  setEditingNoteId(null);
+                                  setDraftNote(null);
+                                } else {
+                                  setEditingNoteId(note.id);
+                                  setDraftNote({ ...note });
                                 }
                               }}
+                              className={`cursor-pointer inline-flex items-center justify-center h-8 w-8 rounded-lg ring-1 transition
+                                ${editingnoteid === note.id ? "bg-red-500/10 text-red-700 dark:text-red-300 ring-red-500/20 hover:bg-red-500/20" : "bg-blue-500/10 text-blue-700 dark:text-blue-300 ring-blue-500/20 hover:bg-blue-500/20"}`}
+                              title={
+                                editingnoteid === note.id
+                                  ? "Cancel editing"
+                                  : "Edit"
+                              }
                             >
-                              <Check size={16} />
-                            </div>
-                          </>
-                        ) : (
-                          hasInitiallyLoaded && (
-                            /* EDIT MODE: "Editing..." badge */
-                            <div className="flex items-center gap-1  px-2 py-1  text-xs font-medium ">
-                              <div
-                                className="flex cursor-pointer rounded hover:bg-green-700/40 text-green-900 bg-green-700/20"
-                                onClick={handleUpdateNote}
-                              >
-                                <CheckCircle size={16} />
-                                <p>UPDATE</p>
-                              </div>
-                              <div className="flex bg-yellow-500/20 rounded text-yellow-600">
+                              {editingnoteid === note.id ? (
+                                <X size={16} />
+                              ) : (
                                 <PencilLine size={16} />
-                                <span>Editing...</span>
-                              </div>
-                            </div>
-                          )
-                        )}
-                        <div
-                          className="cursor-pointer flex items-end ml-auto  px-1 py-1 rounded text-xs"
-                          onClick={() => {
-                            if (editingnoteid === note.id) {
-                              (setEditingNoteId(null), setDraftNote(null));
-                            } else {
-                              setEditingNoteId(note.id);
-                              setDraftNote({ ...note });
-                            }
-                          }}
-                        >
-                          {/* Toggle Edit Mode Button (Pencil/X) */}
-                          {editingnoteid === note.id ? (
-                            <X
-                              size={16}
-                              className="text-red-900 hover:text-red-800"
-                            />
-                          ) : (
-                            <PencilLine
-                              size={16}
-                              className="text-blue-900 hover:text-blue-800"
-                            />
-                          )}
+                              )}
+                            </button>
+                          </div>
                         </div>
                       </div>
-                      <div
-                        className={`absolute -left-1 top-0 w-[65%]  h-full ${editingnoteid === note.id ? "bg-gray-400/70" : "bg-blue-400/70"}
-                                   transform -skew-x-9 origin-left`}
-                      />{" "}
                     </div>
                     {/* ==========================================
                       MAIN CONTENT - Title, Date, Theme, Cost
                       ========================================== */}
-                    <div
-                      className={`mt-1 relative flex flex-col border-2  ${editingnoteid !== note.id ? (isDark ? "border-gray-800" : "border-white") : "border-red-700"}
-                     p-3 ${editingnoteid === note.id ? "bg-secondary/90" : "bg-secondary"} h-full overflow-y-auto`}
-                    >
-                      <div className="flex flex-col ">
-                        <div className="flex justify-between items-start z-10">
-                          <div className="flex flex-col">
+                    <div className="relative w-full mx-auto flex flex-col note-animate-fade">
+                      <Card
+                        className={`mt-1 relative overflow-hidden h-[407px]  border-2 shadow-soft before:absolute before:left-0 before:top-0 
+                        before:bottom-0 before:w-1 before:bg-linear-to-b before:from-primary before:to-secondary`}
+                      >
+                        <Card.Header className="flex items-star justify-between gap-3 pb-2">
+                          <div className="flex-1 min-w-0">
                             {editingnoteid !== note.id ? (
-                              <p className="Ubuntu line-clamp-2 min-h-[40px]">
+                              <Card.Title className="truncate font-semibold text-warm-dark dark:text-warm-light">
                                 {note.productTitle}
-                              </p>
+                              </Card.Title>
                             ) : (
-                              <div className="w-[50%] min-h-[40px]">
-                                <Input
-                                  aria-label="Name"
-                                  className="w-full"
-                                  placeholder="Enter a new title"
-                                  value={draftnote?.productTitle}
-                                  onChange={(e) =>
-                                    handleChangeTitle(e.target.value)
-                                  }
-                                />
-                              </div>
+                              <Input
+                                value={draftnote?.productTitle}
+                                onChange={(e) =>
+                                  handleChangeTitle(e.target.value)
+                                }
+                              />
                             )}
-                            <div className="shrink-0 text-sm text-muted capitalize w-[50%]">
-                              <Chip
-                                variant="secondary"
-                                color="default"
-                                className="py-1 min-h-[40px]"
-                              >
-                                <ClockCheck className="shrink-0" />
-
-                                {editingnoteid === note.id ? (
-                                  <div className="w-32">
-                                    <DateField
-                                      aria-label="Estimated time"
-                                      className="w-full"
-                                      granularity="minute"
-                                      value={
-                                        draftnote?.estimatedTime
-                                          ? parseAbsoluteToLocal(
-                                              draftnote?.estimatedTime,
-                                            )
-                                          : null
-                                      }
-                                      onChange={(date) =>
-                                        handleChangeDate(date)
-                                      }
-                                      minValue={now(getLocalTimeZone())}
-                                    >
-                                      <DateInputGroup className="text-xs">
-                                        <DateInputGroup.Input>
-                                          {(segment) => (
-                                            <DateInputGroup.Segment
-                                              segment={segment}
-                                            />
-                                          )}
-                                        </DateInputGroup.Input>
-                                      </DateInputGroup>
-                                    </DateField>
-                                  </div>
-                                ) : (
-                                  <p className="truncate">
-                                    {note.estimatedTime?.split("T")[0] ||
-                                      "no time selected"}
-                                  </p>
-                                )}
-                              </Chip>
-                            </div>
+                            <Card.Description className="flex items-center gap-1 mt-1 text-xs text-warm-brown/70 dark:text-warm-light/50">
+                              <Calendar size={12} />
+                              <span>
+                                {note.estimatedTime?.split("T")[0] || "No date"}
+                              </span>
+                            </Card.Description>
                           </div>
-                          <div className="flex flex-col items-center">
-                            {editingnoteid === note.id ? (
+                          <div className="flex flex-col items-end gap-2">
+                            {editingnoteid !== note.id ? (
+                              <Chip
+                                size="lg"
+                                variant="soft"
+                                style={{
+                                  backgroundColor: themes.find(
+                                    (t) => t.name === note.theme,
+                                  )?.color
+                                    ? `${themes.find((t) => t.name === note.theme)?.color}30`
+                                    : "bg-warm-brown/10",
+                                }}
+                              >
+                                {note.theme || "No theme"}
+                              </Chip>
+                            ) : (
                               <Dropdown>
-                                <Button
-                                  variant="secondary"
-                                  className="relative z-10 border-2 px-5 py-1 shadow-[0_0_0_2px_#a6a6a8]  "
-                                >
-                                  {draftnote?.theme || ""}
+                                <Button size="sm">
+                                  {draftnote?.theme || "Select"}
                                 </Button>
-                                <Dropdown.Popover className="min-w-[200px]">
+                                <Dropdown.Popover>
                                   <Dropdown.Menu>
-                                    <Dropdown.Section>
-                                      <Header>Themes</Header>
-                                      {themes &&
-                                        themes.length > 0 &&
-                                        themes.map((theme, index) => (
-                                          <Dropdown.Item
-                                            key={index}
-                                            onClick={() => {
-                                              if (draftnote)
-                                                setDraftNote({
-                                                  ...draftnote,
-                                                  theme: theme.name,
-                                                  color: theme.color,
-                                                });
-                                            }}
-                                          >
-                                            <div className="cursor-pointer flex justify-between items-center w-full">
-                                              <Label>{theme.name}</Label>
-                                              <Kbd>
-                                                <Kbd.Content>Theme</Kbd.Content>
-                                              </Kbd>
-                                            </div>
-                                          </Dropdown.Item>
-                                        ))}
-                                    </Dropdown.Section>
+                                    {themes?.map((t, i) => (
+                                      <Dropdown.Item
+                                        key={i}
+                                        onClick={() =>
+                                          setDraftNote({
+                                            ...draftnote!,
+                                            theme: t.name,
+                                            color: t.color,
+                                          })
+                                        }
+                                      >
+                                        <div className="flex justify-between items-center w-full">
+                                          <span>{t.name}</span>
+                                          <Kbd className="ml-2">Theme</Kbd>
+                                        </div>
+                                      </Dropdown.Item>
+                                    ))}
                                   </Dropdown.Menu>
                                 </Dropdown.Popover>
                               </Dropdown>
-                            ) : (
-                              <p
-                                className="Archivo-Black rounded-xl  px-5 py-1 z-10"
-                                style={{
-                                  backgroundColor: note.color,
-                                  boxShadow: `0 0 0 2px ${note.color}`,
-                                }}
-                              >
-                                {note?.theme || "No theme added"}
-                              </p>
                             )}
-                            <div className="bg-gradient-to-b  from-gray-700 to-gray-800 text-white pb-1 px-2 mx-1 pt-2 -mt-2 rounded-b-xl font-bold shadow-md transform translate-y-0 ">
-                              {new Intl.NumberFormat("en-US", {
-                                style: "currency",
-                                currency: "USD",
-                              }).format(Number(note.estcost) || 0)}
+                            <span
+                              className="ml-auto w-fit justify-self-end inline-flex items-center rounded-md px-2 py-1
+                             bg-emerald-500/10 text-emerald-700 dark:text-emerald-300
+                                ring-1 ring-emerald-500/20 font-mono font-semibold tabular-nums"
+                            >
+                              ${Number(note.estcost || 0)}
+                            </span>
+                          </div>
+                        </Card.Header>
+                        <Card.Content className="px-0 pb-2">
+                          <div className="mx-4 rounded-lg overflow-hidden border border-warm-tan/20 dark:border-warm-border/30">
+                            <div
+                              className="grid grid-cols-[1fr_72px_110px] gap-2 px-3 py-2
+                                    text-[11px] font-semibold uppercase tracking-wider
+                                      bg-warm-brown/10 dark:bg-warm-light/5
+                                        text-warm-brown/80 dark:text-warm-light/60
+                                        border-b border-warm-tan/20 sticky top-0 z-10"
+                            >
+                              <span className="Ubuntu">Name</span>
+                              <span className="text-center Ubuntu">Qty</span>
+                              <span className="text-right Ubuntu">Price</span>
+                            </div>
+                          </div>
+                          <ScrollShadow className="max-h-[160px]">
+                            {(editingnoteid === note.id
+                              ? draftnote?.products
+                              : note.products
+                            )?.map((product, i) => (
                               <div
-                                className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3
-                        bg-gray-800 rotate-45 border-gray-600"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="h-1 relative mt-4 w-full bg-gray-600" />
-                        <div className="mt-4">
-                          <h4 className="text-sm font-semibold text-gray-400 mb-2 uppercase tracking-wide">
-                            Products
-                          </h4>
-                          <div className="bg-gray-800/30 rounded-lg overflow-hidden">
-                            <div className="grid grid-cols-3 gap-2 bg-gray-700/50 px-3 py-2 text-xs font-medium text-gray-400 uppercase">
-                              <span>Name</span>
-                              <span className="text-center">Qty</span>
-                              <span className="text-right">Price</span>
-                            </div>
+                                key={i}
+                                className={`grid grid-cols-[1fr_72px_110px] gap-2 px-3 py-2.5 text-sm
+                                border-t border-warm-tan/10
+                                ${i % 2 === 0 ? "bg-transparent" : "bg-warm-brown/3 dark:bg-warm-light/3"}
+                                hover:bg-warm-brown/6 dark:hover:bg-warm-light/6 transition-colors`}
+                              >
+                                {editingnoteid !== note.id ? (
+                                  <>
+                                    <span className="truncate font-medium text-warm-dark dark:text-warm-light">
+                                      {product.name}
+                                    </span>
+                                    <span
+                                      className="text-center text-warm-brown/70 dark:text-warm-light/60 
+                           font-mono"
+                                    >
+                                      {product.quantity}
+                                    </span>
+                                    <span
+                                      className="text-right font-bold text-emerald-600 dark:text-emerald-400 
+                           font-mono tabular-nums"
+                                    >
+                                      ${Number(product.estprice).toFixed(2)}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Input
+                                      variant="secondary"
+                                      value={draftnote?.products[i].name || ""}
+                                      onChange={(e) =>
+                                        handleChangeProduct(
+                                          i,
+                                          "name",
+                                          e.target.value,
+                                        )
+                                      }
+                                    />
+                                    <Input
+                                      type="number"
+                                      variant="secondary"
+                                      value={
+                                        draftnote?.products[i].quantity || ""
+                                      }
+                                      onChange={(e) =>
+                                        handleChangeProduct(
+                                          i,
+                                          "quantity",
+                                          parseFloat(e.target.value) || 0,
+                                        )
+                                      }
+                                    />
 
-                            {/* VIEW MODE: Display products | EDIT MODE: Editable inputs */}
-                            <ScrollShadow className="max-h-[100px] sm:max-h-[125px] md:max-h-[150px] lg:max-h-[200px] w-full">
-                              {(editingnoteid === note.id
-                                ? draftnote?.products
-                                : note.products
-                              )?.map((product, i) => (
-                                <div key={i} className="h-full w-full">
-                                  {editingnoteid !== note.id ? (
-                                    <div className="grid grid-cols-3 text-sm border-t border-gray-700/50 hover:bg-gray-700/30 transition-colors gap-2 px-3 py-2 ">
-                                      <span className="truncate font-medium">
-                                        {product.name}
-                                      </span>
-                                      <span className="text-center text-gray-400">
-                                        {product.quantity}
-                                      </span>
-                                      <span className="text-right font-bold text-emerald-400">
-                                        ${Number(product.estprice).toFixed(2)}
-                                      </span>{" "}
-                                    </div>
-                                  ) : (
-                                    /* EDIT MODE: Editable product row with inputs */
-                                    <div className="grid grid-cols-3 text-sm border-t border-gray-700/50 hover:bg-gray-700/30 transition-colors gap-2 px-3 py-2">
-                                      <Input
-                                        fullWidth
-                                        placeholder="Enter a new Product title"
-                                        variant="secondary"
-                                        value={
-                                          draftnote?.products[i].name || ""
-                                        }
-                                        onChange={(e) =>
-                                          handleChangeProduct(
-                                            i,
-                                            "name",
-                                            e.target.value || "",
-                                          )
-                                        }
-                                      />
-                                      <InputGroup className="min-w-[60px]">
-                                        <InputGroup.Prefix>
-                                          <PencilLine size={20} />
-                                        </InputGroup.Prefix>
-                                        <InputGroup.Input
-                                          placeholder="0"
-                                          type="Number"
-                                          value={
-                                            draftnote?.products[i]?.quantity ||
-                                            ""
-                                          }
-                                          className="min-w-13 w-full"
-                                          onChange={(e) =>
-                                            handleChangeProduct(
-                                              i,
-                                              "quantity",
-                                              parseFloat(e.target.value) || 0,
-                                            )
-                                          }
-                                          min={0}
-                                        />
-                                      </InputGroup>
-                                      <InputGroup className="min-w-[60px]">
-                                        <InputGroup.Prefix>
-                                          <DollarSign className="w-3 sm:w-4 md:w-5 lg:w-6" />
-                                        </InputGroup.Prefix>
-                                        <InputGroup.Input
-                                          placeholder="0"
-                                          type="Number"
-                                          value={
-                                            draftnote?.products[i]?.estprice ||
-                                            ""
-                                          }
-                                          className="min-w-13 w-full"
-                                          onChange={(e) =>
-                                            handleChangeProduct(
-                                              i,
-                                              "estprice",
-                                              parseFloat(e.target.value) || 0,
-                                            )
-                                          }
-                                          min={0}
-                                        />
-                                      </InputGroup>
-                                      <Button
-                                        variant="danger-soft"
-                                        onClick={() => handleDeleteProduct(i)}
-                                        size="sm"
-                                      >
-                                        <Trash size={14} />
-                                      </Button>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </ScrollShadow>
-                            {editingnoteid === note.id && (
-                              <div className="flex justify-center py-2 border-t border-gray-700/50">
-                                <Button
-                                  variant="tertiary"
-                                  onClick={() => handleAddNewProduct()}
-                                  size="sm"
-                                >
-                                  <Plus size={16} /> Add Product
-                                </Button>
+                                    <Input
+                                      type="number"
+                                      variant="secondary"
+                                      value={
+                                        draftnote?.products[i].estprice || ""
+                                      }
+                                      onChange={(e) =>
+                                        handleChangeProduct(
+                                          i,
+                                          "estprice",
+                                          parseFloat(e.target.value) || 0,
+                                        )
+                                      }
+                                    />
+                                  </>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      {/* ==========================================
-                        FOOTER - Created date chip
-                        ========================================== */}
-                      <div className="mt-auto flex justify-end pt-4">
-                        <Chip
-                          variant="secondary"
-                          color="accent"
-                          className="px-1 "
-                        >
-                          <p>created: {note.createdAt.split("T")[0]}</p>
-                        </Chip>
-                      </div>
+                            ))}
+                          </ScrollShadow>
+                          {editingnoteid === note.id && (
+                            <div className="p-2 border-t border-warm-tan/20 flex justify-center">
+                              <Button size="sm" onClick={handleAddNewProduct}>
+                                <Plus size={12} />
+                                Add
+                              </Button>
+                            </div>
+                          )}
+                        </Card.Content>
+                        <Card.Footer className="flex justify-end pt-2">
+                          <Chip
+                            size="sm"
+                            className="text-warm-brown/50 dark:text-warm-light/40 text-xs"
+                          >
+                            {note.createdAt?.split("T")[0]}
+                          </Chip>
+                        </Card.Footer>
+                      </Card>
                     </div>
                   </div>
                 ) : (
@@ -1144,7 +1111,7 @@ const Expenses = () => {
                       <div className="absolute -left-1 top-0 w-[65%] h-full bg-green-500/30 transform -skew-x-9 origin-left" />
                     </div>
                     <div
-                      className={`mt-1 relative flex flex-col border-2 p-4 grow overflow-y-auto ${isDark ? "bg-gray-800 border-gray-600" : "bg-gray-50 border-gray-300"}`}
+                      className={`mt-1 relative flex flex-col border-2 rounded-lg  p-4 grow overflow-y-auto ${isDark ? "bg-gray-800 border-gray-600" : "bg-gray-50 border-gray-300"}`}
                     >
                       <div className="flex items-center gap-2 mb-3">
                         <ClockCheck
@@ -1169,7 +1136,6 @@ const Expenses = () => {
                           {note?.theme || "No theme"}
                         </span>
                         <div className="flex flex-col gap-2">
-                          {/* Fő cost - nagyban */}
                           <div className="flex items-baseline gap-1">
                             {note.cost ? (
                               <>

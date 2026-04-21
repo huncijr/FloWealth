@@ -49,8 +49,8 @@ function App() {
               <Route path="/Analytics" element={<AnalyticsPage />} />
               <Route path="/Account" element={<Login />} />
               <Route path="/Terms&Conditions" element={<TermsConditions />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
-            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </NotesProvider>
       </ThemeProvider>
