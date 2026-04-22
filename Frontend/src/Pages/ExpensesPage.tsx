@@ -761,38 +761,51 @@ const Expenses = () => {
               >
                 {!note.completed ? (
                   <div className="h-full flex flex-col">
-                    <div className="relative w-full h-[65px] overflow-hidden  rounded-2xl shadow-[0_12px_30px_-18px_rgba(0,0,0,0.55)]">
-                      <div className="absolute inset-0 bg-warm-white/50 dark:bg-warm-dark/35 bg-linear-to-r" />
+                    <div
+                      className="relative w-full h-[65px] overflow-hidden rounded-2xl 
+                shadow-[0_12px_30px_-18px_rgba(0,0,0,0.55)]"
+                    >
                       <div
-                        className={`absolute inset-y-0 left-0 w-[100%] lg:w-[72%] bg-gradient-to-r ${editingnoteid === note.id ? "from-slate-500/55 via-slate-400/20 to-transparent" : "from-blue-500/55 via-blue-400/20 to-transparent"}`}
+                        className="absolute inset-0 bg-gradient-to-r from-blue-500/55 via-blue-400/20 to-transparent"
                         style={{
                           clipPath: "polygon(0 0, 70% 0, 56% 100%, 0 100%)",
                         }}
-                      >
-                        <div
-                          className="absolute inset-y-0 left-0 w-[72%] opacity-70"
-                          style={{
-                            clipPath:
-                              "polygon(69% 0, 71% 0, 57% 100%, 55% 100%)",
-                            background:
-                              "linear-gradient(to bottom, rgba(255,255,255,0.45), rgba(255,255,255,0.08))",
-                          }}
-                        />
-                        <div
-                          className="absolute inset-y-0 left-0 w-[82%] opacity-70"
-                          style={{
-                            clipPath:
-                              "polygon(69% 0, 71% 0, 57% 100%, 55% 100%)",
-                            background:
-                              "linear-gradient(to bottom, rgba(255,255,255,0.45), rgba(255,255,255,0.08))",
-                          }}
-                        />
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-black/10 ..." />
+                      <div
+                        className="absolute inset-y-0 left-0 w-[62%] opacity-70"
+                        style={{
+                          clipPath: "polygon(69% 0, 71% 0, 57% 100%, 55% 100%)",
+                          background:
+                            "linear-gradient(to bottom, rgba(255,255,255,0.45), rgba(255,255,255,0.08))",
+                        }}
+                      />{" "}
+                      <div
+                        className="absolute inset-y-0 left-0 w-[72%] opacity-70"
+                        style={{
+                          clipPath: "polygon(69% 0, 71% 0, 57% 100%, 55% 100%)",
+                          background:
+                            "linear-gradient(to bottom, rgba(255,255,255,0.45), rgba(255,255,255,0.08))",
+                        }}
+                      />
+                      <div className="relative z-10 flex items-center justify-between h-full px-4">
+                        {editingnoteid !== note.id ? (
+                          <div className="flex items-center gap-2 h-9 rounded-xl px-3 bg-blue-500 shadow-[...]">
+                            <PencilLine size={16} />
+                            <span className="text-sm font-semibold tracking-wide">
+                              ACTIVE
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 h-9 rounded-xl px-3 bg-amber-500  shadow-[...]">
+                            <PencilLine size={16} />
+                            <span className="text-sm font-semibold tracking-wide">
+                              EDITING
+                            </span>
+                          </div>
+                        )}
 
-                        <div className="absolute inset-0 bg-linear-to-b from-white/10 to-black/5 dark:from-white/5 dark:to-black/20" />
-                        <div
-                          className="flex items-center gap-2  rounded-xl border-warm-tan/30 dark:border-warm-border/40
-                        bg-warm-white/60 dark:bg-warm-dark/40 backdrop-blur px-2 py-1"
-                        >
+                        <div className="flex items-center gap-2">
                           {editingnoteid !== note.id ? (
                             <>
                               <button
@@ -846,42 +859,41 @@ const Expenses = () => {
                               </>
                             )
                           )}
-                          <div className="flex-1">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (editingnoteid === note.id) {
-                                  setEditingNoteId(null);
-                                  setDraftNote(null);
-                                } else {
-                                  setEditingNoteId(note.id);
-                                  setDraftNote({ ...note });
-                                }
-                              }}
-                              className={`cursor-pointer inline-flex items-center justify-center h-8 w-8 rounded-lg ring-1 transition
-                                ${editingnoteid === note.id ? "bg-red-500/10 text-red-700 dark:text-red-300 ring-red-500/20 hover:bg-red-500/20" : "bg-blue-500/10 text-blue-700 dark:text-blue-300 ring-blue-500/20 hover:bg-blue-500/20"}`}
-                              title={
-                                editingnoteid === note.id
-                                  ? "Cancel editing"
-                                  : "Edit"
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (editingnoteid === note.id) {
+                                setEditingNoteId(null);
+                                setDraftNote(null);
+                              } else {
+                                setEditingNoteId(note.id);
+                                setDraftNote({ ...note });
                               }
-                            >
-                              {editingnoteid === note.id ? (
-                                <X size={16} />
-                              ) : (
-                                <PencilLine size={16} />
-                              )}
-                            </button>
-                          </div>
+                            }}
+                            className={`cursor-pointer inline-flex items-center justify-center h-8 w-8 rounded-lg ring-1 transition
+                                ${editingnoteid === note.id ? "bg-red-500/10 text-red-700 dark:text-red-300 ring-red-500/20 hover:bg-red-500/20" : "bg-blue-500/10 text-blue-700 dark:text-blue-300 ring-blue-500/20 hover:bg-blue-500/20"}`}
+                            title={
+                              editingnoteid === note.id
+                                ? "Cancel editing"
+                                : "Edit"
+                            }
+                          >
+                            {editingnoteid === note.id ? (
+                              <X size={16} />
+                            ) : (
+                              <PencilLine size={16} />
+                            )}
+                          </button>
                         </div>
                       </div>
                     </div>
+
                     {/* ==========================================
                       MAIN CONTENT - Title, Date, Theme, Cost
                       ========================================== */}
                     <div className="relative w-full mx-auto flex flex-col note-animate-fade">
                       <Card
-                        className={`mt-1 relative overflow-hidden h-[407px]  border-2 shadow-soft before:absolute before:left-0 before:top-0 
+                        className={`mt-1 relative overflow-hidden h-[387px]  border-2 shadow-soft before:absolute before:left-0 before:top-0 
                         before:bottom-0 before:w-1 before:bg-linear-to-b before:from-primary before:to-secondary`}
                       >
                         <Card.Header className="flex items-star justify-between gap-3 pb-2">
@@ -1158,100 +1170,132 @@ const Expenses = () => {
                         )}
                       </button>
                     )}
-                    <div
-                      className={`flex items-center gap-3 transform -skew-x-9 shadow-lg overflow-hidden ${isDark ? "bg-gray-700" : "bg-gray-300"}`}
-                    >
-                      <div className="flex gap-2 relative z-10 overflow-hidden w-full skew-x-9 m-1 items-center">
-                        <div className="bg-green-600 italic font-semibold text-sm lg:text-base text-white px-3  rounded shadow-lg">
-                          ✓ COMPLETED
-                        </div>
-                        <div className="flex items-end ml-auto text-blue-600 px-1 py-1">
-                          <PencilLine
-                            className="cursor-pointer transition-colors"
-                            size={16}
-                          />
-                        </div>
-                      </div>
-                      <div className="absolute -left-1 top-0 w-[65%] h-full bg-green-500/30 transform -skew-x-9 origin-left" />
-                    </div>
-                    <div
-                      className={`mt-1 relative flex flex-col border-2 rounded-lg  p-4 grow overflow-y-auto ${isDark ? "bg-gray-800 border-gray-600" : "bg-gray-50 border-gray-300"}`}
-                    >
-                      <div className="flex items-center gap-2 mb-3">
-                        <ClockCheck
-                          size={14}
-                          className={isDark ? "text-gray-400" : "text-gray-500"}
-                        />
-                        <span
-                          className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
-                        >
-                          {note.createdAt.split("T")[0]}
-                        </span>
-                      </div>
-                      <h3
-                        className={`Ubuntu text-lg font-medium line-through opacity-60 mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-                      >
-                        {note.productTitle}
-                      </h3>
-                      <div className="flex justify-between items-center mb-4">
-                        <span
-                          className={`text-xs px-2 py-1 rounded ${isDark ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-600"}`}
-                        >
-                          {note?.theme || "No theme"}
-                        </span>
-                        <div className="flex flex-col gap-2">
-                          <div className="flex items-baseline gap-1">
-                            {note.cost ? (
-                              <>
-                                <span
-                                  className={`text-3xl font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
-                                >
-                                  {new Intl.NumberFormat("en-US", {
-                                    style: "currency",
-                                    currency: "USD",
-                                  }).format(Number(note.cost))}
-                                </span>
-                                <span className="text-xs text-gray-500 font-medium">
-                                  final cost
-                                </span>
-                              </>
-                            ) : (
-                              <span className="text-sm text-gray-400 italic">
-                                No cost added
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500">
-                              Estimated:
-                            </span>
-                            <span
-                              className={`text-sm font-medium line-through ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                            >
-                              ${note.estcost}
-                            </span>
-                            {note.cost && (
-                              <span
-                                className={`text-xs px-1.5 py-0.5 rounded-full ${
-                                  Number(note.cost) <= Number(note.estcost)
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-red-100 text-red-700"
-                                }`}
-                              >
-                                {Number(note.cost) <= Number(note.estcost)
-                                  ? "✓ Under"
-                                  : "↑ Over"}{" "}
-                                budget
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                    <div className="relative w-full h-[65px] overflow-hidden rounded-2xl shadow-[0_12px_30px_-18px_rgba(0,0,0,0.55)]">
                       <div
-                        className={`h-px w-full mb-4 ${isDark ? "bg-gray-600" : "bg-gray-300"}`}
-                      />
-                      <div className="grow">
+                        className={`absolute inset-0 ${isDark ? "bg-gray-800/60" : "bg-gray-200/70"}`}
+                      >
+                        <div
+                          className="absolute inset-y-0 left-0 w-[100%] h-full bg-linear-to-r from-emerald-500 via-emerald-400/40 to-transparent"
+                          style={{
+                            clipPath: "polygon(0 0, 70% 0, 56% 100%, 0 100%)",
+                          }}
+                        />
+                        <div
+                          className="absolute inset-y-0 left-0 w-[62%] sm:w-[52%] opacity-70 z-20"
+                          style={{
+                            clipPath:
+                              "polygon(69% 0, 71% 0, 57% 100%, 55% 100%)",
+                            background:
+                              "linear-gradient(to bottom, rgba(68, 59, 59,0.95), rgba(255,255,255,0.08))",
+                          }}
+                        />
+                        <div
+                          className="absolute inset-y-0 left-0 w-[72%] sm:w-[62%] opacity-70 z-20"
+                          style={{
+                            clipPath:
+                              "polygon(69% 0, 71% 0, 57% 100%, 55% 100%)",
+                            background:
+                              "linear-gradient(to bottom, rgba(68, 59, 59,0.95), rgba(255,255,255,0.08))",
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-linear-to-b from-white/10 to-black/10 dark:from-white/5 dark:to-black/25" />
+                        <div className="relative z-10 p-2">
+                          <div
+                            className="flex items-center gap-2 rounded-xl  
+                             backdrop-blur-md px-2 py-1.5  bg-warm-white/70 dark:bg-warm-dark/45"
+                          >
+                            <div className="flex gap-2 h-9 rounded-xl px-3 bg-emerald-600  shadow-[0_10px_22px_-16px_rgba(16,185,129,0.9)]">
+                              <span className="text-sm font-bold  tracking-wide flex justify-center items-center">
+                                <Check size={16} /> COMPLETED
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <Card
+                      className={`mt-1 relative flex flex-col border-2 rounded-lg h-[407px]  p-4 grow overflow-y-auto ${isDark ? "bg-gray-800 border-gray-600" : "bg-gray-50 border-gray-300"}`}
+                    >
+                      <Card.Header className="flex items-start gap-2 mb-3">
+                        {" "}
+                        <div className="flex gap-2">
+                          <ClockCheck
+                            size={14}
+                            className={
+                              isDark ? "text-gray-400" : "text-gray-500"
+                            }
+                          />
+                          <span
+                            className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                          >
+                            {note.createdAt.split("T")[0]}
+                          </span>
+                        </div>
+                      </Card.Header>
+                      <Card.Content className="">
+                        <h3
+                          className={`Ubuntu text-lg font-medium line-through opacity-60 mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                        >
+                          {note.productTitle}
+                        </h3>
+                        <div className="flex justify-between items-center mb-4">
+                          <span
+                            className={`text-xs px-2 py-1 rounded ${isDark ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-600"}`}
+                          >
+                            {note?.theme || "No theme"}
+                          </span>
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-baseline gap-1">
+                              {note.cost ? (
+                                <>
+                                  <span
+                                    className={`text-3xl font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+                                  >
+                                    {new Intl.NumberFormat("en-US", {
+                                      style: "currency",
+                                      currency: "USD",
+                                    }).format(Number(note.cost))}
+                                  </span>
+                                  <span className="text-xs text-gray-500 font-medium">
+                                    final cost
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-sm text-gray-400 italic">
+                                  No cost added
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-500">
+                                Estimated:
+                              </span>
+                              <span
+                                className={`text-sm font-medium line-through ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                              >
+                                ${note.estcost}
+                              </span>
+                              {note.cost && (
+                                <span
+                                  className={`text-xs px-1.5 py-0.5 rounded-full ${
+                                    Number(note.cost) <= Number(note.estcost)
+                                      ? "bg-green-100 text-green-700"
+                                      : "bg-red-100 text-red-700"
+                                  }`}
+                                >
+                                  {Number(note.cost) <= Number(note.estcost)
+                                    ? "✓ Under"
+                                    : "↑ Over"}{" "}
+                                  budget
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          className={`h-px w-full mb-4 ${isDark ? "bg-gray-600" : "bg-gray-300"}`}
+                        />
                         <p
                           className={`text-xs uppercase tracking-wider mb-2 ${isDark ? "text-gray-500" : "text-gray-400"}`}
                         >
@@ -1311,8 +1355,8 @@ const Expenses = () => {
                             />
                           </div>
                         )}
-                      </div>
-                      <div
+                      </Card.Content>
+                      <Card.Footer
                         className={`mt-auto pt-3 flex items-center gap-2 text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
                       >
                         <ClockCheck size={12} />
@@ -1321,8 +1365,8 @@ const Expenses = () => {
                             ? `Due: ${note.estimatedTime.split("T")[0]}`
                             : "No date added"}
                         </span>
-                      </div>
-                    </div>
+                      </Card.Footer>
+                    </Card>
                   </div>
                 )}
               </div>
