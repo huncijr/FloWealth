@@ -25,6 +25,7 @@ const ImageUpload = ({ onImageSelect, initialImage }: ImageUploadProps) => {
     { id: Date.now(), name: "", quantity: 1, price: 0 },
   ]);
   const [storeName, setStoreName] = useState<string>("");
+  const [isDragging, setIsDragging] = useState<boolean>(false);
 
   const [receiptdate, setReceiptDate] = useState(
     new Date().toISOString().split("T")[0],
@@ -34,8 +35,28 @@ const ImageUpload = ({ onImageSelect, initialImage }: ImageUploadProps) => {
     inputRef.current?.click();
   };
 
+  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const onDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (file) handleFile(file);
     if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -68,6 +89,17 @@ const ImageUpload = ({ onImageSelect, initialImage }: ImageUploadProps) => {
     if (receiptItems.length > 1) {
       setReceiptItems(receiptItems.filter((item) => item.id !== id));
     }
+  };
+
+  const handleFile = (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      setPreview(base64String);
+      onImageSelect(base64String);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveReceipt = async () => {
@@ -120,7 +152,12 @@ const ImageUpload = ({ onImageSelect, initialImage }: ImageUploadProps) => {
           />
           {!preview ? (
             <div
-              className="flex flex-col items-center gap-4 cursor-pointer group"
+              className={`flex flex-col items-center gap-4 cursor-pointer group w-full ${isDragging ? " border-3 border-dashed border-primary rounded-2xl" : ""}`}
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onDrop={onDrop}
+              role="button"
+              tabIndex={0}
               onClick={handleClick}
             >
               <div className="relative">
@@ -174,7 +211,14 @@ const ImageUpload = ({ onImageSelect, initialImage }: ImageUploadProps) => {
         <div className="flex-1 rounded-lg min-h-[200px] p-6 flex items-center justify-center  group bg-gray-200 dark:bg-gray-700 transition-colors duration-200">
           <div
             className="flex flex-col items-center gap-4 cursor-pointer"
-            onClick={() => setIsReceiptModalOpen(true)}
+            onClick={() => {
+              setStoreName("");
+              setReceiptItems([
+                { id: Date.now(), name: "", quantity: 1, price: 0 },
+              ]);
+              setReceiptDate(new Date().toISOString().split("T")[0]);
+              setIsReceiptModalOpen(true);
+            }}
           >
             <div className="relative ">
               <div className="absolute inset-0 bg-emerald-500/15 blur-[15px] rounded-full" />

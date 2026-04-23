@@ -1177,7 +1177,7 @@ const Expenses = () => {
                         <div
                           className="absolute inset-y-0 left-0 w-[100%] h-full bg-linear-to-r from-emerald-500 via-emerald-400/40 to-transparent"
                           style={{
-                            clipPath: "polygon(0 0, 70% 0, 56% 100%, 0 100%)",
+                            clipPath: "polygon(0 0, 70% 0, 56% 92%, 0 92%)",
                           }}
                         />
                         <div
