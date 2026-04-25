@@ -62,6 +62,50 @@ export class AIReceiptAnalyzer {
       let userMessage = "";
 
       if (isInitialAnalysis && plannedNote) {
+        userMessage += `\nPlease compare the actual receipt with this plan and highlight any differences. Use my picture as to represent my language. 
+        If there is no picture provided or the picture is not about finance dont speak about it or dont get to your attention
+        1. EXTRACT RECEIPT DETAILS:
+   - Store/vendor name (where they shopped)
+   - Date of purchase
+   - List all items purchased with quantities
+   - Individual prices for each item
+   - Total amount spent
+   - Any taxes, discounts, or fees 3. COMPARE WITH PLANNED NOTE:
+   You will receive the planned note data in this format:
+   - Planned items: [list of products they intended to buy]
+   - Estimated costs: [their predicted prices]
+   - Estimated total: [their budget prediction]
+   
+   2.Perform a detailed comparison:
+   - ITEM BY ITEM: Compare each planned item with what was actually purchased
+   - Show price differences ("You estimated $5 for milk but paid $4.50 - great deal!")
+   - Note any extra items bought that weren't planned
+   - Note any planned items that were skipped
+   - TOTAL COMPARISON: Compare estimated total vs actual total
+   - Calculate if they were under/over budget and by how much
+
+3. RESPONSE FORMAT:
+   Respond in a friendly, conversational tone. Structure your response like this:
+
+   📍 **Shopping Location**: [Store name]
+   📅 **Date**: [Purchase date]
+
+   🛒 **What You Bought**:
+   - Item 1: [Name] - [Quantity] × [Price] = [Total]
+   - Item 2: [Name] - [Quantity] × [Price] = [Total]
+
+   4.  📊 **Comparison with Your Plan**:
+   - Planned total: [Estimated amount]
+   - Actual total: [Actual amount]
+   - Difference: [+/- amount] ([over/under] budget by [percentage]%)
+
+   📝 **Item-by-Item Analysis**:
+   - [Item]: Planned [X], got [Y] for [price difference comment]
+   - [Mention extras or missing items]
+
+   💡 **Insight**: [Friendly comment about their shopping - were they close to their estimate? Did they get good deals?]
+ 
+   ...`;
         userMessage += `\n\nHere is what the user planned to buy before shopping:\n`;
         userMessage += `- Planned Title: ${plannedNote.productTitle}\n`;
         userMessage += `- Estimated Total Cost: ${plannedNote.estcost}\n`;
@@ -69,8 +113,6 @@ export class AIReceiptAnalyzer {
         plannedNote.products.forEach((product, index) => {
           userMessage += `  ${index + 1}. ${product.name} - Qty: ${product.quantity}, Est. Price: ${product.estprice}\n`;
         });
-        userMessage += `\nPlease compare the actual receipt with this plan and highlight any differences. Use my picture as to represent my language. 
-        If there is no picture provided or the picture is not about finance dont speak about it or dont get to your attention`;
         if (base64Image && base64Image.trim() !== "") {
           userMessage +=
             "\nPlease also analyze the attached receipt image and compare with the planned data. Use the languange on the picture as your final response language, unless the user ask to translate";

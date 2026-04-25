@@ -20,9 +20,10 @@ const requestOTP = async (email: string, name: string, password: string) => {
    the actual User record only AFTER they provide the correct code.
   */
 
+  const hashedCode = await bcrypt.hash(code, 10);
   await db.insert(Otps).values({
     email: email,
-    code: code,
+    code: hashedCode,
     expiresAt: new Date(Date.now() + 10 * 60 * 1000),
     tempData: { name, password, createdAt },
   });
@@ -244,7 +245,7 @@ export const AuthenticateUser = async (
           .json({ success: false, message: "Code is expired" });
       }
       // Validation: Compare user-provided code with the stored code
-      const isCodeValid = dbotp.code === otpvalue;
+      const isCodeValid = await bcrypt.compare(otpvalue, dbotp.code);
       if (!isCodeValid) {
         return res.status(401).json({
           message: "code is invalid",

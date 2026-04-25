@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import SYSTEM_PROMPT from "./SystemPrompt";
 
 dotenv.config();
 interface ParsedProduct {
@@ -21,36 +22,37 @@ export class ProductPArser {
     this.model = process.env.AI_MODEL || null;
   }
   async ParseProducts(userText: string): Promise<ParseResult> {
-    const prompt = `You are a product list parser for a shopping expense tracker for FloWealth.
-TASK: Parse user shopping text into a JSON array of products.
+    userText += `
+You are a product list parser for a shopping expense tracker.
 
-IMPORTANT RULES:
-- Extract ONLY these 3 fields: name, quantity, estprice
-- Ignore all "filler" words and conversational text like:
-  * "I need for cooking", "I'll make dinner", "I should buy"
-  * "Something for dessert", "stuff for the week"
-  * "Maybe some", "I also need", "Could grab"
-  
-- name: product name as string (lowercase, short, no description)
-- quantity: number (default to 1 if unclear or not specified)
-- estprice: price in euros as number (if you can't determine price, use 0)
+TASK: Extract products from user text. Extract ANY product-like noun you can find.
 
-EXTRACTION EXAMPLES:
-- Input: "milk 2L 2 euro, also bread and butter"
-  Output: [{"name":"milk","quantity":2,"estprice":2},{"name":"bread","quantity":1,"estprice":0},{"name":"butter","quantity":1,"estprice":0}]
+CRITICAL RULES:
+1. EXTRACT EVERY product noun you can identify - do NOT skip products
+2. Only ignore pure actions/verbs like "buy", "get", "need", "want" as standalone words
+3. The PRODUCT is what comes AFTER action words, not before
+4. Extract 3 fields ONLY: name, quantity, estprice
 
-- Input: "I'll make pizza, need mozzarella and tomatoes and ham"
-  Output: [{"name":"mozzarella","quantity":1,"estprice":0},{"name":"tomatoes","quantity":1,"estprice":0},{"name":"ham","quantity":1,"estprice":0}]
+GOOD EXAMPLES (extract products):
+- "milk 2L 2 euro" → [{"name":"milk","quantity":2,"estprice":2}]
+- "I want to buy a milk for 4$" → [{"name":"milk","quantity":1,"estprice":4}]
+- "I'll get bread and butter" → [{"name":"bread","quantity":1,"estprice":0},{"name":"butter","quantity":1,"estprice":0}]
+- "bought milk 1.5 euro" → [{"name":"milk","quantity":1,"estprice":1.5}]
+- "I need some stuff for cooking: rice, chicken, vegetables" → [{"name":"rice","quantity":1,"estprice":0},{"name":"chicken","quantity":1,"estprice":0},{"name":"vegetables","quantity":1,"estprice":0}]
 
-- Input: "bought milk 1.5 euro"
-  Output: [{"name":"milk","quantity":1,"estprice":1.5}]
+WHAT TO IGNORE (not products):
+- "for cooking", "for dinner", "for dessert" - these describe purpose, not products
+- "stuff", "things", "items" - vague words, extract what follows
 
-- Input: "I need some stuff for cooking: rice, chicken, vegetables"
-  Output: [{"name":"rice","quantity":1,"estprice":0},{"name":"chicken","quantity":1,"estprice":0},{"name":"vegetables","quantity":1,"estprice":0}]
+PRICE EXTRACTION:
+- If price mentioned, extract it
+- If no price, use 0
+- Currency: just the number (ignore $ € etc symbols)
 
-OUTPUT FORMAT: Pure JSON array only, no markdown, no explanations, no additional text.
-If input has no valid products, return empty array [].
+OUTPUT: Pure JSON array only, no markdown, no explanation.
+Empty input = return []
 `;
+    console.log(userText);
     const response = await fetch(String(this.apiURL), {
       method: "Post",
       headers: {
@@ -60,7 +62,7 @@ If input has no valid products, return empty array [].
       body: JSON.stringify({
         model: this.model,
         messages: [
-          { role: "system", content: prompt },
+          { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userText },
         ],
         max_tokens: 1000,
