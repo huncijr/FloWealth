@@ -14,6 +14,7 @@ import {
   Forward,
   Loader2,
   MegaphoneOff,
+  Menu,
   MessageCircle,
   Sparkles,
   Trash2,
@@ -104,7 +105,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   const [recentconversations, setRecentConversations] = useState<
     ConversationData[]
   >([]);
-  const [showConversationList, setShowConversationList] = useState(false);
+  const [showConvList, setShowConvList] = useState(false);
 
   const [showimagepreview, setShowImagePreview] = useState<boolean>(true);
   const [isimagemodalopen, setIsImageModalOpen] = useState(false);
@@ -165,6 +166,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         }));
         // console.log(loadedMessages);
         setMessages(loadedMessages);
+        setShowConvList(false);
         const relatedNote = notes.find((n) => n.id === conv.noteId);
         if (relatedNote) {
           setSelectedNotes(relatedNote);
@@ -289,7 +291,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           animate={{ x: 0 }}
           exit={{ x: "150%" }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="fixed right-[450px] top-0 h-screen w-[300px] z-40 bg-gray-200 dark:bg-gray-800 invisible sm:visible  sm:block"
+          className={`fixed right-[450px] top-0 h-screen w-[300px]  ${showConvList ? "visible" : "hidden"} z-40 bg-gray-200 dark:bg-gray-800 invisible sm:visible  sm:block`}
         >
           <div className="flex flex-col h-full p-4">
             <div className="flex items-center gap-2 mb-4">
@@ -354,6 +356,79 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           onClick={onClose}
         />
 
+        {/* CONVERSATION LIST OVERLAY - MOBIL */}
+        {showConvList && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-gray-200 dark:bg-gray-700 backdrop-blur-sm flex flex-col"
+          >
+            {/* Overlay Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/20">
+              <h3 className="Alfa-slab-one tracking-wide  text-lg">
+                Recent Chats
+              </h3>
+              <Button
+                isIconOnly
+                variant="ghost"
+                onPress={() => setShowConvList(false)}
+                className=" "
+              >
+                <X size={20} />
+              </Button>
+            </div>
+
+            {/* Conv Lista */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {recentconversations.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <MegaphoneOff className="w-12 h-12  mb-4" />
+                  <p className=" text-sm text-center">
+                    No recent conversation found
+                  </p>
+                  <p className="0 text-xs text-center mt-1">
+                    Start a new chat to see it here
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2 ">
+                  {recentconversations.map((conv) => (
+                    <div
+                      key={conv.id}
+                      className="flex items-center gap-2 cursor-pointer bg-gray-400 dark:bg-gray-900  rounded-xl p-3 hover:bg-gray-300 dark:hover:bg-gray-800 transition-all"
+                    >
+                      <button
+                        onClick={() => selectConversation(conv)}
+                        className={`flex-1 text-left ${
+                          currentConversationId === conv.id ? "" : ""
+                        }`}
+                      >
+                        <p className="font-medium truncate">{conv.title}</p>
+                      </button>
+                      <Button
+                        isIconOnly
+                        variant="danger"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteCurrentConversation(conv.id);
+                        }}
+                        className=""
+                        size="sm"
+                      >
+                        <Trash2
+                          size={16}
+                          className="text-bg-black dark:text-bg-white"
+                        />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
         {/* SIDEBAR */}
         <motion.div
           initial={{ x: "100%" }}
@@ -368,6 +443,17 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         >
           <Card className="h-full border-0 bg-transparent">
             <CardHeader className="flex justify-between items-center px-6 py-4 border-b border-white/10">
+              <div className="absolute left-2 top-2">
+                <Button
+                  isIconOnly
+                  variant="ghost"
+                  onPress={() => setShowConvList(!showConvList)}
+                  className="text-white hover:bg-white/10 sm:hidden" // ← Csak mobil
+                >
+                  <Menu size={20} />
+                </Button>
+              </div>
+
               <h3 className="Alfa-slab-one tracking-wide text-white">
                 {currentTitle || "New Chat"}
               </h3>
