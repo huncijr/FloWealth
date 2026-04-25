@@ -3,8 +3,11 @@ import { Plus, SquareCheckBig, Trash, Upload, X } from "lucide-react";
 import React, { useRef, useState } from "react";
 import FloWealthReceipt from "../assets/flowealthtoreceipt.png";
 import html2canvas from "html2canvas";
+import { api } from "../api/axiosInstance";
 interface ImageUploadProps {
   onImageSelect: (base64String: string | null) => void;
+  onPriceExtractStart?: () => void;
+  onPriceExtract?: (price: number) => void;
   initialImage?: string | null | undefined;
 }
 interface ReceiptItem {
@@ -14,7 +17,12 @@ interface ReceiptItem {
   price: number;
 }
 
-const ImageUpload = ({ onImageSelect, initialImage }: ImageUploadProps) => {
+const ImageUpload = ({
+  onImageSelect,
+  initialImage,
+  onPriceExtract,
+  onPriceExtractStart,
+}: ImageUploadProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
   const [preview, setPreview] = useState<string | null>(initialImage || null);
@@ -29,6 +37,11 @@ const ImageUpload = ({ onImageSelect, initialImage }: ImageUploadProps) => {
 
   const [receiptdate, setReceiptDate] = useState(
     new Date().toISOString().split("T")[0],
+  );
+
+  const [ispriceextracting, setIsPriceExtracting] = useState(false);
+  const [priceextracterror, setPriceExtractError] = useState<string | null>(
+    null,
   );
 
   const handleClick = () => {
@@ -94,10 +107,31 @@ const ImageUpload = ({ onImageSelect, initialImage }: ImageUploadProps) => {
   const handleFile = (file: File) => {
     if (!file.type.startsWith("image/")) return;
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
       const base64String = reader.result as string;
       setPreview(base64String);
       onImageSelect(base64String);
+      if (onPriceExtractStart) {
+        onPriceExtractStart();
+      }
+      if (onPriceExtract) {
+        setIsPriceExtracting(true);
+        setPriceExtractError(null);
+        try {
+          const response = await api.post("/analyze-receipt/price", {
+            imageBase64: base64String,
+          });
+          if (response.data.success) {
+            console.log(response.data);
+            onPriceExtract(response.data.price);
+          }
+        } catch (error) {
+          console.error("Price extraction failed", error);
+          setPriceExtractError("Failed to extract price");
+        } finally {
+          setIsPriceExtracting(false);
+        }
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -131,6 +165,26 @@ const ImageUpload = ({ onImageSelect, initialImage }: ImageUploadProps) => {
         const base64 = canvas.toDataURL("image/png");
         setPreview(base64);
         onImageSelect(base64);
+
+        if (onPriceExtract) {
+          setIsPriceExtracting(true);
+          setPriceExtractError(null);
+          try {
+            const response = await api.post("/analyze-receipt/price", {
+              imageBase64: base64,
+              items: receiptItems.filter((i) => i.name.trim() !== ""),
+            });
+            if (response.data.success) {
+              onPriceExtract(response.data.price);
+            }
+          } catch (error) {
+            console.error("Price extraction failed:", error);
+            setPriceExtractError("Failed to extract price");
+          } finally {
+            setIsPriceExtracting(false);
+          }
+        }
+
         setIsReceiptModalOpen(false);
         setReceiptItems([{ id: Date.now(), name: "", quantity: 1, price: 0 }]);
       } catch (error) {

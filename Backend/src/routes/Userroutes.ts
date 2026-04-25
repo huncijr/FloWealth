@@ -31,6 +31,7 @@ import {
   getConversationById,
   getRecentConversations,
   parseProducts,
+  extractPriceFromReceipt,
 } from "../controllers/AIReceiptController";
 import { checkTokenLimit } from "../middlewares/TokenLimit";
 
@@ -63,6 +64,12 @@ router.delete(
   "/conversation/:conversationId",
   userAuth,
   handledeleteConversation,
+);
+router.post(
+  "/analyze-receipt/price",
+  userAuth,
+  checkTokenLimit,
+  extractPriceFromReceipt,
 );
 router.post("/parse-products", userAuth, parseProducts);
 router.get("/getaitokens", userAuth, getAiTokens);

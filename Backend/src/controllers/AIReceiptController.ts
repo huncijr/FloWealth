@@ -11,6 +11,7 @@ import {
   NoteComparisonAnalyzer,
 } from "../services/NoteComparisonAnalyzer";
 import { productParser } from "../services/ProductParser";
+import { extractPrice } from "../services/ExtractPrice";
 
 interface Product {
   name: string;
@@ -367,5 +368,53 @@ export const handledeleteConversation = async (
       .json({ success: true, message: "Conversation deleted" });
   } catch (error) {
     next(error);
+  }
+};
+
+export const extractPriceFromReceipt = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ message: "Unathorized", success: false });
+  }
+  try {
+    const { imageBase64, items } = req.body;
+    if (!imageBase64 && (!items || items.length === 0)) {
+      return res.status(400).json({
+        success: false,
+        message: "Either imageBase64 or items are required",
+      });
+    }
+    const hasTokens = await conversationservice.checkTokenLimit(userId);
+    if (!hasTokens) {
+      return res.status(429).json({
+        success: false,
+        message: "Daily AI token limit reached",
+      });
+    }
+    let finalPrice = 0;
+    let tokensUsed = 0;
+    if (imageBase64 && imageBase64.trim() !== "") {
+      const result = await extractPrice.extractPriceFromReceipt(imageBase64);
+      finalPrice = result.price;
+      tokensUsed = result.token;
+    }
+    if (finalPrice === 0 && items && items.length > 0) {
+      finalPrice = extractPrice.calculatePriceFromItems(items);
+    }
+    if (tokensUsed > 0) {
+      await conversationservice.updateTokenUsage(userId, tokensUsed);
+    }
+    console.log("final price", finalPrice);
+    return res.status(200).json({
+      success: true,
+      price: finalPrice,
+      tokens: tokensUsed,
+    });
+  } catch (err) {
+    next(err);
   }
 };

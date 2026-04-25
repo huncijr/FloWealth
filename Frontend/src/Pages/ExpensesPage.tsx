@@ -181,6 +181,8 @@ const Expenses = () => {
 
   const [aiProducts, setAiProducts] = useState<ProductRow[]>([]);
   const [showProductPreview, setShowProductPreview] = useState<boolean>(false);
+  const [isPriceExtracting, setIsPriceExtracting] = useState<boolean>(false);
+  const [priceextracdots, setPriceExtractDots] = useState(".");
 
   // Calculate total cost whenever rows change
   useEffect(() => {
@@ -604,6 +606,16 @@ const Expenses = () => {
     }
     resetAiStates();
   };
+  useEffect(() => {
+    if (isPriceExtracting) {
+      const interval = setInterval(() => {
+        setPriceExtractDots((prev) => (prev.length >= 3 ? "." : prev + "."));
+      }, 500);
+      return () => clearInterval(interval);
+    } else {
+      setPriceExtractDots(".");
+    }
+  }, [isPriceExtracting]);
 
   useEffect(() => {
     if (isAiParsing) {
@@ -1858,16 +1870,32 @@ const Expenses = () => {
                   setDraftNote({ ...draftnote, picture: base64String });
                 }
               }}
+              onPriceExtract={(price) => {
+                setIsPriceExtracting(false);
+                setFinalCost(price.toString());
+              }}
+              onPriceExtractStart={() => setIsPriceExtracting(true)}
             />
 
             <div className="flex flex-col items-stretch sm:items-end justify-end py-10 px-4 sm:px-0 w-full">
               <div className="py-3 flex flex-col w-full sm:w-72">
                 <Label className="mb-1.5 text-sm font-medium">Final Cost</Label>
                 <Input
-                  type="number"
-                  placeholder="0.00$"
-                  className="w-full"
-                  onChange={(e) => setFinalCost(e.target.value)}
+                  type="text"
+                  inputMode="decimal"
+                  placeholder={
+                    isPriceExtracting
+                      ? `FloWealth AI is thinking${priceextracdots}`
+                      : "0.00$"
+                  }
+                  value={isPriceExtracting ? "" : finalcost || ""}
+                  disabled={isPriceExtracting}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "" || /^\d*\.?\d*$/.test(val)) {
+                      setFinalCost(val);
+                    }
+                  }}
                 />
                 <span className="text-xs text-gray-500 mt-1.5 sm:text-right">
                   What was the final cost ? (optional)
@@ -1880,6 +1908,7 @@ const Expenses = () => {
                     handleaddCompleted(draftnote.id);
                   }
                 }}
+                isDisabled={isPriceExtracting}
               >
                 Submit note
               </Button>
@@ -2010,6 +2039,9 @@ const Expenses = () => {
         note={activenoteforai}
         initialAnalysis={aianalysis}
         isAnalyzing={aiLoading !== null}
+        conversationId={0}
+        conversationTitle={""}
+        onConversationLoaded={() => {}}
       />
       {!user && selectedtheme === "No theme " && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center">

@@ -6,7 +6,7 @@ import {
   Input,
   ScrollShadow,
 } from "@heroui/react";
-import { AnimatePresence, motion, number } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   Bot,
@@ -59,9 +59,9 @@ interface AiChatSidebarProps {
   note: Note | null;
   initialAnalysis?: string;
   isAnalyzing: boolean;
-  conversationId: number;
-  conversationTitle: string;
-  onConversationLoaded: (message: Message[], conversationId: number) => void;
+  conversationId?: number;
+  conversationTitle?: string;
+  onConversationLoaded?: (message: Message[], conversationId: number) => void;
 }
 
 const formatMessageContent = (content: string): string => {
@@ -291,7 +291,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           animate={{ x: 0 }}
           exit={{ x: "150%" }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className={`fixed right-[450px] top-0 h-screen w-[300px]  ${showConvList ? "visible" : "hidden"} z-40 bg-gray-200 dark:bg-gray-800 invisible sm:visible  sm:block`}
+          className={`fixed right-[450px] top-0 h-screen w-[300px]  ${showConvList ? "visible" : "invisible"} z-40 bg-gray-200 dark:bg-gray-800 invisible sm:visible  sm:block`}
         >
           <div className="flex flex-col h-full p-4">
             <div className="flex items-center gap-2 mb-4">
