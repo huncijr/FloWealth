@@ -6,14 +6,17 @@ import {
   Input,
   ScrollShadow,
 } from "@heroui/react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, number } from "framer-motion";
 import {
   ArrowRight,
   Bot,
   Clock,
   Forward,
   Loader2,
+  MegaphoneOff,
+  MessageCircle,
   Sparkles,
+  Trash2,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -40,12 +43,24 @@ interface Note {
     estprice: number | null;
   }>;
 }
+interface ConversationData {
+  id: number;
+  noteId: number | null;
+  title: string;
+  lastMessage: string;
+  messageCount: number;
+  lastUpdated: Date;
+  totalTokens: number;
+}
 interface AiChatSidebarProps {
   isopen: boolean;
   onClose: () => void;
   note: Note | null;
   initialAnalysis?: string;
   isAnalyzing: boolean;
+  conversationId: number;
+  conversationTitle: string;
+  onConversationLoaded: (message: Message[], conversationId: number) => void;
 }
 
 const formatMessageContent = (content: string): string => {
@@ -82,6 +97,14 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   const [selectednotes, setSelectedNotes] = useState<Note | null>(null);
   const { notes } = useNotes();
   const completedNotes = notes.filter((n) => n.completed && n.picture);
+  const [currentConversationId, setCurrentConversationId] = useState<
+    number | null
+  >(null);
+  const [currentTitle, setCurrentTitle] = useState<string>("");
+  const [recentconversations, setRecentConversations] = useState<
+    ConversationData[]
+  >([]);
+  const [showConversationList, setShowConversationList] = useState(false);
 
   const [showimagepreview, setShowImagePreview] = useState<boolean>(true);
   const [isimagemodalopen, setIsImageModalOpen] = useState(false);
@@ -91,7 +114,8 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   const { user } = useAuth();
 
   useEffect(() => {
-    if (isopen) {
+    if (isopen && user) {
+      loadRecentConversations();
       if (initialAnalysis) {
         setMessages((prev) => {
           const alreadyExists = prev.some(
@@ -108,13 +132,75 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     } else {
       setQuotaExceeded(false);
     }
-  }, [initialAnalysis, isopen]);
+  }, [isopen, user]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const loadRecentConversations = async () => {
+    const res = await api.get("/getconversation/recent?limit=10");
+    // console.log("API RESPONSES", res.data.data);
+    if (res.data.success) {
+      // console.log(res.data.data);
+      setRecentConversations(res.data.data);
+    }
+  };
+
+  const selectConversation = async (conv: ConversationData) => {
+    setIsLoading(true);
+    try {
+      const res = await api.get(
+        `/getconversation/id?conversationId=${conv.id}`,
+      );
+      if (res.data.success && res.data.data) {
+        setCurrentConversationId(conv.id);
+        setCurrentTitle(conv.title);
+        const loadedMessages = res.data.data.message.map((m: any) => ({
+          role: m.role,
+          content: m.content,
+          timestamp: new Date(m.timestamp),
+        }));
+        // console.log(loadedMessages);
+        setMessages(loadedMessages);
+        const relatedNote = notes.find((n) => n.id === conv.noteId);
+        if (relatedNote) {
+          setSelectedNotes(relatedNote);
+          if (relatedNote.picture) {
+            setShowImagePreview(true);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load conversation:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleNoteSelect = async (note: Note) => {
+    setSelectedNotes(note);
+    setCurrentConversationId(null);
+    setCurrentTitle(note.productTitle);
+    setMessages([]);
+    setIsFirstMessage(true);
+    setShowImagePreview(true);
+  };
+
+  const deleteCurrentConversation = async (convId: number) => {
+    if (!convId) return;
+    try {
+      await api.delete(`/conversation/${convId}`);
+      setRecentConversations((prev) => prev.filter((c) => c.id !== convId));
+      setCurrentConversationId(null);
+      setCurrentTitle("");
+      setMessages([]);
+    } catch (error) {
+      console.error("Failed to delete:", error);
+    }
+  };
 
   useEffect(() => {
     if (!selectednotes && note) {
@@ -157,6 +243,13 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         };
         setMessages((prev) => [...prev, aiMessage]);
         setIsFirstMessage(false);
+        loadRecentConversations();
+        if (response.data.conversationId) {
+          setCurrentConversationId(response.data.conversationId);
+        }
+        if (response.data.title) {
+          setCurrentTitle(response.data.title);
+        }
       }
     } catch (error: any) {
       if (error.response?.status === 429) {
@@ -192,35 +285,92 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     isopen && (
       <AnimatePresence>
         <motion.div
+          initial={{ x: "150%" }}
+          animate={{ x: 0 }}
+          exit={{ x: "150%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          className="fixed right-[450px] top-0 h-screen w-[300px] z-40 bg-gray-200 dark:bg-gray-800 invisible sm:visible  sm:block"
+        >
+          <div className="flex flex-col h-full p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="p-2 bg-linear-to-br  rounded-xl">
+                <MessageCircle className="w-5 h-5 " />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 mb-4">
+              {recentconversations.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-6 px-4  rounded-xl border border-gray-400 dark:border-gray-800 ">
+                  <MegaphoneOff className="w-8 h-8  mb-2" />
+                  <p className="font-medium text-lg text-center">
+                    No recent conversation found
+                  </p>
+                  <p className=" text-[10px] text-center mt-1">
+                    Start a new chat to see it here
+                  </p>
+                </div>
+              ) : (
+                recentconversations.map((conv) => (
+                  <div
+                    key={conv.id}
+                    className="flex items-center gap-2 dark:bg-white/10 rounded-lg bg-gray-300 hover:bg-gray-400 dark:hover:bg-white/20 transition-all"
+                  >
+                    <button
+                      onClick={() => selectConversation(conv)}
+                      className={`flex-1 px-3 py-2 text-sm text-left Ubuntu ${
+                        currentConversationId === conv.id
+                          ? "text-black dark:bg-white"
+                          : "text-black/80 dart:bg-white/80"
+                      }`}
+                    >
+                      {conv.title.substring(0, 30)}
+                    </button>
+
+                    <Button
+                      isIconOnly
+                      variant="danger"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteCurrentConversation(conv.id);
+                      }}
+                      className="text-black dark:text-white  mr-1"
+                      size="sm"
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* OVERLAY */}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/40 z-40 lg:hidden"
           onClick={onClose}
         />
+
+        {/* SIDEBAR */}
         <motion.div
           initial={{ x: "100%" }}
           animate={{ x: 0 }}
           exit={{ x: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="fixed right-0 top-0 h-full w-full sm:w-[450px] z-50 shadow-2xl"
+          className="fixed right-0 top-0 h-full w-full sm:w-[450px] z-50 shadow-2xl ml-[200px]"
           style={{
             background:
               "radial-gradient(circle at 50% 90%, #e58612 0%, #c97e0e 15%, #8b5a3c 30%,#32303d 50%, #282730 65%, #17161e 100%)",
           }}
         >
-          <Card className="h-full justify-between border-0 bg-transparent">
+          <Card className="h-full border-0 bg-transparent">
             <CardHeader className="flex justify-between items-center px-6 py-4 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-linear-to-br from-primary to-secondary rounded-xl">
-                  <Sparkles className="w-5 h-5 text-white"></Sparkles>
-                </div>
-                <div>
-                  <h3 className="Alfa-slab-one tracking-wide text-white">
-                    FloWealth Assistant
-                  </h3>
-                </div>
-              </div>
+              <h3 className="Alfa-slab-one tracking-wide text-white">
+                {currentTitle || "New Chat"}
+              </h3>
               <Button
                 isIconOnly
                 variant="ghost"
@@ -229,10 +379,8 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               >
                 <X size={6} />
               </Button>
-              <div className="flex w-full justify-start items-start">
-                <p className="Ubuntu text-white">{note?.productTitle}</p>
-              </div>
             </CardHeader>
+
             <div className="flex flex-col flex-1 overflow-hidden">
               <ScrollShadow
                 ref={scrollRef}
@@ -266,16 +414,14 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className={`flex gap-3 ${
-                      message.role === "user" ? "flex-row-reverse" : "flex-row"
-                    }`}
+                    className={`flex gap-3 ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}
                   >
                     <div
                       className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                         message.role === "user"
                           ? user?.picture
                             ? null
-                            : "bg-linear-to-br from-gray-800 to-gray-600 "
+                            : "bg-linear-to-br from-gray-800 to-gray-600"
                           : "bg-linear-to-br from-primary to-secondary"
                       }`}
                     >
@@ -320,6 +466,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     </div>
                   </motion.div>
                 ))}
+
                 {!selectednotes && completedNotes.length > 0 && (
                   <div className="bg-white/10 rounded-xl p-4 mb-4">
                     <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
@@ -330,15 +477,8 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                       {completedNotes.map((n) => (
                         <button
                           key={n.id}
-                          onClick={() => {
-                            setSelectedNotes(n);
-                            setShowImagePreview(true);
-                            setIsFirstMessage(true);
-                            setMessages([]);
-                          }}
-                          className="w-full text-left p-3 rounded-lg bg-white/5 hover:bg-white/10 
-                     border border-white/10 hover:border-white/30 transition-all
-                     flex items-center gap-3"
+                          onClick={() => handleNoteSelect(n)}
+                          className="w-full text-left p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 transition-all flex items-center gap-3"
                         >
                           {n.picture && (
                             <img
@@ -364,6 +504,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     </div>
                   </div>
                 )}
+
                 {user ? (
                   !note &&
                   completedNotes.length === 0 && (
@@ -388,8 +529,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     </p>
                     <Link to="/Account">
                       <Button className="bg-linear-to-r from-primary to-secondary text-white font-semibold px-6">
-                        Create Account
-                        <ArrowRight className="w-4 h-4 ml-2" />
+                        Create Account <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     </Link>
                   </div>
@@ -430,24 +570,21 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                             duration: 0.5,
                             delay: 0.2,
                           }}
-                          className="w-2 h-2 bg-gray-200  rounded-full"
+                          className="w-2 h-2 bg-gray-200 rounded-full"
                         />
                       </div>
                     </div>
                   </motion.div>
                 )}
+
                 {quotaexceeded && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="bg-linear-to-r from-primary/20 to-secondary/20 
-                 border border-orange-500/30 rounded-xl p-4 mb-4"
+                    className="bg-linear-to-r from-primary/20 to-secondary/20 border border-orange-500/30 rounded-xl p-4 mb-4"
                   >
-                    <div
-                      className="flex items-start gap-3
-            "
-                    >
+                    <div className="flex items-start gap-3">
                       <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
                         <Clock className="w-5 h-5 text-white" />
                       </div>
@@ -464,24 +601,22 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                   </motion.div>
                 )}
               </ScrollShadow>
+
               <div className="p-4 bg-black/20 rounded-xl">
                 {showimagepreview && selectednotes?.picture && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="mb-3 flex items-center gap-3 bg-white/10 backdrop-blur-sm 
-               border border-white/20 rounded-xl p-3 pr-4 group"
+                    className="mb-3 flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-3 pr-4 group"
                   >
                     <div
                       onClick={() => setIsImageModalOpen(true)}
-                      className="w-10 h-10 rounded-lg bg-gradient-to-br from-white to-black
-                      border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden
-                    "
+                      className="w-10 h-10 rounded-lg bg-gradient-to-br from-white to-black border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden"
                     >
                       <img
                         src={selectednotes.picture}
-                        className="w-full h-full object-cover "
+                        className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="text-white flex-1 min-w-0">
@@ -495,10 +630,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                         setShowImagePreview(false);
                         setSelectedNotes(null);
                       }}
-                      className="w-8 h-8 rounded-full flex items-center justify-center
-                    bg-white/5 hover:bg-white/20 border border-white/10 
-                    hover:border-white/30 transition-all duration-200
-                    opacity-60 group-hover:opacity-100"
+                      className="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/20 border border-white/10 hover:border-white/30 transition-all duration-200 opacity-60 group-hover:opacity-100"
                     >
                       <X className="w-4 h-4 text-white" />
                     </button>
@@ -521,7 +653,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     isIconOnly
                     onPress={handleSendMessage}
                     isDisabled={!inputvalue.trim() || isloading}
-                    className="bg-linear-to-r from-secondary to-primary "
+                    className="bg-linear-to-r from-secondary to-primary"
                   >
                     {isLoadingState ? (
                       <Loader2 className="animate-spin w-6 h-6" />
@@ -534,6 +666,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             </div>
           </Card>
         </motion.div>
+
         {isimagemodalopen && selectednotes?.picture && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -543,9 +676,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             onClick={() => setIsImageModalOpen(false)}
           >
             <button
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 
-                 hover:bg-white/20 flex items-center justify-center 
-                 transition-colors z-10"
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsImageModalOpen(false);
@@ -553,7 +684,6 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             >
               <X className="w-6 h-6 text-white" />
             </button>
-
             <motion.img
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}

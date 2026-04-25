@@ -26,8 +26,10 @@ import { userAuth } from "../middlewares/Usermiddleware";
 import {
   analyzeReceipt,
   compareTwoNotes,
+  handledeleteConversation,
   getAiTokens,
-  getConversation,
+  getConversationById,
+  getRecentConversations,
   parseProducts,
 } from "../controllers/AIReceiptController";
 import { checkTokenLimit } from "../middlewares/TokenLimit";
@@ -55,7 +57,13 @@ router.get("/themestats", userAuth, GetThemeStats);
 router.delete("/deletetheme/:themeId", userAuth, DeleteTheme);
 
 router.post("/analyze-receipt", userAuth, checkTokenLimit, analyzeReceipt);
-router.get("/getaiconversations", userAuth, getConversation);
+router.get("/getconversation/recent", userAuth, getRecentConversations);
+router.get("/getconversation/id", userAuth, getConversationById);
+router.delete(
+  "/conversation/:conversationId",
+  userAuth,
+  handledeleteConversation,
+);
 router.post("/parse-products", userAuth, parseProducts);
 router.get("/getaitokens", userAuth, getAiTokens);
 router.post("/compare-notes", userAuth, checkTokenLimit, compareTwoNotes);

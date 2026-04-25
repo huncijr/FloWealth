@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { aiConversation, notesTable, userTokenUsage } from "../DB/schemas";
 import { db } from "../DB/db";
 
@@ -14,14 +14,26 @@ interface TokenUsage {
   resetAt: Date;
 }
 
+interface ConversationData {
+  id: number;
+  noteId: number | null;
+  title: string;
+  lastMessage: string;
+  messageCount: number;
+  lastUpdated: Date;
+  totalTokens: number;
+}
+
 export class ConversationService {
   async saveConversation(
     userId: number,
     noteId: number,
     messages: Message[],
     tokens: number,
-  ): Promise<void> {
+    title?: string,
+  ): Promise<number> {
     const existing = await this.getConversationByNoteId(userId, noteId);
+    let conversationid: number | undefined;
     if (existing) {
       await db
         .update(aiConversation)
@@ -31,18 +43,63 @@ export class ConversationService {
           updatedAt: new Date(),
         })
         .where(eq(aiConversation.id, existing.id));
+      conversationid = existing.id;
     } else {
-      await db.insert(aiConversation).values({
-        userId,
-        noteId,
-        messages: this.keepLastMessages(messages, 10),
-        totalTokens: tokens,
-      });
+      const [result] = await db
+        .insert(aiConversation)
+        .values({
+          userId,
+          noteId,
+          title: title || "New Conversation",
+          messages: this.keepLastMessages(messages, 10),
+          totalTokens: tokens,
+        })
+        .returning({ id: aiConversation.id });
+      if (!result) {
+        throw new Error("Failed to create conversation");
+      }
+      conversationid = result.id;
     }
+
     await this.updateTokenUsage(userId, tokens);
+    await this.cleanUpconversation(userId, 10);
+    return conversationid;
   }
 
-  async getRecentConversation(
+  async getRecentConversations(
+    userId: number,
+    limit: number = 10,
+  ): Promise<ConversationData[]> {
+    const conversations = await db
+      .select({
+        id: aiConversation.id,
+        noteId: aiConversation.noteId,
+        title: aiConversation.title,
+        messages: aiConversation.messages,
+        totalTokens: aiConversation.totalTokens,
+        updatedAt: aiConversation.updatedAt,
+      })
+      .from(aiConversation)
+      .where(eq(aiConversation.userId, userId))
+      .orderBy(desc(aiConversation.updatedAt))
+      .limit(limit);
+
+    return conversations.map((conv) => {
+      const messages = conv.messages as Message[];
+      const lastMsg = messages[messages.length - 1];
+      return {
+        id: conv.id,
+        noteId: conv.noteId ?? null,
+        title: conv.title || "Untitled Conversation",
+        lastMessage: lastMsg?.content.substring(0, 80) + "..." || "",
+        messageCount: messages.length,
+        lastUpdated: conv.updatedAt,
+        totalTokens: conv.totalTokens || 0,
+      };
+    });
+  }
+
+  async getRecentConversationById(
     userID: number,
     noteId: number,
     limit: number = 10,
@@ -60,19 +117,54 @@ export class ConversationService {
       .limit(1);
 
     if (conversation.length === 0) return null;
+    console.log(conversation[0]?.messages);
     return {
       message: conversation[0]?.messages as Message[],
       totaltokens: conversation[0]?.totalTokens || 0,
     };
   }
 
-  async deleteConversation(userId: number, noteId: number): Promise<void> {
+  async getConversationById(
+    userId: number,
+    conversationId: number,
+  ): Promise<{
+    message: Message[];
+    totaltokens: number;
+    title: string;
+  } | null> {
+    const [conversation] = await db
+      .select({
+        id: aiConversation.id,
+        title: aiConversation.title,
+        messages: aiConversation.messages,
+        totalTokens: aiConversation.totalTokens,
+      })
+      .from(aiConversation)
+      .where(
+        and(
+          eq(aiConversation.userId, userId),
+          eq(aiConversation.id, conversationId),
+        ),
+      )
+      .limit(1);
+    if (!conversation) return null;
+    return {
+      message: conversation.messages as Message[],
+      totaltokens: conversation.totalTokens || 0,
+      title: conversation.title || "Untitled",
+    };
+  }
+
+  async deleteConversation(
+    userId: number,
+    conversationId: number,
+  ): Promise<void> {
     await db
       .delete(aiConversation)
       .where(
         and(
           eq(aiConversation.userId, userId),
-          eq(aiConversation.noteId, noteId),
+          eq(aiConversation.id, conversationId),
         ),
       );
   }
@@ -152,7 +244,9 @@ export class ConversationService {
 
   async getAllConversations(userId: number): Promise<
     Array<{
+      id: number;
       noteId: number | null;
+      title: string;
       productTitle: string;
       lastMessage: string;
       messageCount: number;
@@ -164,6 +258,7 @@ export class ConversationService {
       .select({
         id: aiConversation.id,
         noteId: aiConversation.noteId,
+        title: aiConversation.title,
         messages: aiConversation.messages,
         totalTokens: aiConversation.totalTokens,
         updatedAt: aiConversation.updatedAt,
@@ -193,8 +288,10 @@ export class ConversationService {
       const lastMsg = messages[messages.length - 1];
 
       return {
+        id: conv.id,
         noteId: conv.noteId ?? null,
         productTitle: noteMap.get(conv.noteId ?? 0) || "Unknown Note",
+        title: conv.title || "Untitled",
         lastMessage: lastMsg?.content?.substring(0, 100) + "..." || "",
         messageCount: messages.length,
         lastUpdated: conv.updatedAt,
@@ -230,6 +327,33 @@ export class ConversationService {
     }
 
     return { id: result[0]?.id ?? 0, totalTokens: result[0]?.totalTokens ?? 0 };
+  }
+  private async cleanUpconversation(userId, limit: number = 10) {
+    const countResult = await db
+      .select({ count: sql`count(*)`.as("count") })
+      .from(aiConversation)
+      .where(eq(aiConversation.userId, userId));
+    const count = Number(countResult[0]?.count || 0);
+    if (count > limit) {
+      const toDelete = count - limit;
+      const oldest = await db
+        .select({ id: aiConversation.id })
+        .from(aiConversation)
+        .where(eq(aiConversation.userId, userId))
+        .orderBy(asc(aiConversation.updatedAt))
+        .limit(toDelete);
+      if (oldest.length > 0) {
+        const idsToDelete = oldest.map((o) => o.id);
+        await db
+          .delete(aiConversation)
+          .where(
+            and(
+              eq(aiConversation.userId, userId),
+              inArray(aiConversation.id, idsToDelete),
+            ),
+          );
+      }
+    }
   }
   estimateTokens(text: string) {
     return Math.ceil(text.length / 4);

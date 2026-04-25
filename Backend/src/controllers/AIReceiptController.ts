@@ -84,7 +84,7 @@ export const analyzeReceipt = async (
       }
 
       const existingConversation =
-        await conversationservice.getRecentConversation(userId, noteId);
+        await conversationservice.getRecentConversationById(userId, noteId);
 
       const previousMessages =
         existingConversation?.message.map((m) => ({
@@ -124,17 +124,20 @@ export const analyzeReceipt = async (
         content: analysis.content,
         timestamp: new Date().toISOString(),
       });
-      await conversationservice.saveConversation(
+      const conversationId = await conversationservice.saveConversation(
         userId,
         noteId,
         messagesToSave,
         analysis.token,
+        analysis.title,
       );
 
       return res.status(200).json({
         success: true,
         analysis: analysis.content,
         tokens: analysis.token,
+        conversationId: conversationId,
+        title: analysis.title || "New Analysis",
         message: "Receipt analyzed succesfully",
       });
     }
@@ -153,7 +156,7 @@ export const analyzeReceipt = async (
   }
 };
 
-export const getConversation = async (
+export const getRecentConversations = async (
   req: UserIdRequest,
   res: Response,
   next: NextFunction,
@@ -162,20 +165,39 @@ export const getConversation = async (
   if (!userId) {
     return res.status(401).json({ success: false, message: "Unathorized" });
   }
-  const { noteId } = req.query;
-  // console.log(noteId);
-  if (noteId) {
-    const conversation = await conversationservice.getRecentConversation(
+
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+    const conversation = await conversationservice.getRecentConversations(
       userId,
-      parseInt(noteId as string),
+      limit,
     );
     return res.status(200).json({ success: true, data: conversation });
-  } else {
-    const allConversations =
-      await conversationservice.getAllConversations(userId);
-    // console.log(allConversations);
-    return res.json({ success: true, data: allConversations });
+  } catch (error) {
+    next(error);
   }
+};
+
+export const getConversationById = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unathorized" });
+  }
+  const { conversationId } = req.query;
+  if (!conversationId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "conversationId required" });
+  }
+  const conversation = await conversationservice.getConversationById(
+    userId,
+    parseInt(conversationId as string),
+  );
+  return res.status(200).json({ success: true, data: conversation });
 };
 
 export const getAiTokens = async (
@@ -315,6 +337,34 @@ export const parseProducts = async (
       products: result.products,
       tokens: result.token,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handledeleteConversation = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unathorized" });
+  }
+  const { conversationId } = req.params;
+  if (!conversationId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "conversationId required" });
+  }
+  try {
+    await conversationservice.deleteConversation(
+      userId,
+      parseInt(conversationId as string),
+    );
+    return res
+      .status(200)
+      .json({ success: true, message: "Conversation deleted" });
   } catch (error) {
     next(error);
   }

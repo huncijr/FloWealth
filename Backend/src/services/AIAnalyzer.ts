@@ -22,6 +22,7 @@ export interface AnalyzeReceiptParams {
 interface AiAnalysisResult {
   content: string;
   token: number;
+  title: string;
 }
 
 export class AIReceiptAnalyzer {
@@ -85,7 +86,10 @@ export class AIReceiptAnalyzer {
    - Calculate if they were under/over budget and by how much
 
 3. RESPONSE FORMAT:
-   Respond in a friendly, conversational tone. Structure your response like this:
+ **IMPORTANT**: Your response MUST start with a title line in this exact format:
+     TITLE: [A short title for this conversation - max 50 characters]
+  After the TITLE line, respond in a friendly, conversational tone with emojis like:
+
 
    📍 **Shopping Location**: [Store name]
    📅 **Date**: [Purchase date]
@@ -182,15 +186,21 @@ export class AIReceiptAnalyzer {
       }
 
       const data = await response.json();
-      const result = data.choices?.[0]?.message?.content;
+      let result = data.choices?.[0]?.message?.content;
       const tokens =
         data.usage?.total_tokens || conversationservice.estimateTokens(result);
-
+      let conversationTitle = "New Analysis";
+      let titleMatch = result.match(/^TITLE:\s*(.+)/m);
+      if (titleMatch) {
+        conversationTitle = titleMatch[1].trim().substring(0, 50);
+        console.log(conversationTitle);
+        result = result.replace(/^TITLE:\s*.+\n?/m, "");
+      }
       if (!result) {
         throw new Error("No content received from AI API");
       }
 
-      return { content: result, token: tokens };
+      return { content: result, token: tokens, title: conversationTitle };
     } catch (error) {
       console.error("Error analyzing receipt:", error);
       throw error;

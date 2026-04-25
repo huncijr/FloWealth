@@ -76,6 +76,7 @@ export const aiConversation = pgTable("ai_conversation", {
   noteId: integer("note_id").references(() => notesTable.id, {
     onDelete: "cascade",
   }),
+  title: varchar("title", { length: 255 }).default(""),
   messages: jsonb("messages")
     .$type<
       Array<{
