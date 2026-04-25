@@ -328,7 +328,7 @@ export class ConversationService {
 
     return { id: result[0]?.id ?? 0, totalTokens: result[0]?.totalTokens ?? 0 };
   }
-  private async cleanUpconversation(userId, limit: number = 10) {
+  private async cleanUpconversation(userId: number, limit: number = 10) {
     const countResult = await db
       .select({ count: sql`count(*)`.as("count") })
       .from(aiConversation)
