@@ -58,10 +58,9 @@ interface AiChatSidebarProps {
   onClose: () => void;
   note: Note | null;
   initialAnalysis?: string;
+  initialConversationId?: number | null;
+  initialTitle?: string;
   isAnalyzing: boolean;
-  conversationId?: number;
-  conversationTitle?: string;
-  onConversationLoaded?: (message: Message[], conversationId: number) => void;
 }
 
 const formatMessageContent = (content: string): string => {
@@ -87,6 +86,8 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   onClose,
   note,
   initialAnalysis,
+  initialConversationId = null,
+  initialTitle = "",
   isAnalyzing = false,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -130,10 +131,16 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           ];
         });
       }
+      if (initialConversationId) {
+        setCurrentConversationId(initialConversationId);
+      }
+      if (initialTitle) {
+        setCurrentTitle(initialTitle);
+      }
     } else {
       setQuotaExceeded(false);
     }
-  }, [isopen, user]);
+  }, [isopen, user, initialAnalysis, initialTitle, initialConversationId]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -205,10 +212,15 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   };
 
   useEffect(() => {
-    if (!selectednotes && note) {
+    if (note) {
       setSelectedNotes(note);
+      setCurrentConversationId(null);
+      setCurrentTitle(note.productTitle);
+      setMessages([]);
+      setIsFirstMessage(true);
+      setShowImagePreview(true);
     }
-  }, [note, selectednotes]);
+  }, [note]);
 
   const handleSendMessage = async () => {
     if (!inputvalue.trim() || !selectednotes) return;
@@ -315,15 +327,17 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                 recentconversations.map((conv) => (
                   <div
                     key={conv.id}
-                    className="flex items-center gap-2 dark:bg-white/10 rounded-lg bg-gray-300 hover:bg-gray-400 dark:hover:bg-white/20 transition-all"
+                    className={`flex items-center gap-2 dark:bg-white/10 rounded-lg bg-gray-300
+                     hover:bg-gray-400 dark:hover:bg-white/20 dark:bg-gray-700 transition-all
+                      ${
+                        currentConversationId === conv.id
+                          ? " bg-gray-400 dark:bg-gray-800 "
+                          : " "
+                      }`}
                   >
                     <button
                       onClick={() => selectConversation(conv)}
-                      className={`flex-1 px-3 py-2 text-sm text-left Ubuntu ${
-                        currentConversationId === conv.id
-                          ? "text-black dark:bg-white"
-                          : "text-black/80 dart:bg-white/80"
-                      }`}
+                      className="flex-1 px-3 py-2 text-sm text-left Ubuntu"
                     >
                       {conv.title.substring(0, 30)}
                     </button>

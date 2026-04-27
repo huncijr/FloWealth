@@ -171,6 +171,10 @@ const Expenses = () => {
   const [activenoteforai, setActiveNoteForAi] = useState<Note | null>(null);
   const [aianalysis, setAiAnalysis] = useState<string>("");
   const [showtutorial, setShowTutorial] = useState(false);
+  const [conversationIdForAi, setConversationIdForAi] = useState<number | null>(
+    null,
+  );
+  const [titleForAi, setTitleForAi] = useState<string>("");
 
   const [currentinput, setCurrentInput] = useState<string>("");
   const [dots, setDots] = useState(".");
@@ -527,6 +531,10 @@ const Expenses = () => {
     setActiveNoteForAi(note);
     setISAiSidebarOpen(true);
     setAiLoading(note.id);
+    setAiAnalysis("");
+    setConversationIdForAi(null);
+    setTitleForAi("");
+
     try {
       const response = await api.post(
         "/analyze-receipt",
@@ -540,6 +548,8 @@ const Expenses = () => {
       );
       if (response.data.success) {
         setAiAnalysis(response.data.analysis);
+        setConversationIdForAi(response.data.conversationId || null);
+        setTitleForAi(response.data.title || "");
       }
     } catch (error) {
       console.error("AI Analysis Error:", error);
@@ -2038,10 +2048,9 @@ const Expenses = () => {
         onClose={() => setISAiSidebarOpen(false)}
         note={activenoteforai}
         initialAnalysis={aianalysis}
+        initialConversationId={conversationIdForAi}
+        initialTitle={titleForAi}
         isAnalyzing={aiLoading !== null}
-        conversationId={0}
-        conversationTitle={""}
-        onConversationLoaded={() => {}}
       />
       {!user && selectedtheme === "No theme " && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center">
