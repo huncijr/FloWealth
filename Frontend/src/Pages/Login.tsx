@@ -265,11 +265,11 @@ const Login = () => {
       ) : (
         /* CASE 3: Initial state - Registration form */
         <div
-          className="mt-25 w-full sm:w-[80%] md:w-[75%] lg:w-[80%] mx-auto overflow-hidden min-h-[700px] border-2 
+          className="mt-25 w-full md:w-[85%] lg:w-[75%] mx-auto overflow-hidden min-h-[700px] border-2 
                         rounded-lg relative flex flex-col md:flex-row md:items-stretch"
         >
           <div
-            className="h-[320px] sm:h-[420px] md:h-auto md:flex-[0.4] flex items-center 
+            className="h-[320px] sm:h-[420px] md:h-auto md:flex-[0.6] flex items-center relative z-0
             justify-center bg-gray-700 border-b-2 md:border-b-0 md:border-r-2 border-secondary overflow-hidden"
           >
             <CustomCarousel />
@@ -306,13 +306,13 @@ const Login = () => {
               }}
             </Switch>
           </div>
-          <div className="flex flex-1 md:flex-[.6]  flex-col gap-5 items-center p-6 md:p-10 sm:mt-5  ">
+          <div className="flex flex-1 md:flex-[.4]  flex-col gap-5 items-center p-6 md:p-10 sm:mt-5  ">
             <h2 className="Nanum-Gothic tracking-widest text-3xl md:text-4xl transition-all lg:text-5xl font-bold border-x-2 px-5 border-secondary text-center">
               {isswitch ? "WELCOME BACK!" : "REGISTER"}
             </h2>
             <div className="w-full max-w-[300px] md:max-w-[400px] lg:max-w-[500px]">
               <div className="flex justify-center">
-                <GoogleLoginButton isDisabled={!termsAccepted && !isswitch} />
+                <GoogleLoginButton isDisabled={false} />
               </div>
               <div className="flex items-center w-full my-2">
                 <div className="flex items-center w-full my-2">

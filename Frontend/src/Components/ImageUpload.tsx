@@ -486,8 +486,12 @@ const ImageUpload = ({
                 "
                     >
                       <div>Item</div>
-                      <div className="text-center">Qty</div>
-                      <div className="text-right">Price</div>
+                      <div className="text-center ml-10 sm:ml-0 md:mr-2">
+                        Qty
+                      </div>
+                      <div className="text-right mr-10 sm:ml-10 md:mr-10">
+                        Price
+                      </div>
                       <div />
                     </div>
 
@@ -497,7 +501,7 @@ const ImageUpload = ({
                         <div
                           key={item.id}
                           className="
-                      grid grid-cols-[1fr_72px_96px_40px]
+                      grid  grid-cols-[2fr_62px_76px_30px] sm:grid-cols-[1fr_72px_96px_40px]
                       gap-2 p-2 rounded-xl
                       bg-white/70 dark:bg-zinc-950/40
                       border border-black/10 dark:border-white/10
@@ -514,7 +518,7 @@ const ImageUpload = ({
                           />
 
                           <Input
-                            className="w-full text-center"
+                            className="w-[full] text-center"
                             type="text"
                             inputMode="numeric"
                             placeholder="1"

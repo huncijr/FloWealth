@@ -11,6 +11,7 @@ import {
   Pizza,
   Zap,
   CircleDashed,
+  Shell,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import useDarkMode from "../Components/Mode.tsx";
@@ -45,7 +46,6 @@ const Home = () => {
       <section className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-4">
         {/* Floating shapes - glow entrance animation */}
 
-        {/* Floating shapes - SM alatt: sarokba | SM felett: szétszórva */}
         <div className="absolute pointer-events-none top-0 left-0 w-[200px] h-[500px] md:top-[-100px] md:left-[-50px] md:w-[500px] md:h-[500px] rounded-full bg-primary/40 md:bg-primary/50 blur-[60px] md:blur-[100px] animate-glow-enter" />
 
         <div className="absolute pointer-events-none top-0 right-0 w-[250px] h-[250px] md:top-[15%] md:right-[-80px] md:w-[400px] md:h-[400px] rounded-full bg-secondary/40 md:bg-secondary/50 blur-[50px] md:blur-[80px] animate-glow-enter-delayed" />
@@ -83,7 +83,7 @@ const Home = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="text-lg md:text-xl  max-w-xl mx-auto mb-8"
+            className="text-lg md:text-xl  max-w-xl mx-auto mb-8 Roboto-slab"
           >
             Track your expenses effortlessly with AI-powered receipt scanning.
             Get instant insights and compare your spending habits.
@@ -270,10 +270,12 @@ const Home = () => {
               className="flex flex-col items-start gap-4"
             >
               <div className="flex items-center gap-3">
-                <Sparkles className="w-8 h-8 text-primary" />
-                <h2 className="text-3xl font-black ">Real-time AI Analysis</h2>
+                <Shell className="w-12 h-12 text-primary" />
+                <h2 className="text-3xl font-black Poetsen-one ">
+                  AI suggestion for your shopping
+                </h2>
               </div>
-              <p className="">
+              <p className="Roboto-slab text-base sm:text-lg md:text-xl items-center">
                 Type what you want to buy, and our AI automatically creates
                 detailed expense notes
               </p>
@@ -294,8 +296,11 @@ const Home = () => {
       {/* DECORATIVE SEPARATOR 1 */}
       <div className="divider-decoration">
         <div className="divider-line-left" />
-        <div className="divider-icon">
-          <Plus className="w-4 h-4 text-primary" />
+        <div className="relative">
+          <div className="absolute inset-0 -top-4 bg-primary/30 blur-[30px] rounded-full animate-glow-soft invisible sm:visible" />
+          <div className="divider-icon">
+            <Plus className="w-4 h-4 text-primary relative z-10" />
+          </div>
         </div>
         <div className="divider-line-right" />
       </div>
@@ -336,7 +341,9 @@ const Home = () => {
           <div className="flex flex-col items-start gap-4">
             <div className="flex items-center gap-3">
               <Sparkles className="w-8 h-8 text-primary" />
-              <h2 className="text-3xl font-black ">Real-time AI Analysis</h2>
+              <h2 className="text-3xl font-black Poetsen-one">
+                Real-time AI Analysis
+              </h2>
             </div>
             <motion.div
               initial="hidden"
@@ -358,7 +365,7 @@ const Home = () => {
                       },
                     },
                   }}
-                  className="text-lg leading-relaxed"
+                  className="Roboto-slab text-base sm:text-lg md:text-xl items-center leading-relaxed"
                 >
                   {word}{" "}
                 </motion.span>
@@ -375,7 +382,8 @@ const Home = () => {
         <div className="separator-ring" />
         <div className="separator-ring" />
         <div className="separator-diamond" />
-        <div className="absolute pointer-events-none top-[40%] right-[20%] w-[500px] h-[500px] rounded-full bg-secondary/20 blur-[30px] animate-float-delayed" />
+        <div className="absolute pointer-events-none top-[40%] right-[20%] w-[500px] h-[500px] rounded-full bg-secondary/20 blur-[30px] animate-float-delayed invisible sm:visible" />
+        <div className="absolute pointer-events-none top-[40%] left-[20%] w-[400px] h-[400px] rounded-full bg-primary/25 blur-[40px] animate-glow-soft invisible sm:visible" />
       </div>
 
       {/* FEATURE SECTION 2 - Text left, Video right */}
@@ -398,7 +406,7 @@ const Home = () => {
           <div className="flex flex-col items-start gap-4">
             <div className="flex items-center gap-3">
               <TrendingUp className="w-8 h-8 text-secondary" />
-              <h2 className="text-3xl font-black ">Compare Notes</h2>
+              <h2 className="text-3xl font-black Poetsen-one">Compare Notes</h2>
             </div>
 
             <motion.div
@@ -421,7 +429,7 @@ const Home = () => {
                       },
                     },
                   }}
-                  className="text-lg leading-relaxed"
+                  className="Roboto-slab text-base sm:text-lg md:text-xl items-center leading-relaxed"
                 >
                   {word2}{" "}
                 </motion.span>
@@ -457,6 +465,7 @@ const Home = () => {
         <div className="separator-dot" style={{ top: "30%", right: "15%" }} />
         <div className="absolute pointer-events-none top-[10%] left-[25%] w-[120px] h-[120px] rounded-full bg-primary/15 blur-[50px] animate-glow-soft" />
         <div className="absolute pointer-events-none bottom-[20%] right-[25%] w-[100px] h-[100px] rounded-full bg-secondary/15 blur-[40px] animate-glow" />
+        <div className="absolute pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-secondary/20 blur-[50px] animate-glow-soft invisible sm:visible" />
       </div>
 
       {/* CTA SECTION */}
@@ -504,7 +513,7 @@ const Home = () => {
               <Sparkles className="w-12 h-12 text-primary" />
             </div>
           </motion.div>
-          <h2 className="text-3xl md:text-4xl font-black mb-4">
+          <h2 className="text-3xl md:text-4xl font-black mb-4 Poetsen-one">
             Ready to Start Tracking?
           </h2>
 

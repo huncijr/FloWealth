@@ -318,14 +318,14 @@ export const NoteComparison = () => {
             <div className="h-px w-16 bg-linear-to-l from-transparent to-secondary/70" />
           </div>{" "}
         </motion.div>
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 sm:gap-6 items-start">
           <motion.div
             className="h-[520px]"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="h-full relative overflow-hidden border-0 shadow-2xl ">
+            <Card className="h-full relative overflow-hidden border-0 shadow-2xl z-0 ">
               <div
                 className={`absolute inset-0 transition-colors duration-300 ${
                   isDark
@@ -497,7 +497,7 @@ export const NoteComparison = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="h-[500px] flex flex-col justify-center items-center gap-6"
+            className="h-[200px] lg:h-[500px] flex flex-col justify-center items-center gap-6"
           >
             <div className="text-center">
               <p className="text-xl font-bold">Select two notes to compare!</p>
@@ -584,7 +584,7 @@ export const NoteComparison = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Card className="relative overflow-hidden border-0 shadow-2xl h-full">
+            <Card className="relative overflow-hidden border-0 shadow-2xl h-full z-0">
               <div
                 className={`absolute inset-0 transition-colors duration-300 ${
                   isDark

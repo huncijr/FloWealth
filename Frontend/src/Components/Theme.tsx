@@ -36,7 +36,6 @@ const Theme = () => {
         <AnimatePresence>
           {ishovered && (
             <>
-              {/* Szétrepülő csillagok */}
               {[...Array(3)].map((_, i) => (
                 <motion.div
                   key={i}

@@ -62,23 +62,23 @@ const ProductTable: React.FC<ProductTableProps> = ({ rows, setRows }) => {
     );
   };
   return (
-    <div className="w-full overflow-x-auto rounded-xl py-10 px-2 border border-divider">
+    <div className="w-full overflow-x-auto rounded-xl py-10 px-2 border border-divider ">
       <ScrollShadow className="max-h-[150px] sm:max-h-[200px] md:max-h-[250px] lg:max-h-[300px]  w-full">
-        <table className="w-full min-w-[400px] text-sm border-collapse table-fixed ">
+        <table className="w-full min-w-[300px] sm:min-w-[400px] text-sm border-collapse table-fixed ">
           <thead
             className={`${isDark ? "bg-black " : "bg-white"} uppercase font-semibold`}
           >
             <tr>
-              <th className="w-[35%] text-sm sm:text-lg md:text-xl lg:text-2xl">
+              <th className="w-[40%] sm:w-[35%] text-sm  sm:text-lg md:text-xl lg:text-2xl">
                 Product
               </th>
-              <th className="w-[25%]  text-sm sm:text-lg md:text-xl lg:text-2xl">
+              <th className="w-[25%] sm:w-[25%]  text-sm sm:text-lg md:text-xl lg:text-2xl">
                 Quantity
               </th>
-              <th className="w-[25%]  text-sm sm:text-lg md:text-xl lg:text-2xl">
+              <th className="w-[30%] sm:w-[25%]  text-sm sm:text-lg md:text-xl lg:text-2xl">
                 Est Price
               </th>
-              <th className="w-[15%]  text-sm sm:text-lg md:text-xl lg:text-2xl"></th>
+              <th className="w-[5%] sm:w-[15%]  text-sm sm:text-lg md:text-xl lg:text-2xl"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-divider min-w-[30%]">
@@ -105,7 +105,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ rows, setRows }) => {
                     <FieldError className="text-danger text-sm" />
                   </TextField>
                 </td>
-                <td className="p-4">
+                <td className=" sm:p-4">
                   <TextField
                     aria-label="Quantity"
                     validate={(value) => {
@@ -116,9 +116,6 @@ const ProductTable: React.FC<ProductTableProps> = ({ rows, setRows }) => {
                     }}
                   >
                     <InputGroup>
-                      <InputGroup.Prefix>
-                        <PencilLine />
-                      </InputGroup.Prefix>
                       <InputGroup.Input
                         placeholder="0"
                         type="Number"
@@ -144,9 +141,6 @@ const ProductTable: React.FC<ProductTableProps> = ({ rows, setRows }) => {
                     }}
                   >
                     <InputGroup>
-                      <InputGroup.Prefix>
-                        <DollarSign />
-                      </InputGroup.Prefix>
                       <InputGroup.Input
                         placeholder="0"
                         type="Number"

@@ -258,7 +258,7 @@ const AnalyticChart = () => {
       <div className="dark:bg-gray-800 bg-white flex flex-col">
         <div className="relative items-center text-center mt-5">
           <h2
-            className="Archivo-Black font-bold tracking-wider
+            className="Archivo-Black text-lg tracking-wilder sm:text-xl md:text-2xl lg:text-3xl tracking-wider
           "
           >
             Analytics

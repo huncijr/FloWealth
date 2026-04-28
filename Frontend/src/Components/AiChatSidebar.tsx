@@ -374,9 +374,9 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         {showConvList && (
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{ opacity: showConvList ? 1 : 0 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-gray-200 dark:bg-gray-700 backdrop-blur-sm flex flex-col"
+            className="fixed inset-0 z-1000 bg-gray-200 dark:bg-gray-700 backdrop-blur-sm flex flex-col"
           >
             {/* Overlay Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/20">
@@ -449,7 +449,7 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           animate={{ x: 0 }}
           exit={{ x: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="fixed right-0 top-0 h-full w-full sm:w-[450px] z-50 shadow-2xl ml-[200px]"
+          className="fixed right-0 top-0 h-full w-full sm:w-[450px] z-999 shadow-2xl ml-[200px]"
           style={{
             background:
               "radial-gradient(circle at 50% 90%, #e58612 0%, #c97e0e 15%, #8b5a3c 30%,#32303d 50%, #282730 65%, #17161e 100%)",

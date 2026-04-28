@@ -34,12 +34,12 @@ const CustomCarousel = () => {
   };
   return (
     <div className="w-full h-full relative group">
-      <div className="relative w-full h-full overflow-hidden aspect-video md:aspect-auto md:h-full">
+      <div className="relative w-full h-full overflow-hidden aspect-video md:aspect-[4/3] md:h-full">
         {images.map((image, index) => (
           <img
             key={index}
             src={image}
-            className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity 
+            className={`absolute inset-0 w-full h-full transition-opacity 
               duration-700 ease-in-out ${index === activeindex ? "opacity-100 z-10" : "opacity-0 z-0"}`}
           />
         ))}

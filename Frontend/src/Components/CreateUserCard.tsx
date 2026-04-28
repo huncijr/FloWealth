@@ -5,10 +5,10 @@ import { useNavigate } from "react-router-dom";
 const CreateUserCard = () => {
   const navigate = useNavigate();
   return (
-    <div className="relative flex items-center justify-center min-h-[60vh] p-8 create-user-easein">
+    <div className="relative flex z-10 items-center justify-center min-h-[60vh] p-8 create-user-easein">
       {/* Card */}
 
-      <Card className="relative z-10 max-w-md w-full bg-content1/80 backdrop-blur-sm border-1 border-divider shadow-xl">
+      <Card className="relative  max-w-md w-full bg-content1/80 backdrop-blur-sm border-1 border-divider shadow-xl">
         <Card.Header className="flex flex-col items-center gap-6 p-8">
           {/* Icon with Glow */}
           <div className="relative">

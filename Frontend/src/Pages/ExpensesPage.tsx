@@ -1583,7 +1583,7 @@ const Expenses = () => {
               <form onSubmit={(e) => handleAddNote(e)}>
                 <div className=" fixed flex items-center justify-center bg-black/50 inset-0 z-50 w-full border-2 ">
                   <div
-                    className={`w-[80%] overflow-y-auto h-[80%] border-2 ${isDark ? "bg-black" : "bg-white"} p-6 shadow-xl`}
+                    className={`w-[80%] overflow-y-auto overflow-x-hidden h-[80%] border-2 ${isDark ? "bg-black" : "bg-white"} p-6 shadow-xl`}
                   >
                     <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:gap-10">
                       <div className="flex-1">
@@ -1643,13 +1643,15 @@ const Expenses = () => {
                         {activeview === "table" ? "Hide Table" : "View Table"}
                       </Button>
                       <Button
-                        className="text-gradient-primary"
+                        className="text-sm sm:text-lg text-gradient-primary"
                         onClick={() =>
                           setActiveView(activeview === "ai" ? null : "ai")
                         }
                       >
-                        <Sparkles />
-                        Generate with FloWealth AI
+                        <Sparkles className="size-4 sm:size-5 md:size-6" />
+                        <span className="Artifika">
+                          Generate with FloWealth AI
+                        </span>
                       </Button>
                     </div>
                     {activeview === "table" && (
@@ -1811,7 +1813,7 @@ const Expenses = () => {
                         </DateInputGroup>
                         <FieldError>{dateerror}</FieldError>
                       </DateField>
-                      <div className="flex justify-center gap-2 Oswald">
+                      <div className="flex flex-col sm:flex-row ml-3 sm:ml-auto justify-center sm:gap-2 Oswald">
                         <h1 className="tracking tracking-wider">Totalcost: </h1>
                         <span className="font-bold tracking-wide text-green-900">
                           {new Intl.NumberFormat("en-US", {
@@ -2053,7 +2055,7 @@ const Expenses = () => {
         isAnalyzing={aiLoading !== null}
       />
       {!user && selectedtheme === "No theme " && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-10">
           <CreateUserCard />
         </div>
       )}

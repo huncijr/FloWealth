@@ -1219,7 +1219,12 @@ gradient-btn {
   .Artifika {
     font-family: "Artifika", serif;
   }
-
+  .Roboto-slab {
+    font-family: "Roboto Slab", serif;
+  }
+  .Poetsen-one {
+    font-family: "Poetsen One", sans-serif;
+  }
   /* Animation classes */
   .animate-float {
     animation: float 8s ease-in-out infinite;

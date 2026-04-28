@@ -8,8 +8,6 @@ import {
   Menu,
   Palette,
   Plus,
-  Sparkles,
-  UserPlus,
   X,
 } from "lucide-react";
 import { useNotes } from "../Context/Notescontext";
@@ -83,9 +81,12 @@ const AnalyticsPage = () => {
     );
   }
 
-  // AnalyticsPage.tsx - "Make an account" state
   if (!user) {
-    return <CreateUserCard />;
+    return (
+      <div className="items-center justify-center flex py-10 ">
+        <CreateUserCard />;
+      </div>
+    );
   }
 
   // ===========================

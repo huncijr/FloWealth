@@ -23,13 +23,13 @@ const NavBar = () => {
     <header className="relative">
       <div
         className={`flex flex-col md:flex-row md:items-center md:justify-between
-       gap-4 p-3 border-b-2 ${isDark ? "shadow-[0_4px_15px_rgba(206,206,206,0.7)]" : "shadow-[0_4px_15px_rgba(44,44,44,0.7)]"}`}
+       gap-1 sm:gap-4  sm:p-4 border-b-2 ${isDark ? "shadow-[0_4px_15px_rgba(206,206,206,0.7)]" : "shadow-[0_4px_15px_rgba(44,44,44,0.7)]"}`}
       >
         <div className="flex justify-between shrink-0">
           <NavLink to="/Home">
             <img
               src={isDark ? DarkFlowealth : Flowealth}
-              className="cursor-pointer h-20 md:h-24 lg:h-28 xl:h-33 w-auto "
+              className="cursor-pointer h-16 md:h-20 lg:h-24 xl:h-29 w-auto "
               alt="FloWealth Logo"
             />
           </NavLink>
@@ -57,14 +57,14 @@ const NavBar = () => {
             </Avatar>
           </NavLink>
         </div>
-        <div className="flex justify-center md:justify-end sm:items-center gap-1 sm:gap-6 ">
+        <div className="flex justify-center md:justify-end sm:items-center sm:gap-6 ">
           <div
-            className="flex justify-center md:justify-end  gap-4 Alfa-slab-one overflow-x-auto  scrollbar-hide
-          text-primary tracking-wider whitespace-nowrap text-lg sm:text-2xl  lg:text-3xl xl:text-4xl transition-all"
+            className="flex justify-center md:justify-end gap-2 sm:gap-3 md:gap-4 py-2 lg:gap-5 Alfa-slab-one overflow-x-auto  scrollbar-hide
+          text-primary tracking-wide sm:tracking-wider whitespace-nowrap text-base sm:text-xl  lg:text-2xl xl:text-3xl transition-all"
             style={{
               color: "transparent",
               WebkitTextStroke: "2px #ad711d",
-              textShadow: "0px 15px 20px rgba(0,0,0,0.3)",
+              textShadow: "2px 4px 15px rgba(0,0,0,0.3)",
             }}
           >
             <NavLink
@@ -73,7 +73,6 @@ const NavBar = () => {
                 `${isActive && "border-b-2 border-secondary "} shrink-0 cursor-pointer hover:opacity-80 transition-opacity`
               }
             >
-              {" "}
               HOME
             </NavLink>
             <NavLink
@@ -82,17 +81,15 @@ const NavBar = () => {
                 `${isActive && "border-b-2 border-secondary "} shrink-0  cursor-pointer hover:opacity-80 transition-opacity`
               }
             >
-              {" "}
               ANALYTICS
             </NavLink>
             <NavLink
               to="/Expenses"
               className={({ isActive }) =>
-                `${isActive && "border-b-2 border-secondary "}shrink-0  cursor-pointer hover:opacity-80 transition-opacity`
+                `${isActive && "border-b-2 border-secondary "} shrink-0  cursor-pointer hover:opacity-80 transition-opacity `
               }
             >
-              {" "}
-              EXPENSES{" "}
+              EXPENSES
             </NavLink>
           </div>
           {/* Desktop account link - visible on md+, handles both Google and regular users */}
