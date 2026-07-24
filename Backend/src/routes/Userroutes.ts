@@ -8,6 +8,10 @@ import {
   resendOTP,
   SignInUser,
   SignOutUser,
+  getBudget,
+  setBudget,
+  getCurrentMonthSpending,
+  getSavingsSummary,
 } from "../controllers/Appcontroller";
 import {
   AddNewThemes,
@@ -74,5 +78,10 @@ router.post(
 router.post("/parse-products", userAuth, parseProducts);
 router.get("/getaitokens", userAuth, getAiTokens);
 router.post("/compare-notes", userAuth, checkTokenLimit, compareTwoNotes);
+
+router.get("/budget", userAuth, getBudget);
+router.post("/budget", userAuth, setBudget);
+router.get("/spending/current-month", userAuth, getCurrentMonthSpending);
+router.get("/savings/summary", userAuth, getSavingsSummary);
 
 export default router;

@@ -8,6 +8,13 @@
       "when": 1777103556012,
       "tag": "0000_stiff_odin",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784903605421,
+      "tag": "0001_monthly_budgets",
+      "breakpoints": true
     }
   ]
 }

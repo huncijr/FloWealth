@@ -41,7 +41,7 @@ const Home = () => {
   const words2 = text2.split(/\s+/);
 
   return (
-    <div className={isDark ? "dark" : ""}>
+    <div>
       {/* HERO SECTION */}
       <section className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-4">
         {/* Floating shapes - glow entrance animation */}

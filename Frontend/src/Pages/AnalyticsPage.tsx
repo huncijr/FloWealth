@@ -89,9 +89,6 @@ const AnalyticsPage = () => {
     );
   }
 
-  // ===========================
-  // EMPTY STATES
-  // ===========================
   if (completedNotes.length === 0) {
     // Themes exist, but no completed notes
     if (themes.length > 0) {

@@ -3,8 +3,8 @@ import { TokenPayload } from "google-auth-library";
 import { AuthRequest, OTPTempData, UserIdRequest } from "../types/interfaces";
 import { generateOTP, sendOTP } from "../middlewares/Emailverification";
 import { db } from "../DB/db";
-import { Otps, Users } from "../DB/schemas";
-import { eq, and, desc } from "drizzle-orm";
+import { Otps, Users, monthlyBudgets, notesTable } from "../DB/schemas";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { jwtToken } from "../routes/jwtgeneration";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
@@ -357,6 +357,198 @@ export const SignOutUser = async (
     return res.status(200).json({
       message: "Signed out successfully",
       success: true,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//  BUDGET ENDPOINTS
+
+export const getBudget = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  try {
+    const month =
+      parseInt(req.query.month as string) || new Date().getMonth() + 1;
+    const year = parseInt(req.query.year as string) || new Date().getFullYear();
+
+    const [budget] = await db
+      .select()
+      .from(monthlyBudgets)
+      .where(
+        and(
+          eq(monthlyBudgets.userId, userId),
+          eq(monthlyBudgets.month, month),
+          eq(monthlyBudgets.year, year),
+        ),
+      )
+      .limit(1);
+
+    return res.status(200).json({
+      success: true,
+      budget: budget?.budget || null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const setBudget = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  try {
+    const { budget, month, year } = req.body;
+    if (!budget || !month || !year) {
+      return res.status(400).json({
+        success: false,
+        message: "budget, month, and year are required",
+      });
+    }
+
+    const existing = await db
+      .select()
+      .from(monthlyBudgets)
+      .where(
+        and(
+          eq(monthlyBudgets.userId, userId),
+          eq(monthlyBudgets.month, month),
+          eq(monthlyBudgets.year, year),
+        ),
+      )
+      .limit(1);
+
+    let result;
+    if (existing.length > 0) {
+      [result] = await db
+        .update(monthlyBudgets)
+        .set({
+          budget: String(budget),
+          updatedAt: new Date(),
+        })
+        .where(eq(monthlyBudgets.id, existing[0].id))
+        .returning();
+    } else {
+      [result] = await db
+        .insert(monthlyBudgets)
+        .values({
+          userId,
+          budget: String(budget),
+          month,
+          year,
+        })
+        .returning();
+    }
+
+    return res.status(200).json({ success: true, budget: result?.budget });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCurrentMonthSpending = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  try {
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    const result = await db
+      .select({
+        totalSpent: sql<string>`COALESCE(SUM(${notesTable.cost}::numeric), '0')`,
+      })
+      .from(notesTable)
+      .where(
+        and(
+          eq(notesTable.userId, userId),
+          eq(notesTable.completed, true),
+          sql`EXTRACT(MONTH FROM ${notesTable.createdAt}) = ${currentMonth}`,
+          sql`EXTRACT(YEAR FROM ${notesTable.createdAt}) = ${currentYear}`,
+        ),
+      );
+
+    return res.status(200).json({
+      success: true,
+      totalSpent: result[0]?.totalSpent || "0",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ==================== SAVINGS ENDPOINTS ====================
+
+export const getSavingsSummary = async (
+  req: UserIdRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  try {
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    // Total savings (all-time)
+    const [totalResult] = await db
+      .select({
+        totalSaved: sql<string>`COALESCE(SUM(${notesTable.estcost}::numeric - ${notesTable.cost}::numeric), '0')`,
+      })
+      .from(notesTable)
+      .where(
+        and(
+          eq(notesTable.userId, userId),
+          eq(notesTable.completed, true),
+          sql`${notesTable.estcost}::numeric > ${notesTable.cost}::numeric`,
+        ),
+      );
+
+    // Monthly savings
+    const [monthResult] = await db
+      .select({
+        monthSaved: sql<string>`COALESCE(SUM(${notesTable.estcost}::numeric - ${notesTable.cost}::numeric), '0')`,
+      })
+      .from(notesTable)
+      .where(
+        and(
+          eq(notesTable.userId, userId),
+          eq(notesTable.completed, true),
+          sql`${notesTable.estcost}::numeric > ${notesTable.cost}::numeric`,
+          sql`EXTRACT(MONTH FROM ${notesTable.createdAt}) = ${currentMonth}`,
+          sql`EXTRACT(YEAR FROM ${notesTable.createdAt}) = ${currentYear}`,
+        ),
+      );
+
+    return res.status(200).json({
+      success: true,
+      totalSaved: totalResult?.totalSaved || "0",
+      monthSaved: monthResult?.monthSaved || "0",
     });
   } catch (error) {
     next(error);

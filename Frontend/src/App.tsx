@@ -21,7 +21,7 @@ const NavBarLayout = () => {
     <main
       className={`${isDark ? "bg-main-bg" : "bg-main-foreground"} min-h-screen `}
     >
-      <div className="flex flex-col relative">
+      <div className="flex flex-col relative z-10">
         <NavBar />
         <div className="absolute top-full right-4 mt-2">
           <Theme />
@@ -30,7 +30,7 @@ const NavBarLayout = () => {
       <div>
         <Outlet />
       </div>
-      <div className="fixed bottom-0 left-0 right-0">
+      <div className="fixed bottom-0 left-0 right-0 z-10">
         <Footer />
       </div>
     </main>

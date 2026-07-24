@@ -101,3 +101,23 @@ export const userTokenUsage = pgTable("user_token_usage", {
   maxTokens: integer("max_tokens").default(90000),
   lastResetAt: timestamp("last_reset_at").defaultNow(),
 });
+
+export const monthlyBudgets = pgTable(
+  "monthly_budgets",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => Users.id, { onDelete: "cascade" }),
+    budget: decimal("budget", { precision: 10, scale: 2 })
+      .notNull()
+      .$type<string>(),
+    month: integer("month").notNull(),
+    year: integer("year").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    check("month_check", sql`${table.month} >= 1 AND ${table.month} <= 12`),
+  ],
+);

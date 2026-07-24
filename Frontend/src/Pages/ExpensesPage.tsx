@@ -64,6 +64,8 @@ import { motion } from "framer-motion";
 import CreateUserCard from "../Components/CreateUserCard.tsx";
 import PromptInput from "../Components/TextWriter.tsx";
 import ShowTutorial from "../Components/ShowTutorial.tsx";
+import BudgetProgressBar from "../Components/BudgetProgressBar.tsx";
+import SavingsWidget from "../Components/SavingsWidget.tsx";
 
 const Expenses = () => {
   // Interface for product rows in the table
@@ -174,6 +176,7 @@ const Expenses = () => {
     null,
   );
   const [titleForAi, setTitleForAi] = useState<string>("");
+  const [budgetRefreshKey, setBudgetRefreshKey] = useState<number>(0);
 
   const [currentinput, setCurrentInput] = useState<string>("");
   const [dots, setDots] = useState(".");
@@ -507,6 +510,7 @@ const Expenses = () => {
       setEditingNoteId(null);
       setIsCompleted(false);
       setFinalCost(null);
+      setBudgetRefreshKey((prev) => prev + 1);
     }
   };
   // Changes note sorting criteria and resets to first page
@@ -760,6 +764,14 @@ const Expenses = () => {
                 </Dropdown.Popover>
               </Dropdown>
             </div>
+          </div>
+          {/* Budget & Savings Widgets */}
+          <div className="px-8 py-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <BudgetProgressBar
+              isDark={isDark}
+              refreshTrigger={budgetRefreshKey}
+            />
+            <SavingsWidget isDark={isDark} />
           </div>
           <div
             className=" grid grid-cols-[repeat(auto-fit,minmax(200px,2fr))]
