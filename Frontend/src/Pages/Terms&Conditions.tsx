@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import useDarkMode from "../Components/Mode";
 import { Mail, Github, ArrowLeft } from "lucide-react";

@@ -178,7 +178,7 @@ export class AIReceiptAnalyzer {
           temperature: 0.7, // Slightly higher for more natural, friendly responses
         }),
       });
-
+      console.log(response);
       if (!response.ok) {
         throw new Error(
           `AI API error: ${response.status} ${response.statusText}`,

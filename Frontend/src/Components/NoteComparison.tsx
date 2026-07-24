@@ -296,8 +296,8 @@ export const NoteComparison = () => {
     lastcomparedNotes?.noteB?.id === noteB?.id;
 
   return (
-    <div className="mt-10">
-      <div className="flex p-6 flex-col items-start py-20">
+    <div className="mt-4">
+      <div className="flex p-6 flex-col items-start py-8 sm:py-16">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -497,7 +497,7 @@ export const NoteComparison = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="h-[200px] lg:h-[500px] flex flex-col justify-center items-center gap-6"
+            className="min-h-[200px] lg:h-[500px] flex flex-col justify-center items-center gap-6 relative z-10"
           >
             <div className="text-center">
               <p className="text-xl font-bold">Select two notes to compare!</p>

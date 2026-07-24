@@ -481,6 +481,28 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               </Button>
             </CardHeader>
 
+            {!user && (
+              <div className="px-4 pt-4">
+                <div className="bg-white/10 border border-white/20 rounded-xl p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-linear-to-br from-secondary/30 to-primary/30 flex items-center justify-center">
+                    <Sparkles className="w-8 h-8 text-secondary" />
+                  </div>
+                  <h4 className="text-xl font-bold text-white mb-2">
+                    Unlock AI Insights
+                  </h4>
+                  <p className="text-white/60 text-sm mb-4">
+                    Create your account to access smart receipt analysis and
+                    personalized spending tips
+                  </p>
+                  <Link to="/Account">
+                    <Button className="bg-linear-to-r from-primary to-secondary text-white font-semibold px-6">
+                      Create Account <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col flex-1 overflow-hidden">
               <ScrollShadow
                 ref={scrollRef}
@@ -605,33 +627,12 @@ const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                   </div>
                 )}
 
-                {user ? (
-                  !note &&
-                  completedNotes.length === 0 && (
-                    <div className="text-center py-8 text-white/50">
-                      <p>No completed notes with pictures found.</p>
-                      <p className="text-sm mt-2">
-                        Complete a note with a receipt image first!
-                      </p>
-                    </div>
-                  )
-                ) : (
-                  <div className="bg-white/10 border border-white/20 rounded-xl p-6 text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-linear-to-br from-secondary/30 to-primary/30 flex items-center justify-center">
-                      <Sparkles className="w-8 h-8 text-secondary" />
-                    </div>
-                    <h4 className="text-xl font-bold text-white mb-2">
-                      Unlock AI Insights
-                    </h4>
-                    <p className="text-white/60 text-sm mb-4">
-                      Create your account to access smart receipt analysis and
-                      personalized spending tips
+                {user && !note && completedNotes.length === 0 && (
+                  <div className="text-center py-8 text-white/50">
+                    <p>No completed notes with pictures found.</p>
+                    <p className="text-sm mt-2">
+                      Complete a note with a receipt image first!
                     </p>
-                    <Link to="/Account">
-                      <Button className="bg-linear-to-r from-primary to-secondary text-white font-semibold px-6">
-                        Create Account <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </Link>
                   </div>
                 )}
 

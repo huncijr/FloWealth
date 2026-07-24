@@ -13,7 +13,6 @@ import {
   TextField,
   Alert,
   ScrollShadow,
-  InputGroup,
   TextArea,
   Description,
   Card,
@@ -306,13 +305,7 @@ const Expenses = () => {
       ),
     });
   };
-  const handleDeleteProduct = (productIndex: number) => {
-    if (!draftnote) return;
-    setDraftNote({
-      ...draftnote,
-      products: draftnote.products.filter((_, i) => i != productIndex),
-    });
-  };
+
   const handleChangeTitle = (newTitle: string) => {
     if (!draftnote) return;
     setDraftNote({ ...draftnote, productTitle: newTitle });
@@ -784,7 +777,7 @@ const Expenses = () => {
                 {!note.completed ? (
                   <div className="h-full flex flex-col">
                     <div
-                      className="relative w-full h-[65px] overflow-hidden rounded-2xl 
+                      className="relative w-full h-[65px] overflow-hidden rounded-2xl
                 shadow-[0_12px_30px_-18px_rgba(0,0,0,0.55)]"
                     >
                       <div
@@ -848,7 +841,7 @@ const Expenses = () => {
                                   setDraftNote({ ...note });
                                   setIsCompleted(true);
                                 }}
-                                className="cursor-pointer inline-flex items-center justify-center h-8 w-8 rounded-lg 
+                                className="cursor-pointer inline-flex items-center justify-center h-8 w-8 rounded-lg
                                 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300
                              hover:bg-emerald-500/20 active:bg-emerald-500/30
                               ring-1 ring-emerald-500/20 transition"
@@ -915,7 +908,7 @@ const Expenses = () => {
                       ========================================== */}
                     <div className="relative w-full mx-auto flex flex-col note-animate-fade">
                       <Card
-                        className={`mt-1 relative overflow-hidden h-[387px]  border-2 shadow-soft before:absolute before:left-0 before:top-0 
+                        className={`mt-1 relative overflow-hidden h-[387px]  border-2 shadow-soft before:absolute before:left-0 before:top-0
                         before:bottom-0 before:w-1 before:bg-linear-to-b before:from-primary before:to-secondary`}
                       >
                         <Card.Header className="flex items-star justify-between gap-3 pb-2">
@@ -1087,13 +1080,13 @@ const Expenses = () => {
                                       {product.name}
                                     </span>
                                     <span
-                                      className="text-center text-warm-brown/70 dark:text-warm-light/60 
+                                      className="text-center text-warm-brown/70 dark:text-warm-light/60
                            font-mono"
                                     >
                                       {product.quantity}
                                     </span>
                                     <span
-                                      className="text-right font-bold text-emerald-600 dark:text-emerald-400 
+                                      className="text-right font-bold text-emerald-600 dark:text-emerald-400
                            font-mono tabular-nums"
                                     >
                                       ${Number(product.estprice).toFixed(2)}
@@ -1223,7 +1216,7 @@ const Expenses = () => {
                         <div className="absolute inset-0 bg-linear-to-b from-white/10 to-black/10 dark:from-white/5 dark:to-black/25" />
                         <div className="relative z-10 p-2">
                           <div
-                            className="flex items-center gap-2 rounded-xl  
+                            className="flex items-center gap-2 rounded-xl
                              backdrop-blur-md px-2 py-1.5  bg-warm-white/70 dark:bg-warm-dark/45"
                           >
                             <div className="flex gap-2 h-9 rounded-xl px-3 bg-emerald-600  shadow-[0_10px_22px_-16px_rgba(16,185,129,0.9)]">
@@ -1633,7 +1626,7 @@ const Expenses = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-4 my-5">
+                    <div className="flex flex-col sm:flex-row gap-4 my-5">
                       <Button
                         variant={activeview ? "tertiary" : "outline"}
                         onClick={() =>
@@ -1674,7 +1667,7 @@ const Expenses = () => {
                                 isAiParsing
                                   ? "bg-gradient-to-r from-secondary to-primary animate-pulse"
                                   : "bg-primary hover:bg-primary/80"
-                              }text-white font-bold py-3 px-6 rounded-full shadow-lg 
+                              }text-white font-bold py-3 px-6 rounded-full shadow-lg
               transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed`}
                             >
                               {isAiParsing ? (
@@ -2023,8 +2016,8 @@ const Expenses = () => {
           onClick={() => setIsImageModalOpen(null)}
         >
           <button
-            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 
-                 hover:bg-white/20 flex items-center justify-center 
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10
+                 hover:bg-white/20 flex items-center justify-center
                  transition-colors z-10"
             onClick={(e) => {
               e.stopPropagation();
