@@ -36,7 +36,7 @@ const NotFoundPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-2xl Oswald tracking-wide mt-4 mb-8 text-gray-600 dark:text-gray-300"
+              className="text-2xl font-reddit-condensed tracking-wide mt-4 mb-8 text-gray-600 dark:text-gray-300"
             >
               Oops! Page not found
             </motion.p>

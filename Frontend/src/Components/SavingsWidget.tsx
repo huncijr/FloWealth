@@ -74,12 +74,12 @@ const SavingsWidget = ({ isDark }: SavingsWidgetProps) => {
         </div>
         <div>
           <h3
-            className={`font-semibold text-sm ${isDark ? "text-white" : "text-gray-800"}`}
+            className={`font-reddit-condensed font-semibold text-base ${isDark ? "text-white" : "text-gray-800"}`}
           >
             Total Savings
           </h3>
           <p
-            className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
+            className={`text-xs ${isDark ? "text-gray-300" : "text-gray-500"}`}
           >
             Est. cost minus actual cost
           </p>
@@ -98,7 +98,7 @@ const SavingsWidget = ({ isDark }: SavingsWidgetProps) => {
         <div className="flex items-center gap-1.5">
           <TrendingUp size={14} className="text-emerald-400" />
           <span
-            className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
+            className={`text-xs ${isDark ? "text-gray-300" : "text-gray-500"}`}
           >
             <span className="text-emerald-400 font-semibold">
               +${monthSaved.toFixed(2)}
@@ -109,7 +109,7 @@ const SavingsWidget = ({ isDark }: SavingsWidgetProps) => {
       )}
 
       {!hasSavings && (
-        <p className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+        <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
           Complete notes with actual costs lower than estimated to see savings
         </p>
       )}

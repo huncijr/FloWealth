@@ -8,6 +8,10 @@
   --color-primary: #ce9613;
   --color-secondary: #bf6a02;
   --color-third: #ad711d;
+
+  --font-dm-sans: "DM Sans", sans-serif;
+  --font-reddit-condensed: "Reddit Sans Condensed", sans-serif;
+  --font-playwrite: "Playwrite NZ Basic", cursive;
 }
 
 html,
@@ -15,6 +19,17 @@ body {
   background-color: var(--color-main-foreground);
   min-height: 100vh;
   overflow-x: hidden;
+  font-family: "DM Sans", sans-serif;
+}
+
+.font-dm-sans {
+  font-family: "DM Sans", sans-serif;
+}
+.font-reddit-condensed {
+  font-family: "Reddit Sans Condensed", sans-serif;
+}
+.font-playwrite {
+  font-family: "Playwrite NZ Basic", cursive;
 }
 
 .scrollbar-hide::-webkit-scrollbar {

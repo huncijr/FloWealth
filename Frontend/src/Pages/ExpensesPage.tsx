@@ -1064,14 +1064,20 @@ const Expenses = () => {
                           <div className="mx-4 rounded-lg overflow-hidden border border-warm-tan/20 dark:border-warm-border/30">
                             <div
                               className="grid grid-cols-[1fr_72px_110px] gap-2 px-3 py-2
-                                    text-[11px] font-semibold uppercase tracking-wider
+                                    text-[11px] font-semibold uppercase tracking-wide
                                       bg-warm-brown/10 dark:bg-warm-light/5
                                         text-warm-brown/80 dark:text-warm-light/60
                                         border-b border-warm-tan/20 sticky top-0 z-10"
                             >
-                              <span className="Ubuntu">Name</span>
-                              <span className="text-center Ubuntu">Qty</span>
-                              <span className="text-right Ubuntu">Price</span>
+                              <span className="font-reddit-condensed">
+                                Name
+                              </span>
+                              <span className="text-center font-reddit-condensed">
+                                Qty
+                              </span>
+                              <span className="text-right font-reddit-condensed">
+                                Price
+                              </span>
                             </div>
                           </div>
                           <ScrollShadow className="max-h-[160px] overflow-y-auto">
@@ -1261,7 +1267,7 @@ const Expenses = () => {
                       </Card.Header>
                       <Card.Content className="">
                         <h3
-                          className={`Ubuntu text-lg font-medium line-through opacity-60 mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                          className={`font-reddit-condensed text-lg font-medium line-through opacity-60 mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
                         >
                           {note.productTitle}
                         </h3>
@@ -1468,7 +1474,7 @@ const Expenses = () => {
               <Ban className="absolute inset-[-10%] w-[120%] h-[120%] text-red-500 drop-shadow-xl" />
             </div>
 
-            <h3 className="Oswald tracking-wider text-xl md:text-2xl lg:text-4xl xl:text-5xl text-gray-500">
+            <h3 className="font-reddit-condensed tracking-wide text-xl md:text-2xl lg:text-4xl xl:text-5xl text-gray-500">
               No notes added
             </h3>
           </div>
@@ -1479,7 +1485,7 @@ const Expenses = () => {
         <div>
           <div className="py-10 flex justify-center items-center">
             <h3
-              className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold tracking-wider Ubuntu "
+              className="font-reddit-condensed text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-extrabold tracking-tight"
               style={{ textShadow: "0 4px 8px rgba(0,0,0,1)" }}
             >
               THEMES
@@ -1820,9 +1826,11 @@ const Expenses = () => {
                         </DateInputGroup>
                         <FieldError>{dateerror}</FieldError>
                       </DateField>
-                      <div className="flex flex-col sm:flex-row ml-3 sm:ml-auto justify-center sm:gap-2 Oswald">
-                        <h1 className="tracking tracking-wider">Totalcost: </h1>
-                        <span className="font-bold tracking-wide text-green-900">
+                      <div className="flex flex-col sm:flex-row ml-3 sm:ml-auto justify-center sm:gap-2">
+                        <h1 className="font-reddit-condensed tracking-wide">
+                          Totalcost:{" "}
+                        </h1>
+                        <span className="font-extrabold tracking-normal text-green-900">
                           {new Intl.NumberFormat("en-US", {
                             style: "currency",
                             currency: "USD",

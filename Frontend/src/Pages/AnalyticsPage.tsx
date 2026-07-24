@@ -103,11 +103,11 @@ const AnalyticsPage = () => {
                 </div>
               </div>
 
-              <h2 className="text-2xl font-bold text-center">
+              <h2 className="font-reddit-condensed text-3xl font-extrabold text-center tracking-tight">
                 No completed notes!
               </h2>
 
-              <p className="text-center text-default-500 max-w-sm">
+              <p className="text-center text-default-500 max-w-sm leading-relaxed">
                 Themes already added but no completed notes. Make a note and
                 complete it to analyze your monthly spending!
               </p>
@@ -148,9 +148,11 @@ const AnalyticsPage = () => {
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold text-center">No themes yet!</h2>
+            <h2 className="font-reddit-condensed text-3xl font-extrabold text-center tracking-tight">
+              No themes yet!
+            </h2>
 
-            <p className="text-center text-default-500 max-w-sm">
+            <p className="text-center text-default-500 max-w-sm leading-relaxed">
               Start organizing your expenses by creating your first theme.
             </p>
 
@@ -160,7 +162,7 @@ const AnalyticsPage = () => {
             </div>
 
             <div className="w-full p-4 bg-primary/5 rounded-lg border border-primary/20">
-              <p className="text-xs text-default-500 text-center">
+              <p className="text-sm text-default-500 text-center leading-relaxed">
                 Themes help you organize expenses by category, making tracking
                 easier!
               </p>
@@ -185,8 +187,8 @@ const AnalyticsPage = () => {
     <div className="flex py-10 sm:py-20 px-4 sm:px-5 w-full">
       <div className="flex flex-col w-full min-w-0">
         <h1
-          className="Abril-Fatface text-3xl sm:text-4xl md:text-5xl text-primary 
-          w-fit mx-auto sm:mx-0 transition-all duration-300 ease-in-out"
+          className="font-reddit-condensed text-3xl sm:text-4xl md:text-5xl text-primary 
+          w-fit mx-auto sm:mx-0 transition-all duration-300 ease-in-out tracking-tight font-extrabold"
         >
           Welcome, {user.name} !
         </h1>
@@ -296,7 +298,7 @@ const AnalyticsPage = () => {
                                   style={{ backgroundColor: theme.color }}
                                 />
                                 <h3
-                                  className={`font-[Abril_Fatface] text-xl ${
+                                  className={`font-reddit-condensed text-xl font-extrabold tracking-tight ${
                                     theme.isVirtual
                                       ? "text-gray-500"
                                       : "text-primary"

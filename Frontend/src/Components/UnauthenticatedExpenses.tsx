@@ -263,12 +263,12 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
 
         <div className="text-center space-y-3">
           <h2
-            className={`text-2xl sm:text-3xl font-bold ${isDark ? "text-white" : "text-gray-800"}`}
+            className={`font-reddit-condensed text-3xl sm:text-4xl font-extrabold tracking-tight ${isDark ? "text-white" : "text-gray-800"}`}
           >
             Try adding your first note!
           </h2>
           <p
-            className={`text-sm sm:text-base max-w-md ${isDark ? "text-gray-400" : "text-gray-500"}`}
+            className={`text-base sm:text-lg max-w-md leading-relaxed ${isDark ? "text-gray-300" : "text-gray-500"}`}
           >
             See how easy it is to track your expenses. Click the button below to
             create a demo note — no account needed!
@@ -313,7 +313,7 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
                   >
                     <NotebookPen className="w-5 h-5 text-primary" />
                     <span
-                      className={`font-medium ${isDark ? "text-white" : "text-gray-800"}`}
+                      className={`font-reddit-condensed font-semibold text-base ${isDark ? "text-white" : "text-gray-800"}`}
                     >
                       Start Demo Note
                     </span>
@@ -375,7 +375,7 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500" />
               <span
-                className={`font-bold ${isDark ? "text-white" : "text-gray-800"}`}
+                className={`font-reddit-condensed font-extrabold text-lg ${isDark ? "text-white" : "text-gray-800"}`}
               >
                 Demo Note Saved!
               </span>
@@ -384,19 +384,19 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
           <div className="p-4 space-y-3">
             <div>
               <span
-                className={`text-xs uppercase tracking-wider ${isDark ? "text-gray-500" : "text-gray-400"}`}
+                className={`font-reddit-condensed text-xs uppercase tracking-widest ${isDark ? "text-gray-400" : "text-gray-500"}`}
               >
                 Title
               </span>
               <p
-                className={`font-semibold ${isDark ? "text-white" : "text-gray-800"}`}
+                className={`font-semibold text-base ${isDark ? "text-white" : "text-gray-800"}`}
               >
                 {savedNote.title}
               </p>
             </div>
             <div>
               <span
-                className={`text-xs uppercase tracking-wider ${isDark ? "text-gray-500" : "text-gray-400"}`}
+                className={`font-reddit-condensed text-xs uppercase tracking-widest ${isDark ? "text-gray-400" : "text-gray-500"}`}
               >
                 Products
               </span>
@@ -418,12 +418,12 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
               className={`flex justify-between items-center pt-2 border-t ${isDark ? "border-gray-700" : "border-gray-200"}`}
             >
               <span
-                className={`font-semibold ${isDark ? "text-gray-300" : "text-gray-600"}`}
+                className={`font-reddit-condensed font-semibold text-base ${isDark ? "text-gray-300" : "text-gray-600"}`}
               >
                 Total
               </span>
               <span
-                className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+                className={`font-reddit-condensed text-xl font-extrabold ${isDark ? "text-green-400" : "text-green-600"}`}
               >
                 $
                 {savedNote.totalCost.toLocaleString("en-US", {
@@ -511,7 +511,7 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.35 }}
-                      className="text-white font-extrabold text-xl text-center leading-tight"
+                      className="font-reddit-condensed text-white font-extrabold text-2xl text-center leading-tight"
                     >
                       Save Your Note
                       <br />
@@ -521,7 +521,7 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.45 }}
-                      className="text-white/80 text-sm text-center mt-2"
+                      className="text-white/80 text-base text-center mt-2 font-medium tracking-wide"
                     >
                       Create a free account in seconds
                     </motion.p>
@@ -559,7 +559,7 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
                             className={`w-5 h-5 mt-0.5 flex-shrink-0 ${isDark ? "text-amber-400" : "text-amber-600"}`}
                           />
                           <span
-                            className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}
+                            className={`text-sm leading-snug ${isDark ? "text-gray-300" : "text-gray-600"}`}
                           >
                             {text}
                           </span>
@@ -583,6 +583,16 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
                         </Button>
                       </Link>
                     </motion.div>
+
+                    {/* Bottom text */}
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.7 }}
+                      className={`font-reddit-condensed text-xs text-center tracking-wide ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                    >
+                      No credit card required · Takes less than a minute
+                    </motion.p>
                   </div>
                 </div>
               </motion.div>
@@ -612,7 +622,7 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
             <div className="flex items-center gap-3">
               <Sparkles className="w-5 h-5 text-primary" />
               <h3
-                className={`font-bold text-lg ${isDark ? "text-white" : "text-gray-800"}`}
+                className={`font-reddit-condensed font-extrabold text-xl ${isDark ? "text-white" : "text-gray-800"}`}
               >
                 Save Note
               </h3>
@@ -777,7 +787,9 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
           {/* ========== PRODUCTS WITH QTY & PRICE LABELS ========== */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-semibold">Products</Label>
+              <Label className="font-reddit-condensed text-sm font-bold tracking-wide">
+                Products
+              </Label>
               <button
                 onClick={addProduct}
                 className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
@@ -789,9 +801,13 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
 
             {/* Column headers */}
             <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 px-1">
-              <span className="flex-1">Name</span>
-              <span className="w-16 text-center">Qty</span>
-              <span className="w-24 text-center">Price</span>
+              <span className="font-reddit-condensed flex-1">Name</span>
+              <span className="font-reddit-condensed w-16 text-center">
+                Qty
+              </span>
+              <span className="font-reddit-condensed w-24 text-center">
+                Price
+              </span>
               {products.length > 1 && <span className="w-8" />}
             </div>
 
@@ -856,12 +872,12 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
             className={`flex justify-between items-center px-4 py-3 rounded-lg ${isDark ? "bg-gray-700/50" : "bg-gray-100"}`}
           >
             <span
-              className={`font-semibold ${isDark ? "text-gray-300" : "text-gray-600"}`}
+              className={`font-reddit-condensed font-semibold text-base ${isDark ? "text-gray-300" : "text-gray-600"}`}
             >
               Total Cost:
             </span>
             <span
-              className={`text-xl font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+              className={`font-reddit-condensed text-2xl font-extrabold ${isDark ? "text-green-400" : "text-green-600"}`}
             >
               $
               {totalCost.toLocaleString("en-US", {

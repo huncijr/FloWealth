@@ -46,7 +46,7 @@ const TermsConditions = () => {
           <span className="text-sm">Back</span>
         </Link>
 
-        <h1 className="text-4xl md:text-5xl font-bold Abril-Fatface text-primary mb-2">
+        <h1 className="font-reddit-condensed text-4xl md:text-5xl font-extrabold tracking-tight text-primary mb-2">
           Terms & Conditions
         </h1>
         <p className="text-sm opacity-70 mb-8">Last updated: 2026-04-10</p>

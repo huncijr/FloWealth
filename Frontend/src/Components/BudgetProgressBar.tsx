@@ -83,7 +83,7 @@ const BudgetProgressBar = ({
             className={isOverBudget ? "text-red-500" : "text-emerald-500"}
           />
           <h3
-            className={`font-semibold text-sm ${isDark ? "text-white" : "text-gray-800"}`}
+            className={`font-reddit-condensed font-semibold text-base ${isDark ? "text-white" : "text-gray-800"}`}
           >
             Monthly Budget
           </h3>
@@ -187,7 +187,7 @@ const BudgetProgressBar = ({
         </>
       ) : (
         <p
-          className={`text-xs text-center ${isDark ? "text-gray-500" : "text-gray-400"}`}
+          className={`text-sm text-center ${isDark ? "text-gray-400" : "text-gray-500"}`}
         >
           Set a monthly budget to track your spending
         </p>
