@@ -42,7 +42,33 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     initAuth();
   }, []);
   useEffect(() => {
-    // console.log(user);
+    // Migrate tutorial note from localStorage to backend when user logs in
+    if (user) {
+      const tutorialNoteStr = localStorage.getItem("floWealthTutorialNote");
+      if (tutorialNoteStr) {
+        try {
+          const tutorialNote = JSON.parse(tutorialNoteStr);
+          const payload = {
+            Theme: "No theme ",
+            Color: "#b7b7b7",
+            ProductTitle: tutorialNote.title,
+            ProductNames: tutorialNote.products.map((p: any) => p.name),
+            Quantities: tutorialNote.products.map((p: any) => p.quantity || 1),
+            EstPrices: tutorialNote.products.map((p: any) => p.estprice || 0),
+            Cost: tutorialNote.totalCost,
+            Date: null,
+          };
+          api
+            .post("/addnote", payload)
+            .then(() => {
+              localStorage.removeItem("floWealthTutorialNote");
+            })
+            .catch(() => {
+              // silently fail - tutorial note could not be migrated
+            });
+        } catch {}
+      }
+    }
   }, [user]);
   return (
     <UserContext.Provider value={{ user, setUser }}>

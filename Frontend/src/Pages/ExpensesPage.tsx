@@ -61,11 +61,11 @@ import { useNotes } from "../Context/Notescontext.tsx";
 import LoadingLogo from "../Components/LoadingLogo.tsx";
 import AiChatSidebar from "../Components/AiChatSidebar.tsx";
 import { motion } from "framer-motion";
-import CreateUserCard from "../Components/CreateUserCard.tsx";
 import PromptInput from "../Components/TextWriter.tsx";
 import ShowTutorial from "../Components/ShowTutorial.tsx";
 import BudgetProgressBar from "../Components/BudgetProgressBar.tsx";
 import SavingsWidget from "../Components/SavingsWidget.tsx";
+import UnauthenticatedExpenses from "../Components/UnauthenticatedExpenses.tsx";
 
 const Expenses = () => {
   // Interface for product rows in the table
@@ -1409,6 +1409,8 @@ const Expenses = () => {
         </div>
       ) : showtutorial && user ? (
         <ShowTutorial isopen={showtutorial} onClose={handleCloseTutorial} />
+      ) : !user ? (
+        <UnauthenticatedExpenses isDark={isDark} />
       ) : (
         <>
           <div className="ml-5 mt-5">
@@ -2059,11 +2061,6 @@ const Expenses = () => {
         initialTitle={titleForAi}
         isAnalyzing={aiLoading !== null}
       />
-      {!user && selectedtheme === "No theme " && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-10">
-          <CreateUserCard />
-        </div>
-      )}
     </div>
   );
 };
