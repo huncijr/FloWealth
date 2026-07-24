@@ -1484,17 +1484,19 @@ const Expenses = () => {
       {user ? (
         <div>
           <div className="py-10 flex justify-center items-center">
-            <h3
-              className="font-reddit-condensed text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-extrabold tracking-tight"
-              style={{ textShadow: "0 4px 8px rgba(0,0,0,1)" }}
-            >
+            <h3 className="font-reddit-condensed text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               THEMES
             </h3>
           </div>
           <div className="relative inline-block w-full">
-            <Button onClick={() => setIsNewTheme(true)} variant="ghost">
-              <BadgePlus /> ADD NEW THEME
-            </Button>
+            <div className="flex justify-center">
+              <Button
+                onClick={() => setIsNewTheme(true)}
+                className="bg-gradient-to-r from-primary to-secondary text-white font-reddit-condensed font-semibold tracking-wide px-8 py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+              >
+                <BadgePlus className="w-5 h-5" /> ADD NEW THEME
+              </Button>
+            </div>
             {isnewtheme && (
               <>
                 <div
@@ -1506,79 +1508,85 @@ const Expenses = () => {
                   }}
                 />
 
-                <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[400px] max-w-[90vw]">
-                  <Card variant="default" className="shadow-xl">
-                    <Card.Header>
-                      <div className="flex justify-between items-center">
-                        <span>Add new theme</span>
-                        <div
+                <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[420px] max-w-[90vw]">
+                  <Card className="shadow-2xl border border-divider rounded-2xl overflow-hidden bg-content1/95 backdrop-blur-md">
+                    <Card.Header className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-divider px-6 py-4">
+                      <div className="flex justify-between items-center w-full">
+                        <h3 className="font-reddit-condensed text-xl font-bold tracking-tight text-primary">
+                          Create New Theme
+                        </h3>
+                        <button
                           onClick={() => {
                             setIsNewTheme(false);
                             setAddTheme("");
                             setSelectedColor(null);
                           }}
-                          className="cursor-pointer"
+                          className="p-1.5 rounded-full hover:bg-danger/10 transition-colors cursor-pointer"
                         >
-                          <XCircleIcon className="text-red-700" />
-                        </div>
+                          <X size={20} className="text-danger" />
+                        </button>
                       </div>
                     </Card.Header>
-                    <Card.Content>
-                      <div className="flex flex-col">
-                        <div className="relative max-w-sm">
-                          <TextField
-                            isRequired
-                            aria-label="name"
-                            validationBehavior="aria"
-                            validate={(value) => {
-                              if (!value.trim()) {
-                                return "Theme name is required";
-                              }
-                              return undefined;
-                            }}
-                          >
-                            <Input
-                              aria-label="Name"
-                              className="pr-10 w-full"
-                              placeholder="Enter the new theme..."
-                              value={addtheme}
-                              onChange={(e) => setAddTheme(e.target.value)}
-                            />
-                            <FieldError className="text-sm text-danger" />
-                          </TextField>
+                    <Card.Content className="px-6 py-5">
+                      <div className="flex flex-col gap-5">
+                        <TextField
+                          isRequired
+                          aria-label="name"
+                          validationBehavior="aria"
+                          validate={(value) => {
+                            if (!value.trim()) {
+                              return "Theme name is required";
+                            }
+                            return undefined;
+                          }}
+                        >
+                          <Label className="font-reddit-condensed font-semibold text-sm tracking-wide">
+                            Theme Name
+                          </Label>
+                          <Input
+                            aria-label="Name"
+                            className="w-full text-lg py-3"
+                            placeholder="Enter the new theme..."
+                            value={addtheme}
+                            onChange={(e) => setAddTheme(e.target.value)}
+                          />
+                          <FieldError className="text-sm text-danger" />
+                        </TextField>
 
-                          <div className="mt-4">
-                            <Label>Select a Color</Label>
-                            <div className="flex justify-evenly">
-                              {allcolors.map((color, i) => (
-                                <div
-                                  key={i}
-                                  className="mt-2 relative cursor-pointer rounded-full border-black w-6 h-6"
-                                  style={{ backgroundColor: color }}
-                                  onClick={() => setSelectedColor(color)}
-                                >
-                                  {selectedcolor === color && (
-                                    <div
-                                      className={`absolute -right-1 -top-1 w-4 h-4 bg-green-700 rounded-full ${isDark ? "text-white" : "text-black"}`}
-                                    >
-                                      <Check className="w-4 h-4" />
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className="flex justify-end mt-5">
-                            <Button
-                              variant="secondary"
-                              onClick={(e) => handleAddtheme(e, addtheme)}
-                            >
-                              <Plus />
-                              Add theme
-                            </Button>
+                        <div>
+                          <Label className="font-reddit-condensed font-semibold text-sm tracking-wide mb-3 block">
+                            Select a Color
+                          </Label>
+                          <div className="flex justify-center gap-4">
+                            {allcolors.map((color, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                className={`relative cursor-pointer rounded-full w-10 h-10 border-2 transition-all duration-200 hover:scale-110 ${
+                                  selectedcolor === color
+                                    ? "border-white ring-2 ring-offset-2 ring-primary shadow-lg scale-110"
+                                    : "border-transparent hover:shadow-md"
+                                }`}
+                                style={{ backgroundColor: color }}
+                                onClick={() => setSelectedColor(color)}
+                              >
+                                {selectedcolor === color && (
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <Check className="w-5 h-5 text-white drop-shadow-md" />
+                                  </div>
+                                )}
+                              </button>
+                            ))}
                           </div>
                         </div>
+
+                        <Button
+                          onClick={(e) => handleAddtheme(e, addtheme)}
+                          className="bg-gradient-to-r from-primary to-secondary text-white font-reddit-condensed font-semibold tracking-wide w-full py-2.5 rounded-xl shadow-md hover:shadow-lg hover:brightness-110 transition-all duration-300"
+                        >
+                          <Plus className="w-5 h-5" />
+                          Add Theme
+                        </Button>
                       </div>
                     </Card.Content>
                   </Card>
@@ -1594,11 +1602,34 @@ const Expenses = () => {
 
             {selectedtheme != null && close && (
               <form onSubmit={(e) => handleAddNote(e)}>
-                <div className=" fixed flex items-center justify-center bg-black/50 inset-0 z-50 w-full border-2 ">
+                <div className="fixed flex items-center justify-center bg-black/60 backdrop-blur-sm inset-0 z-50 w-full">
                   <div
-                    className={`w-[80%] overflow-y-auto overflow-x-hidden h-[80%] border-2 ${isDark ? "bg-black" : "bg-white"} p-6 shadow-xl`}
+                    className={`w-[85%] max-w-4xl overflow-y-auto overflow-x-hidden max-h-[85vh] rounded-3xl shadow-2xl border border-divider/50 p-8 ${
+                      isDark
+                        ? "bg-gray-900/95 backdrop-blur-md"
+                        : "bg-white/95 backdrop-blur-md"
+                    }`}
                   >
-                    <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:gap-10">
+                    {/* Header with close button */}
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="font-reddit-condensed text-2xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                        Create New Note
+                      </h2>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedTheme(null);
+                          setClose(true);
+                          resetAiStates();
+                        }}
+                        className="p-2 rounded-full hover:bg-danger/10 transition-colors cursor-pointer"
+                      >
+                        <X size={22} className="text-danger" />
+                      </button>
+                    </div>
+
+                    {/* Title row + Theme chip */}
+                    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
                       <div className="flex-1">
                         <TextField
                           isRequired
@@ -1613,65 +1644,70 @@ const Expenses = () => {
                             return undefined;
                           }}
                         >
-                          <Label>Title</Label>
+                          <Label className="font-reddit-condensed font-semibold text-sm tracking-wide">
+                            Note Title
+                          </Label>
                           <Input
                             fullWidth
-                            placeholder="Title"
+                            placeholder="What are you planning to buy?"
                             value={producttitle || ""}
                             onChange={(e) => setProductTitle(e.target.value)}
+                            className="text-lg"
                           />
                           <FieldError className="text-sm text-danger" />
                         </TextField>
                       </div>
-                      <div className="justify-between  my-3 sm:my-auto flex shrink-0 gap-3">
-                        <div className="flex-[.3]">
-                          <Chip
-                            color="accent"
-                            variant="soft"
-                            className="cursor-pointer"
-                          >
-                            {selectedtheme}
-                          </Chip>
-                        </div>
-                        <div
-                          onClick={() => (
-                            setSelectedTheme(null),
-                            setClose(true),
-                            resetAiStates()
-                          )}
+                      <div className="flex items-center gap-3 shrink-0">
+                        <Chip
+                          color="accent"
+                          variant="soft"
+                          className="cursor-pointer px-4 py-2 text-sm font-reddit-condensed font-semibold"
                         >
-                          <BookX
-                            className={`${isDark ? " text-white" : "text-black"} cursor-pointer`}
-                          />
-                        </div>
+                          {selectedtheme}
+                        </Chip>
                       </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-4 my-5">
+
+                    {/* Action buttons */}
+                    <div className="flex flex-col sm:flex-row gap-3 mb-6">
                       <Button
-                        variant={activeview ? "tertiary" : "outline"}
+                        variant={activeview === "table" ? "secondary" : "ghost"}
                         onClick={() =>
                           setActiveView(activeview === "table" ? null : "table")
                         }
+                        className={`font-reddit-condensed font-semibold tracking-wide ${
+                          activeview === "table"
+                            ? "bg-gradient-to-r from-primary to-secondary text-white"
+                            : "border-primary text-primary"
+                        }`}
                       >
+                        <NotebookPen className="w-4 h-4" />
                         {activeview === "table" ? "Hide Table" : "View Table"}
                       </Button>
                       <Button
-                        className="text-sm sm:text-lg text-gradient-primary"
+                        variant={activeview === "ai" ? "secondary" : "ghost"}
                         onClick={() =>
                           setActiveView(activeview === "ai" ? null : "ai")
                         }
+                        className={`font-reddit-condensed font-semibold tracking-wide ${
+                          activeview === "ai"
+                            ? "bg-gradient-to-r from-orange-400 to-orange-700 text-white"
+                            : "border-orange-500 text-orange-500"
+                        }`}
                       >
-                        <Sparkles className="size-4 sm:size-5 md:size-6" />
-                        <span className="Artifika">
-                          Generate with FloWealth AI
-                        </span>
+                        <Sparkles className="size-4 sm:size-5" />
+                        Generate with FloWealth AI
                       </Button>
                     </div>
+
                     {activeview === "table" && (
-                      <ProductTable rows={rows} setRows={setRows} />
+                      <div className="mb-6">
+                        <ProductTable rows={rows} setRows={setRows} />
+                      </div>
                     )}
-                    <div className="flex flex-col ">
-                      {activeview === "ai" && (
+
+                    {activeview === "ai" && (
+                      <div className="mb-6">
                         <Modal>
                           <div className="relative">
                             <PromptInput
@@ -1723,13 +1759,10 @@ const Expenses = () => {
                           )}
                           {showProductPreview && aiProducts.length > 0 && (
                             <div className="w-full md:max-w-[80%] mx-auto mt-4">
-                              {/* Outer gradient border */}
                               <div className="p-[3px] rounded-2xl bg-linear-to-r from-primary via-secondary to-primary">
-                                {/* Inner card background */}
                                 <div
                                   className={`rounded-2xl p-6 ${isDark ? "bg-gray-900" : "bg-white"}`}
                                 >
-                                  {/* Header with linear text */}
                                   <div className="flex items-center justify-center gap-2 mb-6">
                                     <Sparkles className="w-5 h-5 text-primary" />
                                     <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
@@ -1737,8 +1770,6 @@ const Expenses = () => {
                                     </h2>
                                     <Sparkles className="w-5 h-5 text-secondary" />
                                   </div>
-
-                                  {/* Products list with glassmorphism effect */}
                                   <div className="mb-4 rounded-xl bg-linear-to-br from-primary/10 to-secondary/10 p-4 space-y-2">
                                     {aiProducts.map((product) => (
                                       <div
@@ -1760,8 +1791,6 @@ const Expenses = () => {
                                       </div>
                                     ))}
                                   </div>
-
-                                  {/* Summary */}
                                   <div className="flex gap-2 items-center mb-4 px-2">
                                     <span className="text-gray-500 text-sm">
                                       Total items:
@@ -1770,8 +1799,6 @@ const Expenses = () => {
                                       {aiProducts.length}
                                     </span>
                                   </div>
-
-                                  {/* Action buttons */}
                                   <div className="flex gap-3">
                                     <Button
                                       size="sm"
@@ -1798,12 +1825,14 @@ const Expenses = () => {
                             </div>
                           )}
                         </Modal>
-                      )}
-                    </div>
-                    <div className="flex justify-between py-5">
+                      </div>
+                    )}
+
+                    {/* Bottom bar with Date & Total Cost */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-divider">
                       <DateField
                         isInvalid={!!dateerror}
-                        className="w-[256px] "
+                        className="w-[256px]"
                         granularity="minute"
                         value={selecteddate}
                         onChange={(date) => {
@@ -1816,7 +1845,9 @@ const Expenses = () => {
                         }}
                         minValue={now(getLocalTimeZone())}
                       >
-                        <Label> Choose a date(optional) </Label>
+                        <Label className="font-reddit-condensed font-semibold text-sm tracking-wide">
+                          Choose a date (optional)
+                        </Label>
                         <DateInputGroup>
                           <DateInputGroup.Input>
                             {(segment) => (
@@ -1826,11 +1857,11 @@ const Expenses = () => {
                         </DateInputGroup>
                         <FieldError>{dateerror}</FieldError>
                       </DateField>
-                      <div className="flex flex-col sm:flex-row ml-3 sm:ml-auto justify-center sm:gap-2">
-                        <h1 className="font-reddit-condensed tracking-wide">
-                          Totalcost:{" "}
-                        </h1>
-                        <span className="font-extrabold tracking-normal text-green-900">
+                      <div className="flex items-center gap-3 bg-content2 rounded-xl px-5 py-3">
+                        <span className="font-reddit-condensed text-lg font-semibold tracking-wide text-default-600">
+                          Total Cost:
+                        </span>
+                        <span className="text-2xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
                           {new Intl.NumberFormat("en-US", {
                             style: "currency",
                             currency: "USD",
@@ -1838,13 +1869,15 @@ const Expenses = () => {
                         </span>
                       </div>
                     </div>
-                    <div className="flex justify-center">
+
+                    {/* Submit button */}
+                    <div className="flex justify-center mt-6">
                       <Button
-                        className="w-[80%]"
-                        variant="tertiary"
                         type="submit"
+                        className="w-full sm:w-72 bg-gradient-to-r from-primary to-secondary text-white font-reddit-condensed font-bold text-lg tracking-wide py-4 rounded-2xl shadow-lg hover:shadow-xl hover:brightness-110 transition-all duration-300"
                       >
-                        Create new note
+                        <NotebookPen className="w-5 h-5" />
+                        Create New Note
                       </Button>
                     </div>
                   </div>
