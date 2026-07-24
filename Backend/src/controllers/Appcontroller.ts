@@ -440,7 +440,7 @@ export const setBudget = async (
           budget: String(budget),
           updatedAt: new Date(),
         })
-        .where(eq(monthlyBudgets.id, existing[0].id))
+        .where(eq(monthlyBudgets.id, existing[0]!.id))
         .returning();
     } else {
       [result] = await db
