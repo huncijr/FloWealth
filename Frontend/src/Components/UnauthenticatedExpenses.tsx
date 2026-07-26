@@ -22,7 +22,7 @@ import {
   Bot,
   Smartphone,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface TutorialProduct {
@@ -98,6 +98,7 @@ const parseAiInput = (text: string): AiMockProduct[] => {
 };
 
 const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
+  const navigate = useNavigate();
   const [step, setStep] = useState<"idle" | "filling" | "saved">("idle");
   const [showDropdown, setShowDropdown] = useState(false);
   const [title, setTitle] = useState("");
@@ -114,8 +115,12 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
   const [showAiProducts, setShowAiProducts] = useState(false);
   const [aiDots, setAiDots] = useState(".");
 
-  // Fixed CTA card
-  const [showFixedCta, setShowFixedCta] = useState(false);
+  // Analyze CTA — appears 2.5s after note is saved
+  const [showAnalyzeCta, setShowAnalyzeCta] = useState(false);
+
+  // Create account CTA — appears 4.5s after "Not now" is clicked
+  const [showCreateAccountCta, setShowCreateAccountCta] = useState(false);
+  const [deferredCreateAccount, setDeferredCreateAccount] = useState(false);
 
   // Load existing note on mount
   useEffect(() => {
@@ -138,13 +143,21 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
     }
   }, [isAiThinking]);
 
-  // Show fixed CTA card 2 seconds after note is saved
+  // Show analyze CTA 2.5s after note is saved
   useEffect(() => {
     if (step === "saved" && savedNote) {
-      const timer = setTimeout(() => setShowFixedCta(true), 2000);
+      const timer = setTimeout(() => setShowAnalyzeCta(true), 2500);
       return () => clearTimeout(timer);
     }
   }, [step, savedNote]);
+
+  // Show create account CTA 4.5s after "Not now" is clicked
+  useEffect(() => {
+    if (deferredCreateAccount && step === "saved" && savedNote) {
+      const timer = setTimeout(() => setShowCreateAccountCta(true), 4500);
+      return () => clearTimeout(timer);
+    }
+  }, [deferredCreateAccount, step, savedNote]);
 
   const totalCost = products.reduce(
     (sum, p) => sum + (p.estprice || 0) * (p.quantity || 1),
@@ -188,7 +201,9 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
 
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(note));
     setSavedNote(note);
-    setShowFixedCta(false);
+    setShowAnalyzeCta(false);
+    setShowCreateAccountCta(false);
+    setDeferredCreateAccount(false);
     setStep("saved");
   };
 
@@ -197,7 +212,9 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
     setSavedNote(null);
     setTitle("");
     setProducts([{ name: "", quantity: 1, estprice: 0 }]);
-    setShowFixedCta(false);
+    setShowAnalyzeCta(false);
+    setShowCreateAccountCta(false);
+    setDeferredCreateAccount(false);
     setShowAiInput(false);
     setAiInput("");
     setAiProducts([]);
@@ -435,20 +452,27 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
           </div>
         </motion.div>
 
-        <Button variant="outline" onPress={handleStartOver}>
+        {/* Start over link */}
+        <button
+          onClick={handleStartOver}
+          className={`text-xs underline underline-offset-2 hover:opacity-70 transition-opacity ${isDark ? "text-gray-400" : "text-gray-500"}`}
+        >
           Start Over
-        </Button>
+        </button>
 
-        {/* FIXED CTA Card — fullscreen backdrop blur, appears after 2 seconds */}
+        {/* =========================================== */}
+        {/* FIXED CARD 1: "Now analyze it" / "Not now" */}
+        {/* Appears automatically 2.5s after note saved  */}
+        {/* =========================================== */}
         <AnimatePresence>
-          {showFixedCta && (
+          {showAnalyzeCta && !showCreateAccountCta && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xl"
-              onClick={() => setShowFixedCta(false)}
+              onClick={() => setShowAnalyzeCta(false)}
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.85, y: 40 }}
@@ -463,15 +487,14 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
                 className="relative w-[92%] max-w-sm"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Close button — top right, outside card */}
+                {/* Close button */}
                 <button
-                  onClick={() => setShowFixedCta(false)}
+                  onClick={() => setShowAnalyzeCta(false)}
                   className="absolute -top-3 -right-3 z-10 p-2 rounded-full bg-white dark:bg-gray-700 shadow-lg border-2 border-gray-200 dark:border-gray-600 hover:scale-110 transition-transform"
                 >
                   <X className="w-4 h-4 text-gray-500 dark:text-gray-300" />
                 </button>
 
-                {/* Main card */}
                 <div
                   className={`rounded-3xl overflow-hidden shadow-2xl ${
                     isDark
@@ -479,14 +502,125 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
                       : "bg-white border border-gray-200"
                   }`}
                 >
-                  {/* Gradient header with logo */}
+                  {/* Header */}
+                  <div className="relative bg-gradient-to-br from-primary to-secondary px-6 pt-10 pb-12">
+                    <div className="absolute top-4 right-6 w-20 h-20 rounded-full bg-white/10" />
+                    <div className="absolute bottom-4 left-8 w-12 h-12 rounded-full bg-white/8" />
+                    <div className="relative flex justify-center mb-4">
+                      <motion.div
+                        initial={{ scale: 0, rotate: -30 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 200,
+                          damping: 15,
+                          delay: 0.25,
+                        }}
+                        className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/30 flex items-center justify-center shadow-lg"
+                      >
+                        <BarChart3
+                          className="w-10 h-10 text-white"
+                          strokeWidth={2}
+                        />
+                      </motion.div>
+                    </div>
+                    <motion.h3
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.35 }}
+                      className="font-reddit-condensed text-white font-extrabold text-2xl text-center leading-tight"
+                    >
+                      Want to see
+                      <br />
+                      your analytics?
+                    </motion.h3>
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.45 }}
+                      className="text-white/80 text-base text-center mt-2 font-medium tracking-wide"
+                    >
+                      View your note on a beautiful chart
+                    </motion.p>
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="px-6 py-6 space-y-3">
+                    <Button
+                      size="lg"
+                      className="w-full py-5 text-lg font-extrabold bg-gradient-to-r from-primary to-secondary text-white shadow-xl shadow-primary/30 hover:shadow-primary/50 hover:brightness-110 transition-all rounded-2xl"
+                      onPress={() => {
+                        setShowAnalyzeCta(false);
+                        navigate("/Analytics");
+                      }}
+                    >
+                      <BarChart3 className="w-5 h-5" />
+                      Now analyze it
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full py-5 text-base font-semibold rounded-2xl"
+                      onPress={() => {
+                        setShowAnalyzeCta(false);
+                        setDeferredCreateAccount(true);
+                      }}
+                    >
+                      Not now
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ============================================== */}
+        {/* FIXED CARD 2: "Create an account to save it!"  */}
+        {/* Appears 4.5s after "Not now" is clicked        */}
+        {/* ============================================== */}
+        <AnimatePresence>
+          {showCreateAccountCta && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xl"
+              onClick={() => setShowCreateAccountCta(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.85, y: 40 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.85, y: 40 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 180,
+                  damping: 20,
+                  delay: 0.1,
+                }}
+                className="relative w-[92%] max-w-sm"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => setShowCreateAccountCta(false)}
+                  className="absolute -top-3 -right-3 z-10 p-2 rounded-full bg-white dark:bg-gray-700 shadow-lg border-2 border-gray-200 dark:border-gray-600 hover:scale-110 transition-transform"
+                >
+                  <X className="w-4 h-4 text-gray-500 dark:text-gray-300" />
+                </button>
+
+                <div
+                  className={`rounded-3xl overflow-hidden shadow-2xl ${
+                    isDark
+                      ? "bg-gray-800 border border-gray-700"
+                      : "bg-white border border-gray-200"
+                  }`}
+                >
                   <div className="relative bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-500 px-6 pt-10 pb-12">
-                    {/* Decorative circles */}
                     <div className="absolute top-4 right-6 w-20 h-20 rounded-full bg-white/10" />
                     <div className="absolute bottom-4 left-8 w-12 h-12 rounded-full bg-white/8" />
                     <div className="absolute top-8 left-12 w-6 h-6 rounded-full bg-white/15" />
 
-                    {/* Account avatar / logo */}
                     <div className="relative flex justify-center mb-4">
                       <motion.div
                         initial={{ scale: 0, rotate: -30 }}
@@ -506,7 +640,6 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
                       </motion.div>
                     </div>
 
-                    {/* Title */}
                     <motion.h3
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -515,7 +648,7 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
                     >
                       Save Your Note
                       <br />
-                      Permanently! 🔒
+                      Permanently!
                     </motion.h3>
                     <motion.p
                       initial={{ opacity: 0 }}
@@ -527,9 +660,7 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
                     </motion.p>
                   </div>
 
-                  {/* Content */}
                   <div className="px-6 pt-0 pb-6 space-y-5">
-                    {/* Feature list */}
                     <motion.div
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -545,10 +676,7 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
                           Icon: BarChart3,
                           text: "Track all your expenses in one place",
                         },
-                        {
-                          Icon: Bot,
-                          text: "Unlock AI-powered analysis tools",
-                        },
+                        { Icon: Bot, text: "Unlock AI-powered analysis tools" },
                         {
                           Icon: Smartphone,
                           text: "Access your data from any device",
@@ -567,7 +695,6 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
                       ))}
                     </motion.div>
 
-                    {/* CTA Button */}
                     <motion.div
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -583,16 +710,6 @@ const UnauthenticatedExpenses = ({ isDark }: { isDark: boolean }) => {
                         </Button>
                       </Link>
                     </motion.div>
-
-                    {/* Bottom text */}
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.7 }}
-                      className={`font-reddit-condensed text-xs text-center tracking-wide ${isDark ? "text-gray-400" : "text-gray-500"}`}
-                    >
-                      No credit card required · Takes less than a minute
-                    </motion.p>
                   </div>
                 </div>
               </motion.div>

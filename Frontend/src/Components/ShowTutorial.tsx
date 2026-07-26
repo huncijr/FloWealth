@@ -53,10 +53,10 @@ const ShowTutorial: React.FC<ShowTutorialProps> = ({ isopen, onClose }) => {
                     <Sparkles className="sm:w-5 sm:h-5 md:w-7 md:h-7 lg:w-9 lg:h-9 xl:w-11 xl:h-11" />
                   </div>
                   <div className="leading-tight">
-                    <p className="tracking-wide Artifika font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+                    <p className="tracking-wide font-reddit-condensed font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
                       Get started guide
                     </p>
-                    <p className="Artifika text-lg sm:text-xl md:text-2xl lg:text-3xl">
+                    <p className=" text-lg sm:text-xl md:text-2xl lg:text-3xl">
                       {" "}
                       Track and analyze your spendings.
                     </p>

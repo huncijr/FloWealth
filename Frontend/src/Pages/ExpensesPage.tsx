@@ -23,6 +23,7 @@ import { useAuth } from "../Context/AuthContext";
 import {
   BadgePlus,
   Ban,
+  BarChart3,
   BookX,
   Calendar,
   Check,
@@ -43,6 +44,7 @@ import {
   XCircleIcon,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../api/axiosInstance";
 import useDarkMode from "../Components/Mode";
 import ProductTable from "../Components/ProductTable";
@@ -189,6 +191,8 @@ const Expenses = () => {
   const [showProductPreview, setShowProductPreview] = useState<boolean>(false);
   const [isPriceExtracting, setIsPriceExtracting] = useState<boolean>(false);
   const [priceextracdots, setPriceExtractDots] = useState(".");
+  const [showCompletionToast, setShowCompletionToast] = useState(false);
+  const navigate = useNavigate();
 
   // Calculate total cost whenever rows change
   useEffect(() => {
@@ -511,6 +515,7 @@ const Expenses = () => {
       setIsCompleted(false);
       setFinalCost(null);
       setBudgetRefreshKey((prev) => prev + 1);
+      setShowCompletionToast(true);
     }
   };
   // Changes note sorting criteria and resets to first page
@@ -1974,6 +1979,39 @@ const Expenses = () => {
               </Button>
             </div>
           </div>
+        </div>
+      )}
+
+      {showCompletionToast && (
+        <div className="fixed top-2 inset-x-0 mx-auto w-fit z-60">
+          <Alert status="success">
+            <Alert.Indicator>
+              <CheckCheck />
+            </Alert.Indicator>
+            <Alert.Content>
+              <Alert.Title>Note completed successfully!</Alert.Title>
+            </Alert.Content>
+            <div className="flex items-center gap-2 ml-4">
+              <Button
+                size="sm"
+                className="bg-gradient-to-r from-primary to-secondary text-white font-reddit-condensed font-semibold"
+                onClick={() => {
+                  setShowCompletionToast(false);
+                  navigate("/Analytics");
+                }}
+              >
+                <BarChart3 className="w-4 h-4" />
+                View on Chart
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowCompletionToast(false)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </Alert>
         </div>
       )}
 
