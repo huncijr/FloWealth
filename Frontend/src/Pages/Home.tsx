@@ -1,5 +1,4 @@
 import { useAuth } from "../Context/AuthContext";
-import NoteComparison from "../Components/NoteComparison.tsx";
 import { motion } from "framer-motion";
 import {
   ArrowDown,
@@ -12,16 +11,78 @@ import {
   Zap,
   CircleDashed,
   Shell,
+  Bitcoin,
+  Landmark,
+  DollarSign,
+  Coins,
+  ArrowUpRight,
+  ArrowDownRight,
+  ChartBar,
+  UserCircle,
+  Search,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useDarkMode from "../Components/Mode.tsx";
+import MarketWidget from "../Components/MarketWidget.tsx";
+import MarketSearch from "../Components/MarketSearch.tsx";
 import analyzeVideo from "../Videos/VIdeoAnalyzer.mp4";
 import compariseVideo from "../Videos/VideoCompariser.mp4";
 import AINoteCreater from "../Videos/CreateNoteWithAi.mp4";
+import { useEffect, useState } from "react";
+
+interface MarketData {
+  crypto: {
+    symbol: string;
+    name: string;
+    price: number;
+    changePercent24h: number;
+  }[];
+  stocks: {
+    symbol: string;
+    name: string;
+    price: number;
+    change: number;
+    changePercent: number;
+  }[];
+  forex: {
+    pair: string;
+    rate: number;
+    changePercent: number;
+  }[];
+  commodities: {
+    name: string;
+    symbol: string;
+    price: number;
+    changePercent24h: number;
+  }[];
+}
 
 const Home = () => {
   const { user } = useAuth();
   const { isDark } = useDarkMode();
+  const navigate = useNavigate();
+  const [marketData, setMarketData] = useState<MarketData | null>(null);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      fetch("/API/market/all")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) setMarketData(data.data);
+        })
+        .catch(() => {});
+    }
+  }, [user]);
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+    }).format(price);
+  };
+
   const scrollToFeatures = () => {
     document
       .getElementById("create-with-ai")
@@ -29,7 +90,337 @@ const Home = () => {
   };
 
   if (user) {
-    return <NoteComparison />;
+    return (
+      <div className="px-4 sm:px-8 lg:px-12 py-6 space-y-6">
+        {/* Welcome + Search */}
+        <div className="space-y-4">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight">
+            Welcome back,{" "}
+            <span className="bg-linear-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
+              {user.name}
+            </span>
+          </h1>
+          <p className="text-default-500 text-sm sm:text-base">
+            Track global markets, compare your expenses, and manage your
+            finances in one place.
+          </p>
+          <MarketSearch onResults={setSearchResults} />
+        </div>
+
+        {/* Search Results (above widgets when active) */}
+        {searchResults.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {searchResults.map((item, i) => (
+              <div
+                key={i}
+                className={`p-4 rounded-2xl border-2 transition-all ${
+                  isDark
+                    ? "bg-gray-800 border-gray-700 hover:border-primary/30"
+                    : "bg-white border-gray-200 hover:border-primary"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-extrabold px-2 py-1 rounded-full bg-primary/10 text-primary uppercase">
+                    {item.type}
+                  </span>
+                </div>
+                <h3 className="font-bold text-lg">{item.symbol}</h3>
+                <p className="text-xs text-default-400 truncate">{item.name}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Widget Grid — dense masonry-style, full width */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Crypto — col-span-2 (wider, 3 items) */}
+          <div className="lg:col-span-2">
+            <MarketWidget
+              title="Crypto Market"
+              icon={<Bitcoin className="w-4 h-4 text-orange-500" />}
+              lastUpdated={marketData ? "Updated just now" : "Loading..."}
+            >
+              <div className="space-y-2">
+                {marketData?.crypto?.length ? (
+                  marketData.crypto.map((coin) => (
+                    <div
+                      key={coin.symbol}
+                      className="flex items-center justify-between py-1.5"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-orange-500/10 flex items-center justify-center">
+                          <span className="text-xs font-extrabold text-orange-400">
+                            {coin.symbol.slice(0, 3)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-sm">
+                            {coin.name}
+                          </span>
+                          <p className="text-xs text-default-400">
+                            {coin.symbol}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold">
+                          {formatPrice(coin.price)}
+                        </p>
+                        <p
+                          className={`text-xs flex items-center gap-1 ${
+                            coin.changePercent24h >= 0
+                              ? "text-emerald-500"
+                              : "text-red-500"
+                          }`}
+                        >
+                          {coin.changePercent24h >= 0 ? (
+                            <ArrowUpRight className="w-3 h-3" />
+                          ) : (
+                            <ArrowDownRight className="w-3 h-3" />
+                          )}
+                          {coin.changePercent24h.toFixed(2)}%
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="h-4 w-20 bg-default-200 rounded animate-pulse" />
+                        <div className="h-4 w-16 bg-default-200 rounded animate-pulse" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </MarketWidget>
+          </div>
+
+          {/* Stocks — col-span-2 (wider, 3 items) */}
+          <div className="lg:col-span-2">
+            <MarketWidget
+              title="Stock Market"
+              icon={<ChartBar className="w-4 h-4 text-blue-500" />}
+              lastUpdated={marketData ? "Updated just now" : "Loading..."}
+            >
+              <div className="space-y-2">
+                {marketData?.stocks?.length ? (
+                  marketData.stocks.map((stock) => (
+                    <div
+                      key={stock.symbol}
+                      className="flex items-center justify-between py-1.5"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-blue-500/10 flex items-center justify-center">
+                          <span className="text-xs font-extrabold text-blue-400">
+                            {stock.symbol.slice(0, 3)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-sm">
+                            {stock.name}
+                          </span>
+                          <p className="text-xs text-default-400">
+                            {stock.symbol}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold">
+                          {formatPrice(stock.price)}
+                        </p>
+                        <p
+                          className={`text-xs flex items-center gap-1 ${
+                            stock.changePercent >= 0
+                              ? "text-emerald-500"
+                              : "text-red-500"
+                          }`}
+                        >
+                          {stock.changePercent >= 0 ? (
+                            <ArrowUpRight className="w-3 h-3" />
+                          ) : (
+                            <ArrowDownRight className="w-3 h-3" />
+                          )}
+                          {stock.changePercent.toFixed(2)}%
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="h-4 w-20 bg-default-200 rounded animate-pulse" />
+                        <div className="h-4 w-16 bg-default-200 rounded animate-pulse" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </MarketWidget>
+          </div>
+
+          {/* Forex — col-span-1 (compact, 4 pairs) */}
+          <div className="lg:row-span-2">
+            <MarketWidget
+              title="Forex Rates"
+              icon={<DollarSign className="w-4 h-4 text-emerald-500" />}
+              lastUpdated={marketData ? "Updated just now" : "Loading..."}
+            >
+              <div className="space-y-1.5">
+                {marketData?.forex?.length ? (
+                  marketData.forex.map((fx) => (
+                    <div
+                      key={fx.pair}
+                      className="flex items-center justify-between py-2 border-b border-divider last:border-0"
+                    >
+                      <span className="font-semibold text-sm">{fx.pair}</span>
+                      <div className="text-right">
+                        <p className="font-semibold text-sm">
+                          {fx.rate.toFixed(4)}
+                        </p>
+                        <p
+                          className={`text-xs ${
+                            fx.changePercent >= 0
+                              ? "text-emerald-500"
+                              : "text-red-500"
+                          }`}
+                        >
+                          {fx.changePercent >= 0 ? "+" : ""}
+                          {fx.changePercent.toFixed(2)}%
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="space-y-2">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between py-2 border-b border-divider last:border-0"
+                      >
+                        <div className="h-4 w-14 bg-default-200 rounded animate-pulse" />
+                        <div className="h-4 w-16 bg-default-200 rounded animate-pulse" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </MarketWidget>
+          </div>
+
+          {/* Commodities — col-span-1, row-span-2 (tall, 3 items with bigger cards) */}
+          <div className="lg:row-span-2">
+            <MarketWidget
+              title="Gold & Metals"
+              icon={<Coins className="w-4 h-4 text-yellow-500" />}
+              lastUpdated={marketData ? "Updated just now" : "Loading..."}
+            >
+              <div className="space-y-3">
+                {marketData?.commodities?.length ? (
+                  marketData.commodities.map((comm) => (
+                    <div
+                      key={comm.symbol}
+                      className={`p-4 rounded-xl border transition-all ${
+                        isDark
+                          ? "bg-gray-700 border-gray-600"
+                          : "bg-default-100 border-default-300"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-bold text-sm">{comm.name}</span>
+                        <span className="text-xs text-default-400">
+                          {comm.symbol}
+                        </span>
+                      </div>
+                      <p className="text-xl font-extrabold">
+                        {formatPrice(comm.price)}
+                      </p>
+                      <p
+                        className={`text-sm flex items-center gap-1 mt-1 ${
+                          comm.changePercent24h >= 0
+                            ? "text-emerald-500"
+                            : "text-red-500"
+                        }`}
+                      >
+                        {comm.changePercent24h >= 0 ? (
+                          <ArrowUpRight className="w-4 h-4" />
+                        ) : (
+                          <ArrowDownRight className="w-4 h-4" />
+                        )}
+                        {comm.changePercent24h.toFixed(2)}% (24h)
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className="p-4 rounded-xl border border-default-200"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="h-4 w-12 bg-default-200 rounded animate-pulse" />
+                          <div className="h-3 w-8 bg-default-200 rounded animate-pulse" />
+                        </div>
+                        <div className="h-7 w-24 bg-default-200 rounded animate-pulse mb-1" />
+                        <div className="h-4 w-20 bg-default-200 rounded animate-pulse" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </MarketWidget>
+          </div>
+
+          {/* Compare Notes — col-span-2 (stretched horizontally) */}
+          <div className="lg:col-span-2">
+            <MarketWidget
+              title="Compare Your Expenses"
+              icon={<TrendingUp className="w-4 h-4 text-primary" />}
+              onClick={() => navigate("/Compare")}
+            >
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="flex-1">
+                  <p className="text-sm text-default-500 leading-relaxed mb-3">
+                    Side-by-side AI-powered comparison of your expenses. Find
+                    which store gives you better deals and save more money.
+                  </p>
+                  <div className="flex gap-2 flex-wrap">
+                    <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
+                      AI-Powered
+                    </span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-secondary/10 text-secondary font-medium">
+                      Real-time Insights
+                    </span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-500 font-medium">
+                      Save Money
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate("/Compare");
+                  }}
+                  className="shrink-0 px-6 py-3 rounded-xl bg-linear-to-r from-primary to-secondary text-white font-bold text-sm transition-all hover:shadow-lg hover:shadow-primary/30 flex items-center gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Compare Now →
+                </button>
+              </div>
+            </MarketWidget>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const text1 =

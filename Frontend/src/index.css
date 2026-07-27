@@ -9,6 +9,10 @@
   --color-secondary: #bf6a02;
   --color-third: #ad711d;
 
+  --color-divider: rgba(128, 128, 128, 0.15);
+  --color-content1: #ffffff;
+  --color-content2: #f4f4f5;
+
   --font-dm-sans: "DM Sans", sans-serif;
   --font-reddit-condensed: "Reddit Sans Condensed", sans-serif;
   --font-playwrite: "Playwrite NZ Basic", cursive;
@@ -45,6 +49,9 @@ html.dark body {
 .dark {
   --color-main-bg: #0f0542;
   --color-main-foreground: #ffffff;
+  --color-divider: rgba(255, 255, 255, 0.08);
+  --color-content1: #1f2937;
+  --color-content2: #111827;
 }
 .dark .bg-warm-cream {
   background-color: #3d3632;
@@ -1335,4 +1342,25 @@ gradient-btn {
   .ai-branch--down {
     transform: rotate(8deg) translateY(12px);
   }
+}
+
+/* ========== MARKET WIDGET UTILITIES ========== */
+.widget-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .widget-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.widget-card {
+  @apply relative overflow-hidden border-2 border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl;
+}
+
+.widget-card-search {
+  @apply p-4 rounded-2xl border-2 transition-all;
 }

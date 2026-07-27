@@ -38,6 +38,14 @@ import {
   extractPriceFromReceipt,
 } from "../controllers/AIReceiptController";
 import { checkTokenLimit } from "../middlewares/TokenLimit";
+import {
+  marketAll,
+  marketCrypto,
+  marketStocks,
+  marketForex,
+  marketCommodities,
+  marketSearch,
+} from "../controllers/MarketController";
 
 const router = Router();
 
@@ -83,5 +91,12 @@ router.get("/budget", userAuth, getBudget);
 router.post("/budget", userAuth, setBudget);
 router.get("/spending/current-month", userAuth, getCurrentMonthSpending);
 router.get("/savings/summary", userAuth, getSavingsSummary);
+
+router.get("/market/all", marketAll);
+router.get("/market/crypto", marketCrypto);
+router.get("/market/stocks", marketStocks);
+router.get("/market/forex", marketForex);
+router.get("/market/commodities", marketCommodities);
+router.get("/market/search", marketSearch);
 
 export default router;

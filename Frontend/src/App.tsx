@@ -13,6 +13,7 @@ import { ThemeProvider } from "./Context/ThemeContext";
 import { NotesProvider } from "./Context/Notescontext";
 import Footer from "./Components/Footer";
 import TermsConditions from "./Pages/Terms&Conditions";
+import CompareNotes from "./Pages/CompareNotes";
 
 const NavBarLayout = () => {
   const { isDark } = useDarkMode();
@@ -49,6 +50,7 @@ function App() {
               <Route path="/Analytics" element={<AnalyticsPage />} />
               <Route path="/Account" element={<Login />} />
               <Route path="/Terms&Conditions" element={<TermsConditions />} />
+              <Route path="/Compare" element={<CompareNotes />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
