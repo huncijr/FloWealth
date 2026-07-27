@@ -440,7 +440,7 @@ const Home = () => {
   const text1 =
     "Our AI instantly scans your receipts and extracts key information. No more manual entry - just snap a photo and let FloWealth do the rest. Track prices, compare stores, and never miss a detail.";
   const text2 =
-    "Side-by-side comparison of your spending notes. See which store offers better prices, track estimation accuracy, and make smarter shopping decisions based on real data.";
+    "Unlock powerful market analytics with interactive candlestick and line charts. Track price movements, identify patterns, and stay ahead of the market with real-time data.";
 
   const words1 = text1.split(/\s+/);
   const words2 = text2.split(/\s+/);
@@ -811,7 +811,9 @@ const Home = () => {
           <div className="flex flex-col items-start gap-4">
             <div className="flex items-center gap-3">
               <TrendingUp className="w-8 h-8 text-secondary" />
-              <h2 className="text-3xl font-black Poetsen-one">Compare Notes</h2>
+              <h2 className="text-3xl font-black Poetsen-one">
+                Market Insights
+              </h2>
             </div>
 
             <motion.div
