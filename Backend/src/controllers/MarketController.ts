@@ -7,6 +7,7 @@ import {
   getCommodities,
   searchMarket,
 } from "../services/MarketService";
+import { getChartData } from "../services/MarketChartService";
 
 export const marketAll = async (
   _req: Request,
@@ -81,6 +82,39 @@ export const marketSearch = async (
   try {
     const query = (req.query.q as string) || "";
     const data = await searchMarket(query);
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const marketChart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { symbol, type, name, range } = req.query;
+    if (!symbol || !type || !name) {
+      res
+        .status(400)
+        .json({
+          success: false,
+          message: "symbol, type, and name are required",
+        });
+      return;
+    }
+    const validTypes = ["stock", "crypto", "forex", "commodity"];
+    if (!validTypes.includes(String(type))) {
+      res.status(400).json({ success: false, message: "Invalid type" });
+      return;
+    }
+    const data = await getChartData(
+      String(symbol),
+      String(type) as "stock" | "crypto" | "forex" | "commodity",
+      String(name),
+      String(range || "1M"),
+    );
     res.json({ success: true, data });
   } catch (err) {
     next(err);

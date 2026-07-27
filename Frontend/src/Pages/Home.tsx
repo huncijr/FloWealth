@@ -25,6 +25,7 @@ import { Link, useNavigate } from "react-router-dom";
 import useDarkMode from "../Components/Mode.tsx";
 import MarketWidget from "../Components/MarketWidget.tsx";
 import MarketSearch from "../Components/MarketSearch.tsx";
+import MarketChartWidget from "../Components/MarketChartWidget.tsx";
 import analyzeVideo from "../Videos/VIdeoAnalyzer.mp4";
 import compariseVideo from "../Videos/VideoCompariser.mp4";
 import AINoteCreater from "../Videos/CreateNoteWithAi.mp4";
@@ -62,7 +63,11 @@ const Home = () => {
   const { isDark } = useDarkMode();
   const navigate = useNavigate();
   const [marketData, setMarketData] = useState<MarketData | null>(null);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedAsset, setSelectedAsset] = useState<{
+    symbol: string;
+    name: string;
+    type: "stock" | "crypto" | "forex" | "commodity";
+  } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -89,6 +94,18 @@ const Home = () => {
       ?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleAssetSelect = (
+    symbol: string,
+    name: string,
+    type: "stock" | "crypto" | "forex" | "commodity",
+  ) => {
+    setSelectedAsset({ symbol, name, type });
+    // Scroll to chart widget
+    document
+      .querySelector("[data-chart-widget]")
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
   if (user) {
     return (
       <div className="px-4 sm:px-8 lg:px-12 py-6 space-y-6">
@@ -104,32 +121,17 @@ const Home = () => {
             Track global markets, compare your expenses, and manage your
             finances in one place.
           </p>
-          <MarketSearch onResults={setSearchResults} />
+          <MarketSearch onSelect={setSelectedAsset} isDark={isDark} />
         </div>
 
-        {/* Search Results (above widgets when active) */}
-        {searchResults.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {searchResults.map((item, i) => (
-              <div
-                key={i}
-                className={`p-4 rounded-2xl border-2 transition-all ${
-                  isDark
-                    ? "bg-gray-800 border-gray-700 hover:border-primary/30"
-                    : "bg-white border-gray-200 hover:border-primary"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-extrabold px-2 py-1 rounded-full bg-primary/10 text-primary uppercase">
-                    {item.type}
-                  </span>
-                </div>
-                <h3 className="font-bold text-lg">{item.symbol}</h3>
-                <p className="text-xs text-default-400 truncate">{item.name}</p>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Chart Widget (always visible, shows placeholder when no asset selected) */}
+        <div data-chart-widget>
+          <MarketChartWidget
+            asset={selectedAsset}
+            onClose={() => setSelectedAsset(null)}
+            isDark={isDark}
+          />
+        </div>
 
         {/* Widget Grid — dense masonry-style, full width */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -145,7 +147,10 @@ const Home = () => {
                   marketData.crypto.map((coin) => (
                     <div
                       key={coin.symbol}
-                      className="flex items-center justify-between py-1.5"
+                      onClick={() =>
+                        handleAssetSelect(coin.symbol, coin.name, "crypto")
+                      }
+                      className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-500/10 rounded-lg px-2 -mx-2 transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-orange-500/10 flex items-center justify-center">
@@ -212,7 +217,10 @@ const Home = () => {
                   marketData.stocks.map((stock) => (
                     <div
                       key={stock.symbol}
-                      className="flex items-center justify-between py-1.5"
+                      onClick={() =>
+                        handleAssetSelect(stock.symbol, stock.name, "stock")
+                      }
+                      className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-500/10 rounded-lg px-2 -mx-2 transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -279,7 +287,10 @@ const Home = () => {
                   marketData.forex.map((fx) => (
                     <div
                       key={fx.pair}
-                      className="flex items-center justify-between py-2 border-b border-divider last:border-0"
+                      onClick={() =>
+                        handleAssetSelect(fx.pair, fx.pair, "forex")
+                      }
+                      className="flex items-center justify-between py-2 border-b border-divider last:border-0 cursor-pointer hover:bg-gray-500/10 rounded-lg px-2 -mx-2 transition-colors"
                     >
                       <span className="font-semibold text-sm">{fx.pair}</span>
                       <div className="text-right">
@@ -328,10 +339,13 @@ const Home = () => {
                   marketData.commodities.map((comm) => (
                     <div
                       key={comm.symbol}
-                      className={`p-4 rounded-xl border transition-all ${
+                      onClick={() =>
+                        handleAssetSelect(comm.symbol, comm.name, "commodity")
+                      }
+                      className={`p-4 rounded-xl border transition-all cursor-pointer hover:scale-[1.02] ${
                         isDark
-                          ? "bg-gray-700 border-gray-600"
-                          : "bg-default-100 border-default-300"
+                          ? "bg-gray-700 border-gray-600 hover:border-primary/30"
+                          : "bg-default-100 border-default-300 hover:border-primary"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">

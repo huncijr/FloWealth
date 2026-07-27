@@ -45,6 +45,7 @@ import {
   marketForex,
   marketCommodities,
   marketSearch,
+  marketChart,
 } from "../controllers/MarketController";
 
 const router = Router();
@@ -98,5 +99,6 @@ router.get("/market/stocks", marketStocks);
 router.get("/market/forex", marketForex);
 router.get("/market/commodities", marketCommodities);
 router.get("/market/search", marketSearch);
+router.get("/market/chart", marketChart);
 
 export default router;
