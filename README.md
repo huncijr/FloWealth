@@ -13,8 +13,6 @@
 - Upload receipt images and compare them with your planned note
 - Track estimated vs actual spending
 - View spending statistics by theme
-- Sign in with email or Google
-- Dark and light mode
 
 ## Here are some small previews of the app in action:
 
