@@ -1,95 +1,95 @@
-# 🍀 FloWealth
+# FloWealth
 
-<h2>Server is running at: <a href="https://flowealth.eu/">https://flowealth.eu/</a></h2>
+Live server: [https://flowealth.eu/](https://flowealth.eu/)
 
-## 📖 About FloWealth
+## About FloWealth
 
-**FloWealth** is a modern expense tracking application that helps you manage your spending habits with intelligent AI-powered features. Plan your shopping trips, track actual purchases, and get detailed analytics about your spending patterns
+FloWealth is a website where you can track your purchases, analyze them, and organize them into themes, then let an AI go through the whole thing. You log what you bought, group it by topic, and the AI looks at it and tells you where your money actually goes.
 
 ## Features
 
 - Create shopping notes with products, quantities, and estimated prices
-- Organize notes into themes/categories
+- Organize notes into themes
 - Upload receipt images and compare them with your planned note
 - Track estimated vs actual spending
 - View spending statistics by theme
 
 ## Here are some small previews of the app in action:
 
-### 🏠 Landing Page
-
-The landing page features a beautiful, animated hero section showcasing FloWealth's AI-powered expense tracking capabilities.
+### Landing Page
 
 ![Landing Page](./Readme%20gifs/landingpage.gif)
 
 ---
 
-### 🌙 Dark/Light Mode
-
-Switch seamlessly between dark and light themes with a beautifully animated toggle.
+### Dark/Light Mode
 
 ![Dark/Light Mode](./Readme%20gifs/darkehitemode.gif)
 
 ---
 
-### 📝 Note Management
-
-Create notes with just an AI prompt - just type what you need to buy and our AI parses it automatically. Add products, estimate prices, and track your planned expenses.
+### Note Management
 
 ![Add Note](./Readme%20gifs/addnote.gif)
 
 ---
 
-### 👁️ View Notes
-
-View all your notes in a beautiful grid layout. Filter by completed, upcoming, or all notes.
+### View Notes
 
 ![View Notes](./Readme%20gifs/viewnotes.gif)
 
 ---
 
-### 🏷️ Theme Management
-
-Organize your expenses by creating color-coded themes. Track spending across different categories.
+### Theme Management
 
 ![Add Theme](./Readme%20gifs/addtheme.gif)
 
 ---
 
-### 📊 Analytics Dashboard
-
-Get insights into your spending patterns with detailed analytics. See theme-based statistics and spending trends.
+### Analytics Dashboard
 
 ![Analyze Note](./Readme%20gifs/analyzenote.gif)
 
 ---
 
-### 🤖 AI Receipt Analysis
-
-Upload your receipt and let FloWealth's AI analyze it. Compare actual purchases with your planned note.
+### AI Receipt Analysis
 
 ![Analyze Note with AI](./Readme%20gifs/analyzenotewithai.gif)
 
 ---
 
-### ⚖️ AI-Powered Comparison
-
-Compare multiple notes and get AI-generated insights about your spending habits and accuracy.
+### AI-Powered Comparison
 
 ![Compare with AI](./Readme%20gifs/comparewithai.gif)
 
 ---
 
-### 👤 Account Management
-
-Manage your account settings, view token usage, and delete your account securely.
+### Account Management
 
 ![Account Page](./Readme%20gifs/accountpage.gif)
 
-## 📄 License
+## Running it locally
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+You need Node.js installed. That is the only requirement.
 
-MIT License - see [LICENSE](LICENSE).
+Clone the repo, then open two terminals. One for the backend, one for the frontend.
 
-Made with ❤️ by **Abro** , © 2026
+Backend:
+
+```bash
+cd Backend
+npm install
+npm run dev
+```
+
+Frontend:
+
+```bash
+cd Frontend
+npm install
+npm run dev
+```
+
+The backend starts with tsx, the frontend with Vite. Both print the address they run on. Open the frontend one in your browser and you are in.
+
+Made by Abro, 2026
