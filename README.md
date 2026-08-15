@@ -89,7 +89,3 @@ cd Frontend
 npm install
 npm run dev
 ```
-
-The backend starts with tsx, the frontend with Vite. Both print the address they run on. Open the frontend one in your browser and you are in.
-
-Made by Abro, 2026
