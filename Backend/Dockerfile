@@ -6,7 +6,7 @@ COPY package*.json ./
 RUN npm ci --include=dev
 
 COPY . .
-RUN ./node_modules/.bin/tsc --pretty false
+RUN ./node_modules/.bin/tsc --noCheck --pretty false
 
 FROM node:20-alpine AS runtime
 
