@@ -3,10 +3,10 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 COPY . .
-RUN npm run build
+RUN ./node_modules/.bin/tsc --pretty false
 
 FROM node:20-alpine AS runtime
 
