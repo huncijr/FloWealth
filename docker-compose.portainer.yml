@@ -1,0 +1,67 @@
+services:
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    environment:
+      PORT: "3001"
+      NODE_ENV: production
+      URL: https://${APP_DOMAIN:-flowealth.eu}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID is required}
+      CLOUDFLARE_SECRET_KEY: ${CLOUDFLARE_SECRET_KEY:?CLOUDFLARE_SECRET_KEY is required}
+      RESEND_API: ${RESEND_API:?RESEND_API is required}
+      EMAIL_FROM: ${EMAIL_FROM:?EMAIL_FROM is required}
+      AI_API_KEY: ${AI_API_KEY:?AI_API_KEY is required}
+      API_URL: ${API_URL:?API_URL is required}
+      AI_MODEL: ${AI_MODEL:?AI_MODEL is required}
+      FINNHUB_API_KEY: ${FINNHUB_API_KEY:?FINNHUB_API_KEY is required}
+    expose:
+      - "3001"
+    restart: unless-stopped
+    init: true
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3001/API/health').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - app
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:?VITE_GOOGLE_CLIENT_ID is required}
+        VITE_CLOUDFLARE_SITE_KEY: ${VITE_CLOUDFLARE_SITE_KEY:?VITE_CLOUDFLARE_SITE_KEY is required}
+    depends_on:
+      backend:
+        condition: service_healthy
+    expose:
+      - "80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      app:
+      proxy:
+        aliases:
+          - flowealth-web
+
+networks:
+  app:
+    internal: true
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:?PROXY_NETWORK is required}

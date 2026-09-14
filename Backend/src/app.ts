@@ -8,9 +8,9 @@ import cookieParser from "cookie-parser";
 dotenv.config();
 const app: Application = express();
 
-const isDevelopment: boolean = process.env.NODE_ENV === "production";
+const isProduction: boolean = process.env.NODE_ENV === "production";
 
-if (!isDevelopment && !process.env.URL) {
+if (isProduction && !process.env.URL) {
   throw new Error("URL is not Valid!");
 }
 
@@ -21,11 +21,15 @@ app.use(express.urlencoded({ limit: "4mb", extended: true }));
 
 app.use(
   cors({
-    origin: isDevelopment ? process.env.URL : "http://localhost:5173",
+    origin: isProduction ? process.env.URL : "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
   }),
 );
+
+app.get("/API/health", (_request: Request, response: Response) => {
+  response.status(200).json({ status: "ok" });
+});
 
 app.use("/API", router);
 

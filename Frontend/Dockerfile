@@ -1,18 +1,23 @@
 FROM node:20-alpine AS build
 
-WORKDIR /FloWealth
+WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY . .
 
-RUN  npx vite build
+ARG VITE_GOOGLE_CLIENT_ID
+ARG VITE_CLOUDFLARE_SITE_KEY
+ENV VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
+ENV VITE_CLOUDFLARE_SITE_KEY=${VITE_CLOUDFLARE_SITE_KEY}
+
+RUN npm run build
 
 FROM nginx:stable-alpine
 
-COPY --from=build /FloWealth/dist /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 
-CMD ["nginx","-g","daemon off;"]
+CMD ["nginx", "-g", "daemon off;"]

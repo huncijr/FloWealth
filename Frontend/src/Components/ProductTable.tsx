@@ -7,7 +7,7 @@ import {
   TextField,
 } from "@heroui/react";
 import useDarkMode from "./Mode";
-import { Diff, DollarSign, Minus, PencilLine } from "lucide-react";
+import { Diff, Minus } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 
 // Interface for a single product row

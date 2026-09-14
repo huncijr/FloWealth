@@ -39,10 +39,8 @@ const ImageUpload = ({
     new Date().toISOString().split("T")[0],
   );
 
-  const [ispriceextracting, setIsPriceExtracting] = useState(false);
-  const [priceextracterror, setPriceExtractError] = useState<string | null>(
-    null,
-  );
+  const [, setIsPriceExtracting] = useState(false);
+  const [, setPriceExtractError] = useState<string | null>(null);
 
   const handleClick = () => {
     inputRef.current?.click();

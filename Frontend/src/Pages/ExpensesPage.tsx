@@ -24,7 +24,6 @@ import {
   BadgePlus,
   Ban,
   BarChart3,
-  BookX,
   Calendar,
   Check,
   CheckCheck,

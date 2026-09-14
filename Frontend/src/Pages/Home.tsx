@@ -12,14 +12,11 @@ import {
   CircleDashed,
   Shell,
   Bitcoin,
-  Landmark,
   DollarSign,
   Coins,
   ArrowUpRight,
   ArrowDownRight,
   ChartBar,
-  UserCircle,
-  Search,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import useDarkMode from "../Components/Mode.tsx";

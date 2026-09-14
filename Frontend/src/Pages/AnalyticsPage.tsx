@@ -36,7 +36,6 @@ import {
   ReferenceLine,
   RadialBarChart,
   RadialBar,
-  Legend,
 } from "recharts";
 
 type ThemeWithVirtual = Theme & { isVirtual?: boolean };
@@ -353,7 +352,7 @@ const AnalyticsPage = () => {
                       stroke={isDark ? "#1f2937" : "#fff"}
                       strokeWidth={2}
                     >
-                      {donutData.map((entry, index) => (
+                      {donutData.map((_, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}

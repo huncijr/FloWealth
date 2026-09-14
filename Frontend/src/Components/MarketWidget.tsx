@@ -1,6 +1,5 @@
 import { Card } from "@heroui/react";
 import { motion } from "framer-motion";
-import useDarkMode from "./Mode";
 import type { ReactNode } from "react";
 
 interface MarketWidgetProps {
@@ -20,8 +19,6 @@ const MarketWidget = ({
   href,
   children,
 }: MarketWidgetProps) => {
-  const { isDark } = useDarkMode();
-
   const content = (
     <Card
       className={`relative overflow-hidden border-2 border-divider bg-content1/80 backdrop-blur-sm h-full ${

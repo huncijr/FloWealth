@@ -1,15 +1,23 @@
-FROM node:20-alpine
+FROM node:20-alpine AS build
 
-WORKDIR /FloWealth
+WORKDIR /app
 
-COPY package*json ./
-
-RUN npm install
+COPY package*.json ./
+RUN npm ci
 
 COPY . .
-
 RUN npm run build
 
-EXPOSE 5001
+FROM node:20-alpine AS runtime
 
-CMD ["node","dist/server.js"]
+ENV NODE_ENV=production
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+COPY --from=build --chown=node:node /app/dist ./dist
+
+USER node
+EXPOSE 3001
+
+CMD ["node", "dist/server.js"]

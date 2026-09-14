@@ -1,5 +1,5 @@
 import { Chip, Spinner, Tooltip } from "@heroui/react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../api/axiosInstance";
 import { Check, ShieldAlert, Trash2 } from "lucide-react";
 import useDarkMode from "./Mode";
